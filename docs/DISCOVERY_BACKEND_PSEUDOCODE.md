@@ -149,32 +149,5 @@ function validateAntiGaming(user, request):
     # Paid permanent placement is NOT allowed here.
     # Any paid boosts must live in a separate, clearly-marked surface,
     # never in the core 6–8 discovery rows.
-
-
 All production implementations must keep logic equivalent to this pseudocode,
 even if the database or language changes in the future.
-
-
----
-
-## 3️⃣ After you paste + commit
-
-Once that file exists:
-
-- **rooted-core** now fully defines:
-  - GEO law  
-  - Discovery card rules  
-  - UI ↔ Backend contract  
-  - Actual backend algorithm
-
-Next step *after this* (we can do next message):
-
-> Mirror this endpoint behavior into your **ROOTED app code** (Make/Figma → React/TS) so the front end only ever asks for what this backend promises.
-
-For now, do these 3 actions:
-
-1. Create `DISCOVERY_BACKEND_PSEUDOCODE.md`
-2. Paste the content
-3. Commit with `Add backend pseudocode for discovery API`
-
-Then tell me: **“backend file is done”** and I’ll walk you through how this maps into your actual app / Supabase / Vercel side.
