@@ -204,6 +204,35 @@ Service-role / direct SQL in emergencies
 
 No admin SQL helper whose name starts with _admin_ or _debug_ may be exposed via the public RPC API.
 
+
+All vendor & institution applications live in:
+
+public.vendor_applications
+
+public.institution_applications
+
+Applications are never auto-approved. They always enter:
+
+public.moderation_queue with entity_type = 'vendor_application' or 'institution_application'.
+
+Only admins can:
+
+Approve/reject applications (via admin_moderate_submission).
+
+Change status on application tables (RLS).
+
+Every decision:
+
+Updates the application status.
+
+Updates moderation_queue status + timestamps + reviewed_by.
+
+Sends a notification via notifications system:
+
+submission_approved for approvals.
+
+submission_rejected for rejections.
+
 ---
 
 This file is CANONICAL and applies platform-wide.
