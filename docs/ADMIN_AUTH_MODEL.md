@@ -113,4 +113,6 @@ ROOTED Admin Model enforces:
 
 ---
 
+No admin SQL helper whose name starts with _admin_ or _debug_ may be exposed via the public RPC API.
+
 This Admin Authorization Model is **IMMUTABLE and CANONICAL** across all ROOTED verticals.
