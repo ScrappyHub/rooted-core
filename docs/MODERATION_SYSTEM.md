@@ -162,4 +162,44 @@ This system is **vertical-agnostic** and applies automatically to:
 * Experiences
 * Future Vertical Modules
 
+Admin identity is defined purely in public.user_tiers:
+
+role = 'admin'
+
+account_status = 'active'
+
+Admin RPCs exposed to the frontend are limited to:
+
+admin_get_user_accounts
+
+admin_set_role_tier
+
+admin_set_account_status
+
+admin_update_feature_flags
+
+admin_moderate_submission
+
+Every exposed admin RPC:
+
+✅ Uses SECURITY DEFINER
+
+✅ Calls public.is_admin() at the top
+
+✅ Writes to public.user_admin_actions (for account-level changes)
+
+✅ For moderation, chains into notification helpers
+
+Internal helpers like _admin_moderate_submission_internal are:
+
+🚫 Not to be exposed via Supabase’s “Exposed Functions”
+
+✅ Used only by:
+
+Outer admin RPC
+
+Service-role / direct SQL in emergencies
+
+If you want, you can add a one-liner to ADMIN_AUTH_MODEL.md:
+
 This file is CANONICAL and applies platform-wide.
