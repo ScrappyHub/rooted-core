@@ -1,9 +1,17 @@
-# ROOTED Core – Debug Toolkit
+# ROOTED Core – Debug Toolkit (CANONICAL)
 
-This doc is the **canonical reference** for debugging ROOTED’s core platform
+This is the canonical reference for debugging ROOTED’s **core platform**  
 (Supabase, auth, roles, RLS, media, GEO, analytics).
 
-If a vertical is acting weird, start here.
+If a vertical is acting weird, **start here**.
+
+Related docs:
+
+- `rooted-core/docs/ADMIN_AUTH_MODEL.md`
+- `rooted-core/docs/MODERATION_SYSTEM.md`
+- `rooted-core/docs/NOTIFICATIONS_SYSTEM.md`
+- `rooted-core/docs/DISCOVERY_RULES.md`
+- `rooted-core/docs/GEO_RULES.md`
 
 ---
 
@@ -11,15 +19,16 @@ If a vertical is acting weird, start here.
 
 Core covers:
 
-- `user_tiers` + `feature_flags`
+- `auth.users`, `user_tiers`, `feature_flags`
 - Auth & session lookup
 - RLS / policies on shared tables
 - Media & storage (public vs protected)
 - GEO & discovery rules
 - Basic analytics plumbing
+- Admin debug dashboards & RPCs
 
-Vertical-specific bugs (Community, Construction, etc.) should still check
-core first, then move to their own debug docs.
+Vertical-specific bugs (Community, Construction, Arts & Culture, etc.)  
+should still check **Core first**, then move to their own debug docs.
 
 ---
 
@@ -28,27 +37,31 @@ core first, then move to their own debug docs.
 Run these **in order** when something feels off:
 
 1. **Who am I logged in as?**
-   - Check `user_tiers` for this user.
-   - Confirm `role` and `tier` are what you think they are.
+   - Check `auth.users` and `user_tiers` for this user.
+   - Confirm `role` and `tier` are what you think they are  
+     (`guest | individual | vendor | institution | admin` and `free | premium | premium_plus`).
 
 2. **Is RLS blocking it?**
    - Look for RLS errors in Supabase logs.
    - Try the same query via Supabase “Run as user” if needed.
 
 3. **Is the feature actually built in this vertical?**
-   - If it references future verticals (healthcare, disaster, etc.),
-     verify there’s real DB + UI wiring, not just docs.
+   - If it references frozen verticals (healthcare, emergency, disaster, workforce),
+     verify there’s real DB + UI wiring and not just docs.
 
 4. **Is GEO/discovery hiding it?**
-   - Confirm provider/landmark/event is marked “discoverable” and within
-     radius / filters.
+   - Confirm provider/landmark/event is marked discoverable and within radius / filters.
+   - Check category + seasonal filters.
 
 5. **Is media/storage blocking it?**
-   - Check the bucket, object path, and storage policies.
+   - Check bucket, object path, and storage policies.
+   - Test from an incognito window for public vs protected behavior.
 
 6. **Is this just UI state?**
-   - Refresh, log out/in, clear local storage; make sure feature flags
-     aren’t stuck.
+   - Refresh, log out/in, clear local storage.
+   - Confirm feature flags for that user are correct.
+
+If you still can’t tell, log it as `core-unknown` (see §8).
 
 ---
 
@@ -57,56 +70,63 @@ Run these **in order** when something feels off:
 ### 3.1 Tables
 
 - `auth.users` (Supabase)
-- `user_tiers`
-- Any `feature_flags` table or JSON column you use
+- `public.user_tiers` (single source of truth for role/tier)
+- `feature_flags` JSON on `user_tiers`
 
 ### 3.2 Steps
 
 1. Find test users in `auth.users`.
 2. For each, ensure **exactly one** row in `user_tiers`:
-   - `role` ∈ `['community','vendor','institution','admin']`
+   - `role` ∈ `['guest','individual','vendor','institution','admin']`
    - `tier` ∈ `['free','premium','premium_plus']`
 3. In the app, log in as each and confirm:
-   - Routing matches (`/community/...` vs `/vendor/...` etc.).
+   - Routing matches (`/community/...` vs `/vendor/...` vs `/institution/...`).
    - Premium-only UI doesn’t appear for free tier.
+   - Admin-only panels appear only for `role='admin'`.
 
 **If it fails:**
 
 - Missing `user_tiers` row
 - Wrong `role` / `tier`
-- Front-end role routing using stale/incorrect logic
+- Front-end routing using stale or hard-coded logic
 
 ---
 
 ## 4. RLS & Permissions
 
-### 4.1 Tables to sanity check
+### 4.1 High-priority tables
 
 - `providers`
-- `provider_media` / vendor media
+- `provider_media` / `vendor_media`
 - `conversations`, `conversation_participants`, `messages`
 - `events`, `event_registrations`
-- Analytics tables
+- `landmarks`
+- Analytics tables (`vendor_analytics_*`, `bulk_offer_analytics`, etc.)
+- `moderation_queue`
+- `notifications`
 
 ### 4.2 Test pattern
 
-For each table:
+For each table, use three test accounts:
 
-1. Use a **test vendor** account:
-   - Try `SELECT`, `INSERT`, `UPDATE`, `DELETE` where appropriate.
-   - Confirm vendor can only see/edit **their** rows.
+1. **Vendor**
+   - Can `SELECT/UPDATE/DELETE` only their own rows.
+   - Cannot see other vendors’ private data.
 
-2. Use a **test institution** account:
-   - Confirm they can see what they should (e.g., their RFQs) and not
-     other institutions’ private data.
+2. **Institution**
+   - Can see their own RFQs, bids, events, etc.
+   - Cannot see other institutions’ private data.
 
-3. Use an **admin** account:
-   - Confirm they see everything that’s required for operations.
+3. **Admin**
+   - Can see everything needed for operations/moderation.
+   - Still subject to RLS rules defined in `ADMIN_AUTH_MODEL.md`.
 
 **Red flags:**
 
 - “RLS: new row violates row-level policy” on actions that should be allowed.
 - A non-admin seeing another user’s private rows.
+- Any table with RLS disabled or enabled-with-zero-policies  
+  (see RLS Health dashboard in §9.6).
 
 ---
 
@@ -124,397 +144,272 @@ Buckets:
    - Institution
 
 2. Confirm:
-   - Successful upload (no 403/401).
+
+   - Upload succeeds (no 401/403/500).
    - Public media is viewable without auth when intended.
-   - Protected media **does not** load in an incognito/private window.
+   - Protected media **does not** load in incognito/private.
 
 3. If broken:
-   - Check storage bucket policies in Supabase.
-   - Check object key path (e.g., `vendors/{id}/...`) matches RLS rules.
+
+   - Check Supabase Storage policies.
+   - Check object key path (e.g. `vendors/{vendor_id}/...`) matches policy predicates.
+   - Confirm UI is using the correct bucket and path.
 
 ---
 
 ## 6. GEO & Discovery
 
-Core rule: **all discovery behavior follows the GEO docs in `rooted-core/docs/GEO_RULES.md`**.
+Core rule: discovery follows `rooted-core/docs/GEO_RULES.md` and `DISCOVERY_RULES.md`.
 
 ### 6.1 Debug steps
 
 1. In Community UI, open a “discover” map/list view.
-2. Change:
+2. Adjust:
    - Radius
    - Category
-   - Any seasonal or “featured” filters
-3. Confirm:
-   - Only curated/allowed providers show.
-   - Municipal / backend-only layers never show for normal users.
+   - Seasonal / featured filters
 
-If a municipality or backend-only entity appears → data tagging + GEO rule bug.
+3. Confirm:
+
+   - Only curated/allowed providers show.
+   - Municipal / backend-only entities never show for normal users.
+   - Kids Mode content respects Kids rules.
+
+If a municipality or backend-only entity appears → data tagging or GEO rule bug.
 
 ---
 
 ## 7. Analytics Plumbing (High-Level)
 
-Right now, analytics are **lightweight** in production.
+Current state: **lightweight, not full BI**.
 
 ### 7.1 Confirm:
 
-- Events (clicks/views) write into the correct tables.
-- Aggregation or materialized views are in place if already created.
+- Basic events (clicks/views) are writing to:
+  - `vendor_analytics_daily`
+  - `vendor_analytics_basic_daily`
+  - `vendor_analytics_advanced_daily`
+  - `bulk_offer_analytics`
+
+- Any aggregations or materialized views that exist are updating.
 
 If no data appears:
-- Check that front-end is actually sending events.
-- Check that RLS permits inserts from the client.
 
-Full ETL / advanced analytics are future work; treat anything labeled
-“advanced analytics” as **not guaranteed** until wiring is complete.
+- Confirm front-end is actually sending the event.
+- Confirm RLS permits inserts from that role/tier.
+- Treat anything labeled “advanced analytics” as **best effort / WIP** until fully wired.
 
 ---
 
-## 8. When In Doubt
+## 8. When In Doubt (Bug Filing)
 
 If you can’t tell if something is:
 
-- A core bug
-- A vertical bug
-- Or an unbuilt feature
+- A core bug  
+- A vertical bug  
+- Or an unbuilt feature  
 
 Log a bug with:
 
-- User role/tier
+- User role & tier
 - Vertical + screen
 - Exact action
-- Expected vs actual
+- Expected vs actual behavior
+- Any relevant IDs (user_id, provider_id, event_id)
 
-…and tag it as `core-unknown` until triaged.
+Tag it as `core-unknown` until triaged.
 
+---
 
-1️⃣ SAFE READ-ONLY INSPECTORS (Admin Panel “Debug Dashboards”)
+## 9. Admin Debug Dashboards & Tools
 
-These should be the first tab(s) in your Admin Panel. They’re for understanding, not changing.
+This section defines the **Admin Panel tools** that implement the debug flows above.  
+They are split into:
 
-1.1 User Overview — “Users & Accounts”
+- **Read-only inspectors** (no mutations)
+- **Controlled admin actions** (RPCs with `is_admin()` checks)
+- **Root-only helpers** (SQL-only, no UI)
 
-Back end:
+### 9.1 Read-Only Inspectors
 
-Uses your existing view: public.admin_user_accounts
+#### 9.1.1 Users & Accounts
 
-Or RPC: public.admin_get_user_accounts()
+**Back end:**
 
-Shows per user:
+- View: `public.admin_user_accounts`  
+  or RPC: `public.admin_get_user_accounts()`
 
-user_id
+**Shows per user:**
 
-email
+- `user_id`
+- `email`
+- `role`
+- `tier`
+- `account_status`
+- `feature_flags`
+- `deletion_status` (from `account_deletion_requests`)
+- `deletion_requested_at`
 
-role
+**UI:**
 
-tier
+- Search by email or user_id
+- Filters by `role`, `tier`, `account_status`, `deletion_status`
+- Click row → open **User Debug View**
 
-account_status
+---
 
-feature_flags
+#### 9.1.2 User Debug View
 
-deletion_status (from account_deletion_requests)
+**Back end idea:** `debug_user_snapshot(user_id)` that aggregates:
 
-deletion_requested_at
+- `auth.users`
+- `user_tiers`
+- `user_admin_actions` (history)
+- `account_deletion_requests`
+- `user_devices`
+- Recent `notifications`
+- Recent `moderation_queue` items with `submitted_by = user_id`
 
-Admin UI panel:
+**UI Tabs:**
 
-Search by email / user_id
+- Profile (email, created_at, last_sign_in)
+- Tier & Flags (role, tier, feature_flags, account_status)
+- Admin Actions Log
+- Deletion Requests
+- Devices
+- Recent Notifications
+- Submissions (events, landmarks, applications)
 
-Filters: role, tier, account_status, deletion_status
+> 🔒 **Rule:** This view is read-only. All changes go through admin RPCs.
 
-Clicking a user opens the User Detail Debug (next tool).
+---
 
-1.2 User Detail Snapshot — “User Debug View”
+#### 9.1.3 Moderation → Queue
 
-Back end (conceptual): one debug RPC like debug_user_snapshot(user_id) that aggregates:
+**Back end:**
 
-auth.users
+- `SELECT` from `public.moderation_queue`
+- Joined with:
+  - `events` (`entity_type = 'event'`)
+  - `landmarks` (`entity_type = 'landmark'`)
+  - `vendor_applications` / `institution_applications` (future)
 
-user_tiers
+**Shows:**
 
-user_admin_actions (history)
+- `id`
+- `entity_type`
+- `entity_id`
+- `submitted_by`
+- `status`
+- `reason`
+- `created_at`
+- `reviewed_at`
+- `reviewed_by`
 
-account_deletion_requests
+**UI:**
 
-user_devices
+- Filters: `status`, `entity_type`, `submitted_by`
+- Click row →
+  - show underlying entity data
+  - show linked notifications
+  - show Approve / Reject buttons (see §9.2.2)
 
-latest notifications
+---
 
-latest moderation_queue items submitted_by this user
+#### 9.1.4 Notifications → Queue & History
 
-Admin UI:
+**Back end:**
 
-Right-side drawer / page for a single user
+- `public.notifications`
 
-Tabs:
+**Views:**
 
-Profile (email, created_at, last_sign_in)
+- Queue: `where delivered = false`
+- History: recent by `user_id` or `type`
 
-Tier & Flags (role, tier, feature_flags, account_status)
+**UI:**
 
-Admin Actions Log
+- Queue tab: identify stuck notifications
+- History tab: verify what a user was sent
+- Optional “Resend” button → `admin_resend_notification(notification_id)`
 
-Deletion Requests
+---
 
-Devices
+#### 9.1.5 Onboarding → Applications (Vendor / Institution)
 
-Recent Notifications
+Once application tables exist:
 
-Submissions (events, landmarks, applications)
+- `vendor_applications`
+- `institution_applications`
+- Joined with `moderation_queue`
+- Joined with `auth.users` (who submitted)
 
-👉 Rule: This view is read-only. Mutations happen via the controlled tools below.
+**Panels:**
 
-1.3 Moderation Queue Inspector — “Moderation → Queue”
+- Vendor Applications (Pending / Approved / Rejected)
+- Institution Applications (Pending / Approved / Rejected)
 
-Back end:
+Approve / Reject use application RPCs in §9.2.3.
 
-Direct SELECT from public.moderation_queue (with filters)
+---
 
-Join with:
+#### 9.1.6 Security → RLS Health
 
-events when entity_type='event'
+**Back end:**
 
-landmarks when entity_type='landmark'
+A debug query that lists each table with:
 
-later vendor_applications / institution_applications
+- `table_name`
+- `rls_enabled` (boolean)
+- `policy_count` (# of policies)
 
-Shows per moderation item:
+**UI:**
 
-id
+- Highlight:
+  - RLS disabled → ⚠️
+  - RLS enabled but `policy_count = 0` → ⚠️
 
-entity_type
+This is the **backdoor detector**.  
+Fixes are done in migrations / SQL, not in the UI.
 
-entity_id
+---
 
-submitted_by
+### 9.2 Controlled Admin Actions (RPC-backed Buttons)
 
-status
+All these RPCs:
 
-reason
+- Call `public.is_admin()`  
+- Write to `user_admin_actions` / `moderation_queue` / etc.  
+- Are the **only** mutation paths from the admin UI.
 
-created_at
+#### 9.2.1 Account Status & Tier
 
-reviewed_at
+**RPCs:**
 
-reviewed_by
+- `admin_set_account_status(user_id, new_status)`
+- `admin_set_role_tier(user_id, new_role, new_tier)`
+- `admin_update_feature_flags(user_id, new_flags)`
 
-Admin UI:
+**UI (from User Debug View):**
 
-Filters by:
+- Dropdown: `account_status` (`active`, `suspended`, `deleted`, etc.)
+- Dropdown: `role` & `tier`
+- JSON editor / toggles for `feature_flags`
 
-status: pending | approved | rejected
+Every change:
 
-entity_type
+- Calls the appropriate RPC
+- Logs to `user_admin_actions`
 
-submitted_by
+---
 
-Clicking an item:
+#### 9.2.2 Moderation Actions (Approve / Reject)
 
-shows underlying entity (event/landmark/application)
+**RPC:**
 
-shows history & linked notifications
-
-exposes Approve / Reject buttons (which call the admin RPC — see section 2.2)
-
-1.4 Notifications Inspector — “Notifications → Queue & History”
-
-Back end:
-
-public.notifications
-
-Views:
-
-Queue: where delivered = false
-
-History: recent notifications by user_id or by type
-
-Admin UI:
-
-Queue tab: see stuck notifications (for worker debugging)
-
-History tab: check what a user was actually sent
-
-Button “Resend” uses a controlled admin RPC (see 2.4).
-
-1.5 Applications Inspector — “Onboarding → Applications” (for vendor/institution)
-
-Once we add those tables, debug view should show:
-
-vendor_applications
-
-institution_applications
-
-Joined with moderation_queue
-
-Joined with auth.users (who submitted)
-
-Panels:
-
-Vendor Applications (Pending / Approved / Rejected)
-
-Institution Applications (Pending / Approved / Rejected)
-
-Approve / Reject uses the same moderation tools (2.2) and application-specific RPCs.
-
-1.6 RLS & Backdoor Scanner — “Security → RLS Health”
-
-Back end:
-
-A debug query (read-only) that shows, per table:
-
-Is RLS enabled?
-
-Number of policies
-
-So your admin panel can show:
-
-Tables with RLS disabled → ⚠️ highlight
-
-Tables with RLS enabled but no policies → ⚠️ highlight
-
-This is your “backdoor detector” for data access.
-
-(Admin UI only shows the state; fixes happen via migrations / SQL, not buttons.)
-
-2️⃣ CONTROLLED ADMIN ACTIONS (Buttons that Actually Change Things)
-
-These are the only mutation tools your Admin Panel should expose.
-
-Each action → 1 RPC → 1 or more tables. All must:
-
-Check is_admin()
-
-Write an audit record to user_admin_actions / moderation_queue / etc.
-
-2.1 Account Status Controls
-
-RPCs (already defined):
-
-admin_set_account_status(user_id, new_status)
-
-admin_set_role_tier(user_id, new_role, new_tier)
-
-admin_update_feature_flags(user_id, new_flags)
-
-Admin UI:
-
-From User Debug View:
-
-Dropdown: account_status (active, suspended, deleted, etc.)
-
-Dropdown: role & tier (only allowed combinations)
-
-JSON editor or toggles for feature_flags
-
-Every save:
-
-Calls exact RPC
-
-Logs into user_admin_actions
-
-2.2 Moderation Actions (Approve / Reject)
-
-RPC: admin_moderate_submission(moderation_id, new_status, decision_reason)
-
-Approve: new_status = 'approved'
-
-Reject: new_status = 'rejected'
-
-This RPC:
-
-Validates is_admin()
-
-Updates entity moderation_status
-
-Updates moderation_queue.status
-
-Writes reviewed_at, reviewed_by, reason
-
-Fires the appropriate notification via:
-
-notify_submission_approved(...)
-
-notify_submission_rejected(...)
-
-Admin UI:
-
-On Moderation Item:
-
-Approve button (with confirmation)
-
-Reject button (with required reason text)
-
-2.3 Application Decisions (Vendor / Institution)
-
-Once we wire applications:
-
-RPCs (high-level design):
-
-admin_decide_vendor_application(application_id, decision, reason)
-
-admin_decide_institution_application(application_id, decision, reason)
-
-Each will:
-
-Approve:
-
-Create / activate provider
-
-Set onboarding flags
-
-Mark application + moderation as approved
-
-Send *_application_approved notification
-
-Reject:
-
-Mark application + moderation as rejected
-
-Send *_application_rejected notification
-
-Admin UI uses these under the hood from the Applications Inspector.
-
-2.4 Notification Re-send / Requeue
-
-RPC: e.g. admin_resend_notification(notification_id)
-
-Behavior:
-
-Only admin can call
-
-Creates a new notification row based on the original
-
-Does not edit original for audit trail
-
-Worker picks up the new one
-
-3️⃣ ROOT-LEVEL MAINTENANCE TOOLS (NO UI BUTTONS)
-
-These exist for you in the SQL editor only, not for normal admins.
-
-3.1 _admin_moderate_submission_internal(...)
-
-Already defined.
-
-No is_admin() check
-
-Used for:
-
-emergency fixes
-
-debugging in SQL editor
-
-Should never be called from frontend
-
-3.2 Future Root Helpers (pattern)
-
-Any future helper that bypasses normal checks should:
-
-Be prefixed with _admin_ or _debug_
-
-Live only in SQL and migrations
-
-Never be added to Supabase “exposed function” list
+```sql
+admin_moderate_submission(
+  moderation_id uuid,
+  new_status text,          -- 'approved' or 'rejected'
+  decision_reason text
+)
