@@ -162,6 +162,8 @@ This system is **vertical-agnostic** and applies automatically to:
 * Experiences
 * Future Vertical Modules
 
+## 9. Admin moderation
+
 Admin identity is defined purely in public.user_tiers:
 
 role = 'admin'
