@@ -105,9 +105,29 @@ All use the same `notifications` table.
 
 ## 7. Security
 
+---
+
+##8. Harden update to Notifications 
+
 * ✅ Users only read their own notifications via RLS
 * ✅ Admins can audit delivery
 * ✅ Service role can mark delivery
+
+* Marketplace & Analytics RLS Audit
+
+For bids, bulk_offers, bulk_offer_analytics, vendor_analytics_*:
+
+Remove or tighten any legacy policy that:
+
+Uses USING (true) for all authenticated users, or
+
+Ignores feature_flags and provider ownership.
+
+Ensure at least one policy per table enforces:
+
+Provider ownership (owner_user_id = auth.uid() where relevant)
+
+AND the correct feature flag (public.has_feature(auth.uid(), '…'))
 
 ---
 
