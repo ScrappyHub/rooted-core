@@ -1,15 +1,24 @@
- ROOTED – GIT COMPREHENSIVE HANDOFF (v1)
+# ROOTED – GIT COMPREHENSIVE HANDOFF (v2)
 
-> This repo is NOT a new build.  
-> It is the live code + schema for the ROOTED platform, which is already architected.  
-> All work from here is: **audit, polish, wiring, and hardening.**
+This repo is NOT a new build.  
+It is the live code + schema for the ROOTED platform, which is already architected.
+
+All work from here is:
+- Audit
+- Polish
+- Wiring
+- Hardening
 
 ---
 
 ## 0. How to Use This Doc
 
-This document is the **canonical handoff** for anyone touching this repo:  
-you, other devs, or AI assistants.
+This document is the canonical handoff for anyone touching this repo:
+- You (Alec)
+- Other devs
+- Designers
+- Advisors
+- AI assistants
 
 It defines:
 
@@ -18,96 +27,121 @@ It defines:
 - What’s allowed vs not allowed
 - Backend status (Supabase + RLS)
 - Frontend logic (Figma/Make → React/TS)
-- The **exact order** in which to finish backend hardening
+- Account governance, opt-in / opt-out, and deletion flow
+- Seasonal + featured discovery logic
+- The exact order in which to finish backend hardening
 
 If you’re new here:
 
 1. Read sections **1–3** to understand the platform.
-2. Read **4–5** before touching any backend logic.
-3. Use the AI prompt in **§8** whenever you bring in an assistant.
+2. Read **4–7** before touching any backend logic.
+3. Use the AI prompt in **§10** whenever you bring in an assistant.
 
 ---
 
 ## 1. ROOTED – What This Platform Actually Is
 
-ROOTED is a **governed multi-vertical platform** for:
+ROOTED is a governed multi-vertical platform for:
 
 - Community
 - Vendors
 - Institutions
-- (Future) verticals like Construction and Healthcare
+- Future verticals (Construction, Arts & Culture, Environment, Healthcare*, etc.)
 
 It is BOTH:
 
-1. **A public-facing local directory**
-2. **A dual B2B bulk + bid marketplace** for institutional procurement
-3. **A community + seasonal/cultural intelligence layer** (feeds, kids, events, landmarks)
+- A **public-facing local directory**
+- A **dual B2B bulk + bid marketplace** for institutional procurement
+- A **community + seasonal/cultural intelligence layer** (feeds, kids, events, landmarks)
 
 Everything runs through **one governed core**:
 
 - Supabase (Auth + Postgres + Storage)
 - Role + tier system
 - Feature flags
+- Account governance (admin controls, opt-in/opt-out, deletion)
 - Seasonal & holiday intelligence
 - Kids Mode safety
-- Procurement and experiences
+- Procurement & experiences
 - Mapping + landmarks
 - Analytics
 
-No one is allowed to re-architect this core.
+> **No one is allowed to re-architect this core.**
 
 ---
 
 ## 2. ROOTED Core – Shared Systems (All Verticals)
 
-The following systems are **horizontal** and shared by ALL verticals:
+The following systems are **horizontal** and shared by **ALL verticals**:
 
-- ✅ Supabase Auth
-- ✅ Roles: `guest`, `individual`, `vendor`, `institution`, `admin`
-- ✅ Tiers: `free`, `premium`, `premium_plus`
-- ✅ `user_tiers` + `feature_flags` (jsonb)
-- ✅ Providers (`providers` table) – vendors + institutions share the same base
-- ✅ Media:
-  - `provider_media`
-  - `vendor_media`
-  - Buckets:
-    - `rooted-public-media`
-    - `rooted-protected-media`
-- ✅ Procurement:
-  - `rfqs`
-  - `bids`
-  - `bulk_offers`
-  - `bulk_offer_analytics`
-- ✅ Messaging:
-  - `conversations`
-  - `conversation_participants`
-  - `messages`
-- ✅ Events + Volunteering:
-  - `events`
-  - `event_registrations`
-- ✅ Landmarks (educational, non-commercial)
-  - `landmarks`
-- ✅ Feed & social:
-  - `feed_items`
-  - `feed_comments`
-  - `feed_likes`
-- ✅ Analytics:
-  - `vendor_analytics_daily`
-  - `vendor_analytics_basic_daily`
-  - `vendor_analytics_advanced_daily`
-- ✅ Account deletion flow:
-  - `account_deletion_requests`
-- ✅ System KV:
-  - `kv_store_f009e61d` (locked, for internal configs)
+### 2.1 Identity & Access
 
-All current and future verticals **inherit** this governed foundation.  
-Verticals are modules. The core is law.
+- `auth.users`
+- `public.user_tiers` (roles, tiers, feature_flags, account_status)
+- Account governance layer:
+  - `public.user_admin_actions` (admin audit log)
+  - `public.account_deletion_requests` (deletion pipeline)
+- Admin helpers / views:
+  - `public.admin_user_accounts` (VIEW)
+  - `public.admin_get_user_accounts()` (RPC)
+  - `public.is_admin()` (check function)
+
+### 2.2 Providers & Media
+
+- `providers` (shared base for vendors, institutions, orgs, nonprofits, sanctuaries)
+- `provider_media`
+- `vendor_media`
+
+Buckets:
+
+- `rooted-public-media`
+- `rooted-protected-media`
+
+### 2.3 Procurement
+
+- `rfqs`
+- `bids`
+- `bulk_offers`
+- `bulk_offer_analytics`
+
+### 2.4 Messaging
+
+- `conversations`
+- `conversation_participants`
+- `messages`
+
+### 2.5 Events, Volunteering, Landmarks
+
+- `events`
+- `event_registrations`
+- `landmarks`
+
+### 2.6 Feed & Social
+
+- `feed_items`
+- `feed_comments`
+- `feed_likes`
+
+### 2.7 Analytics
+
+- `vendor_analytics_daily`
+- `vendor_analytics_basic_daily`
+- `vendor_analytics_advanced_daily`
+- `bulk_offer_analytics`
+
+### 2.8 Config / KV
+
+- `kv_store_f009e61d` (locked, internal configs)
+- `app_settings` (for global feature flags like `community_uploads`)
+
+> All current and future verticals inherit this governed foundation.  
+> Verticals are **modules**. The core is **law**.
 
 ---
 
 ## 3. Non-Negotiable Governance Rules
 
-These rules apply to any work in this repo:
+These rules apply to **any work in this repo**.
 
 ### 3.1 Absolute “Do Not” List
 
@@ -119,38 +153,53 @@ These rules apply to any work in this repo:
 - ❌ Do NOT infer religion, culture, or demographics
 - ❌ Do NOT monetize landmarks
 - ❌ Do NOT build political messaging features
-- ❌ Do NOT let vendors/institutions bypass premium_plus gates via UI-only checks
+- ❌ Do NOT let vendors/institutions bypass `premium_plus` gates via UI-only checks
+- ❌ Do NOT bypass account governance (user_tiers, feature_flags, account_status)
+- ❌ Do NOT bypass opt-in / opt-out or deletion flows
+- ❌ Do NOT expose community member profiles publicly
 
 ### 3.2 Allowed Work
 
 - ✅ Audit existing logic
 - ✅ Polish UI/UX
 - ✅ Wire existing backend → UI
-- ✅ Add **new policies** (RLS)
-- ✅ Add functions / views / edge functions
-- ✅ Add **NEW** columns/tables only if clearly marked in PR / commit message
+- ✅ Add new policies (RLS)
+- ✅ Add functions / views / edge functions / jobs
+- ✅ Add NEW columns/tables **only if clearly marked** in PR / commit
+- ✅ Extend debug & admin tooling inside the existing doctrine
 
 ---
 
-## 4. Roles, Tiers, and Feature Flags (Single Source of Truth)
+## 4. Roles, Tiers, Feature Flags — AND Governance
 
-### 4.1 `user_tiers` Table
+### 4.1 `user_tiers` Table (Source of Truth)
 
 Core columns:
 
 - `user_id` (UUID → `auth.users.id`)
 - `role` – one of:
+  - `guest` (implicit via no auth)
+  - `individual` / `community`
   - `vendor`
   - `institution`
   - `admin`
-  - (possibly `individual` / `community`)
 - `tier` – one of:
   - `free`
   - `premium`
   - `premium_plus`
 - `feature_flags` (JSONB)
-- `account_status` – e.g. `active`, `suspended`
-- timestamps
+- `account_status` – e.g.:
+  - `active`
+  - `suspended`
+  - `locked`
+  - `pending_deletion`
+- `created_at`, `updated_at`
+
+> **This table is the single source of truth for:**
+> - Access
+> - Monetization
+> - Vertical eligibility
+> - Feature availability
 
 ### 4.2 Feature Flags (Examples)
 
@@ -175,14 +224,50 @@ Copy code
   "can_view_basic_analytics": true,
   "can_view_advanced_analytics": false
 }
-Free vendor/institution: similar, but no bids, no advanced analytics.
+Free vendor / institution: similar, but:
 
-Rule: Backend policies must respect feature_flags.
-UI is not trusted. DB is the final gate.
+No bids
+
+No advanced analytics
+
+Possibly no bulk tools
+
+Sanctuary / Rescue Feature Flags (Canonical Pattern)
+For nonprofit sanctuary / rescue entities:
+
+json
+Copy code
+{
+  "sanctuary_rescue": "true",
+  "commercial_access": "disabled",
+  "provider_premium_allowed": "false",
+  "provider_premium_plus_allowed": "false",
+  "bid_market_access": "false",
+  "bulk_procurement_access": "false"
+}
+4.3 Governance Rules from user_tiers
+account_status != 'active' → the user is locked out platform-wide
+
+role → determines all vertical permissions
+
+tier → controls premium vs premium_plus tools
+
+feature_flags → controls:
+
+Vertical access (can_use_construction, can_use_arts_culture, etc.)
+
+Sanctuary / rescue non-commercial state
+
+Experimental/beta toggles
+
+Opt-ins (marketing, overlays) until a dedicated user_consents system exists
+
+Backend policies must respect feature_flags.
+The DB is the final gate. UI is never trusted.
 
 5. Frontend Logic (What the UI Must Respect)
 5.1 Kids Mode
-Activates via explicit flow and parental approval
+Kids Mode activates via explicit flow + parental governance:
 
 Parental PIN required
 
@@ -198,34 +283,38 @@ Age tiers:
 
 13+
 
-All kids surfaces must:
+All Kids surfaces must:
 
-Enforce isKidsSafe === true
+Enforce isKidsSafe === true (from content / events / landmarks)
 
 Hide pricing, booking, fundraising, institutions, sales CTAs
 
+Never expose B2B messaging
+
+Never surface community uploads
+
 Dietary rules:
 
-Apply ONLY to food, recipes, food videos
+Apply ONLY to food, recipes, and food videos
 
-Must NOT block animal education / farm science
+Must NOT block animal education / farm science content
 
 5.2 Seasonal + Holiday Intelligence
-Season = always on
+Season = always on (baseline mode)
 
 Date-based
 
-Controls base palette, theming, subtle animations
+Controls palette, theming, subtle dynamics
 
 Holidays = optional overlay
 
-11 cultural holiday sets
+~11 cultural sets
 
 ~30+ holidays
 
-Defaults: off for everyone
+Defaults: OFF for everyone
 
-Activation requires:
+Activation requires ALL:
 
 Date match
 
@@ -237,7 +326,22 @@ Kids Mode opt-in (if active)
 
 Kid-safe content
 
-If any condition fails → fallback to seasonal baseline.
+If any condition fails → fall back to seasonal baseline.
+
+Seasonal Featured Providers (Canonical)
+View: seasonal_featured_providers
+
+Helper function: current_season(p_date date default current_date)
+
+Used by:
+
+Home “featured” carousels
+
+Map vendor highlighting
+
+Directory ordering
+
+Season debug queries live in the Debug Toolkit (separate doc).
 
 5.3 Experiences
 Vendors:
@@ -254,16 +358,18 @@ Track statuses
 
 Public individuals:
 
-Browse only, no institutional booking
+Browse only (no institutional booking)
 
 Kids:
 
-Education-only experiences, no pricing/booking
+Education-only experiences
+
+No pricing / no booking
 
 5.4 Landmarks
 Educational, non-commercial
 
-Kids-safe version via is_kids_safe
+Kids-safe flavor via is_kids_safe
 
 Public discovery allowed
 
@@ -271,23 +377,270 @@ Can be linked to experiences
 
 Never monetized
 
-6. Backend Hardening Roadmap (Supabase + SQL)
-This is the exact order for backend work from this point on.
+6. Account Governance, Opt-In/Out & Deletion
+6.1 Admin Audit Log
+public.user_admin_actions records every admin action:
 
-STEP 1 — Lock user_tiers as the Canon
+admin_id
+
+target_user_id
+
+action_type
+
+details (JSONB)
+
+created_at
+
+Required for:
+
+Status changes
+
+Role changes
+
+Tier changes
+
+Feature flags updates
+
+6.2 Admin User View & RPC
+public.admin_user_accounts (VIEW)
+
+user_id
+
+email
+
+role
+
+tier
+
+account_status
+
+feature_flags
+
+deletion request status
+
+public.admin_get_user_accounts() (RPC)
+
+Security definer
+
+Uses public.is_admin() checks
+
+Used by the Admin Panel — never query raw tables directly in UI.
+
+6.3 Opt-In / Opt-Out (Core-Level)
+Opt-in/out is now handled at ROOTED Core:
+
+Governs:
+
+Seasonal overlays
+
+Cultural overlays
+
+Marketing
+
+Notification channels
+
+Vertical participation (where appropriate)
+
+Enforced via:
+
+feature_flags
+
+(Future) user_consents system
+
+Discovery rules in Community / Construction / Arts & Culture
+
+6.4 Account Deletion Pipeline
+public.account_deletion_requests:
+
+When user requests deletion:
+
+status = 'pending', created_at set
+
+Account is immediately restricted: no new content, messaging, or marketplace actions
+
+Admin panel:
+
+Approves / processes:
+
+in_progress
+
+completed
+
+Deletion behavior:
+
+PII anonymized where required
+
+Provider/institution records soft-detached
+
+Audit rows preserved
+
+Legal chain-of-custody maintained
+
+This pipeline is canonical, civic-grade, and cannot be bypassed.
+
+7. Discovery, Badges & Community Safety
+7.1 Vendor Discovery Badges (Specialty)
+Vendors (businesses) get discovery badges that:
+
+Power search
+
+Power map filters
+
+Drive featured placement
+
+Show as social proof
+
+Examples:
+
+VENDOR_FARM
+
+VENDOR_BAKERY
+
+VENDOR_MARKET
+
+VENDOR_ORCHARD
+
+VENDOR_FOOD_TRUCK
+
+VENDOR_FARM_STAND
+
+etc. (see badge seed list)
+
+These live in:
+
+badges (badge_type = 'vendor_specialty')
+
+provider_badges (link vendors → badges)
+
+7.2 Institution Tags (Classification Only)
+Institutions do not get discovery specialty badges. They get classification tags:
+
+Community Service
+
+Correctional Facilities
+
+Government Agencies
+
+Municipalities / Public Agencies
+
+Nonprofits
+
+Schools & Universities
+
+Youth Programs
+
+Sanctuary / Rescue (mission-only)
+
+Stored as:
+
+badges with badge_type = 'institution_tag'
+
+Connected via provider_badges
+
+Used for:
+
+Map filters
+
+Compliance overlays
+
+Labeling in institution profiles
+
+NOT used for discovery ranking or commercial promotion.
+
+7.3 Sanctuary / Rescue Rules
+Sanctuary / rescue entities are:
+
+Entity type: nonprofit sanctuary / rescue
+
+Access tier: Community + Volunteer only
+
+Commercial access: Disabled
+
+They:
+
+✅ Can apply to ROOTED
+
+✅ Can post volunteer events
+
+✅ Can appear in community discovery
+
+❌ Cannot use Provider Premium / Premium Plus
+
+❌ Cannot access bids, bulk procurement, paid tools
+
+Enforced via:
+
+Institution tags
+
+feature_flags with commercial_access = 'disabled'
+
+7.4 Community Uploads (Disabled but Possible)
+Community uploads exist in schema, but:
+
+Global toggle: community_uploads_enabled() (backed by app_settings)
+
+RLS on community upload tables:
+
+FOR INSERT requires community_uploads_enabled() = true
+
+For now:
+
+❌ Public, non-admin community uploads are blocked
+
+✅ Admin seeding allowed
+
+✅ Read-only viewing allowed (where safe)
+
+❌ Kids Mode never allowed to upload or manage spots
+
+This is a safety-first hibernation until culture/experience loops are ready.
+
+7.5 Social Proof & Privacy
+Provider profiles (vendors, institutions, sanctuaries):
+
+✅ Public
+
+✅ Discovery-eligible
+
+✅ Show impact metrics, badges, etc.
+
+Community member profiles:
+
+❌ Not public
+
+✅ Private dashboard showing their own:
+
+Volunteer history
+
+Impact stats
+
+Badges (if any)
+
+❌ Never discoverable through search/map
+
+Impact rollups:
+
+Provider-level impact (public)
+
+User-level impact (private)
+
+8. Backend Hardening Roadmap (Supabase + SQL)
+This is the order of operations for backend hardening.
+
+STEP 1 — Lock user_tiers as Canon
 Confirm rows exist for:
 
-vendor_free / vendor_premium / vendor_premium_plus
+vendor_free, vendor_premium, vendor_premium_plus
 
-institution_free / institution_premium_plus
+institution_free, institution_premium_plus
 
 admin
 
-individual/community (if used)
+individual / community (if used)
 
 Confirm feature_flags JSON matches intended behavior.
 
-Make sure RLS for:
+Ensure RLS for:
 
 bids
 
@@ -295,7 +648,7 @@ bulk_offers
 
 vendor_analytics_*
 
-uses checks like:
+Uses checks like:
 
 sql
 Copy code
@@ -309,17 +662,17 @@ bids
 
 Confirm:
 
-Only institutions/admin can insert RFQs
+Only institutions/admin can INSERT into rfqs
 
-Only premium_plus vendors can insert bids
+Only premium_plus vendors can INSERT into bids
 
-Vendor sees only their own bids
+Vendors see only their bids
 
-Institution sees bids tied to its RFQs
+Institutions see bids for their RFQs
 
 Admin sees everything
 
-No schema changes. Adjust policies only if needed.
+No schema changes. Adjust policies only.
 
 STEP 3 — Bulk Offers + Bulk Analytics
 Tables:
@@ -336,9 +689,9 @@ Only premium_plus vendors see advanced analytics
 
 bulk_offer_analytics:
 
-Writes = service_role / edge function only
+Writes: service_role / edge function only
 
-Reads = vendor-own or admin-all
+Reads: vendor-own or admin-all
 
 STEP 4 — Media / Camera / Docs / Video
 Tables:
@@ -355,21 +708,19 @@ rooted-protected-media
 
 Rules:
 
-Insert:
+Insert: owner_user_id = auth.uid()
 
-owner_user_id = auth.uid()
-
-Update/Delete:
-
-Only owner OR admin
+Update/Delete: only owner OR admin
 
 Select:
 
-Public media visible for active providers
+Public media: visible for active providers
 
-Protected media only where appropriate
+Protected: only via correct role/id checks
 
-Frontend must route uploads to the correct buckets and paths.
+Frontend must:
+
+Route uploads to correct buckets and folder patterns.
 
 STEP 5 — Events & Volunteering
 Tables:
@@ -384,7 +735,7 @@ Events:
 
 Vendors/Institutions/Admin insert
 
-Public select status = 'published'
+Public select: status = 'published' (and moderation_status = 'approved')
 
 Owner/Admin update/delete
 
@@ -394,7 +745,7 @@ Any authenticated user can register
 
 Users see their own registrations
 
-Event host + admin can see registrations for their events
+Host + admin can see registrations for their events
 
 STEP 6 — Landmarks
 Table:
@@ -403,15 +754,15 @@ landmarks
 
 Enforce:
 
-Public select is_published = true
+Public select: is_published = true
 
-Kids surfaces add is_kids_safe = true
+Kids surfaces: add is_kids_safe = true
 
 Vendors/Institutions/Admin insert
 
 Owner/Admin update/delete
 
-No monetization logic anywhere around landmarks
+No monetization logic around landmarks
 
 STEP 7 — Messaging
 Tables:
@@ -426,11 +777,11 @@ Confirm:
 
 Only participants can see a conversation and its messages
 
-Creation limited to allowed roles (vendor, institution, possibly individual)
+Creation limited to allowed roles (vendor, institution, possible individual)
 
 Kids Mode cannot access B2B messaging
 
-Optional: Admin moderation access
+Optional: admin moderation access via audited tools
 
 STEP 8 — Feed (Items, Comments, Likes) HARDENING
 Tables:
@@ -445,17 +796,17 @@ Work:
 
 Turn on RLS for feed_comments and feed_likes.
 
-Add policies:
+Policies:
 
 Authenticated-only writes
 
 Only authors (or admin) can update/delete their own comments/likes
 
-Comments/likes must be tied to existing feed_items
+Comments/likes must reference existing feed_items
 
-This closes anonymous or abusive write paths.
+Closes anonymous / abusive write paths.
 
-STEP 9 — Analytics ETL (Optional Post-Launch)
+STEP 9 — Analytics ETL (Post-Launch)
 Tables:
 
 vendor_analytics_daily
@@ -468,9 +819,13 @@ bulk_offer_analytics
 
 Work:
 
-Add cron / edge jobs to populate these from usage events.
+Add cron / edge jobs to populate from usage events.
 
-Writes must be restricted to service_role or dedicated internal roles.
+Writes must be:
+
+service_role
+
+or dedicated internal role
 
 Vendors never write their own analytics.
 
@@ -479,9 +834,9 @@ Before soft launch:
 
 List all RLS-enabled tables.
 
-Confirm there are no sensitive tables with RLS off.
+Confirm no sensitive tables have RLS off.
 
-For each sensitive table, answer:
+For each sensitive table, define:
 
 Who can INSERT?
 
@@ -491,7 +846,7 @@ Who can UPDATE?
 
 Who can DELETE?
 
-Test manually with:
+Test behavior for:
 
 vendor_free
 
@@ -504,18 +859,20 @@ institution
 admin
 
 If behavior matches expectations → Backend is LOCKED.
-Remaining work = UI, UX, and polish.
+Remaining work = UI, UX, polish.
 
-7. Current Vertical Status (Reality Only)
+9. Current Vertical Status (Reality Only)
 ✅ ROOTED Community – active, core UX + flows present
 
 🏗️ ROOTED Construction – in development (logic + structure reuse)
 
-🏥 ROOTED Healthcare (non-clinical) – in development (no patient data, no records)
+🏗️ ROOTED Arts & Culture – in canonical design + early wiring
 
-All other verticals are ideas, not live or promised.
+🏥 ROOTED Healthcare (non-clinical) – conceptual only (no patient data, no records)
 
-8. Recommended AI Prompt for This Repo
+All other verticals in the roadmap are not live and must integrate with this core.
+
+10. Recommended AI Prompt for This Repo
 Whenever you open a new AI chat for this repo, start with this:
 
 text
@@ -532,6 +889,9 @@ You are NOT allowed to:
 - Change holiday/cultural consent rules
 - Bypass premium_plus constraints
 - Monetize landmarks
+- Bypass account_status, feature_flags, or deletion pipeline
+- Expose community member profiles publicly
+- Bypass app-wide safety rules for Kids and Community
 
 You ARE allowed to:
 - Audit and polish existing logic
@@ -539,13 +899,17 @@ You ARE allowed to:
 - Add edge functions, views, or jobs
 - Wire existing backend logic into UI components
 - Help with performance, readability, and structure
+- Extend admin/debug tools that respect the governance model
 
 Always respect:
 - user_tiers + feature_flags as the source of truth
 - Kids Mode restrictions
 - Seasonal + holiday intelligence (season baseline, holidays dual-consent)
+- Seasonal featured view (seasonal_featured_providers) for discovery
 - Media bucket rules (rooted-public-media, rooted-protected-media)
+- Account governance + opt-in/opt-out + deletion pipeline
+- Safety constraints for sanctuaries, nonprofits, and community uploads
 
-Use the BACKEND HARDENING ROADMAP in ROOTED_GIT_HANDOFF.md and tell me which STEP you’re working on when you make changes.
-End of ROOTED – GIT COMPREHENSIVE HANDOFF (v1)
-This file should live at the root of the repo and be treated as platform law.
+Use the BACKEND HARDENING ROADMAP in ROOTED_GIT_HANDOFF_v2.md and tell me which STEP you’re working on when you make changes.
+End of ROOTED – GIT COMPREHENSIVE HANDOFF (v2)
+This file lives at the repo root and is treated as platform law.
