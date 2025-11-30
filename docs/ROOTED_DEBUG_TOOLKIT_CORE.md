@@ -403,9 +403,34 @@ Every change:
 
 ---
 
+
+You can paste that into your GitHub debug doc verbatim.
+
+---
+
+## ✅ Canonical status
+
+What we just did is now canon for ROOTED:
+
+- ✅ `current_season()` exists and is the **only** place that defines seasons.
+- ✅ `seasonal_featured_providers` is the **canonical seasonal discovery view**.
+- ✅ Directory, map, and home feed are expected to **read from this view** (or join to it) when deciding who to boost.
+- ✅ Admins have a **Season Debug** section to inspect behavior, not guess.
+
+No new tables, no new columns, no kids-mode bypasses.  
+Just **read-only seasonal intelligence** layered on top of your existing providers.
+
+If you’re good with this, next we can either:
+
+- Wire seasonal logic into **events/experiences** the same way, or  
+- Move on to the next item on your big checklist (institutions, sanctuaries, community uploads lock, volunteer badges, etc.).
+
+
 #### 9.2.2 Moderation Actions (Approve / Reject)
 
 **RPC:**
+
+---
 
 ```sql
 admin_moderate_submission(
