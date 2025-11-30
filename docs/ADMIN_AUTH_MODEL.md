@@ -184,6 +184,6 @@ submission_approved for approvals.
 
 submission_rejected for rejections.
 
---
+---
 
 This Admin Authorization Model is **IMMUTABLE and CANONICAL** across all ROOTED verticals.
