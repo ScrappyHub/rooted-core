@@ -200,6 +200,6 @@ Outer admin RPC
 
 Service-role / direct SQL in emergencies
 
-If you want, you can add a one-liner to ADMIN_AUTH_MODEL.md:
+No admin SQL helper whose name starts with _admin_ or _debug_ may be exposed via the public RPC API.
 
 This file is CANONICAL and applies platform-wide.
