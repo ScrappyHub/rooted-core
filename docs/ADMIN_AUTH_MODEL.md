@@ -113,6 +113,77 @@ ROOTED Admin Model enforces:
 
 ---
 
+## 9. Admin Moderation
+
+Admin identity is defined purely in public.user_tiers:
+
+role = 'admin'
+
+account_status = 'active'
+
+Admin RPCs exposed to the frontend are limited to:
+
+admin_get_user_accounts
+
+admin_set_role_tier
+
+admin_set_account_status
+
+admin_update_feature_flags
+
+admin_moderate_submission
+
+Every exposed admin RPC:
+
+✅ Uses SECURITY DEFINER
+
+✅ Calls public.is_admin() at the top
+
+✅ Writes to public.user_admin_actions (for account-level changes)
+
+✅ For moderation, chains into notification helpers
+
+Internal helpers like _admin_moderate_submission_internal are:
+
+🚫 Not to be exposed via Supabase’s “Exposed Functions”
+
+✅ Used only by:
+
+Outer admin RPC
+
+Service-role / direct SQL in emergencies
+
 No admin SQL helper whose name starts with _admin_ or _debug_ may be exposed via the public RPC API.
+
+
+All vendor & institution applications live in:
+
+public.vendor_applications
+
+public.institution_applications
+
+Applications are never auto-approved. They always enter:
+
+public.moderation_queue with entity_type = 'vendor_application' or 'institution_application'.
+
+Only admins can:
+
+Approve/reject applications (via admin_moderate_submission).
+
+Change status on application tables (RLS).
+
+Every decision:
+
+Updates the application status.
+
+Updates moderation_queue status + timestamps + reviewed_by.
+
+Sends a notification via notifications system:
+
+submission_approved for approvals.
+
+submission_rejected for rejections.
+
+--
 
 This Admin Authorization Model is **IMMUTABLE and CANONICAL** across all ROOTED verticals.
