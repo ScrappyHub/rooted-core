@@ -154,6 +154,7 @@ Institution	Free	❌	❌	✅	❌
 Institution	Premium	❌	✅	✅	❌
 Institution	Premium Plus	✅	✅	✅	✅
 Admin	Any	✅	✅	✅	✅
+
 🔒 Absolute Enforcement Rules
 
 Premium does NOT include bidding. Ever.
@@ -376,6 +377,8 @@ Create shadow privileges outside of RLS + feature flags
 ---
 
 🧾 GIT-LOCKED LAW
+
+No production table, policy, RPC, or feature flag may be altered without a committed GitHub change.
 
 All access control rules must exist in:
 
