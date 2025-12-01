@@ -322,12 +322,16 @@ Any governance laws
 
 ---
 
-👤 ADMIN POWERS ARE:
+👤 Admin has full system access ONLY within the bounds of:
 
-✅ Logged
-✅ Audited
-✅ Role-scoped
-✅ Time-bounded when possible
+- Feature flags
+- RLS
+- Moderation pipelines
+- Audit logging
+- Kids Mode supremacy
+- Sanctuary restrictions
+
+---
 
 Every privileged action must create a record in:
 
