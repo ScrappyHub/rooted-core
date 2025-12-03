@@ -1,149 +1,143 @@
-✅ ROOTED — MODERATION SYSTEM (CANONICAL v3)
+### `docs/MODERATION_SYSTEM.md`
 
-Purpose:
-The Moderation System provides a governed, auditable, admin-controlled approval and denial pipeline for all public-facing content and applications across ROOTED.
+```md
+# ✅ ROOTED — MODERATION SYSTEM (CANONICAL)
 
-Nothing that touches the public map, directory, feed, or discovery layer is allowed to skip this system.
+Status: ✅ Canonical  
+Scope: All public-facing submissions across all ROOTED verticals  
 
-1. Scope
+Purpose:  
+The Moderation System provides a governed, auditable, admin-controlled approval/denial pipeline for all public-facing content and applications across ROOTED.
 
-The moderation system applies to:
+Nothing that touches the **public map, directory, feed, discovery, or Kids surfaces** is allowed to skip this system.
 
-Events
+Related docs:
 
-Landmarks
+- `ADMIN_AUTH_MODEL.md`
+- `DISCOVERY_RULES.md`
+- `GEO_RULES.md`
+- `NOTIFICATIONS_SYSTEM.md`
+- `ROOTED_PLATFORM_CONSTITUTION.md` (reference copy in this repo)
+- Platform-level: `ROOTED_PRE-LAUNCH_ABUSE_TEST_MATRIX.md`
 
-Vendor applications
+---
 
-Institution applications
+## 1. Scope
 
-(Future) Feed items / community uploads
+The Moderation System currently applies to:
 
-(Future) Experiences and vertical-specific submissions
+- Events
+- Landmarks
+- Vendor applications
+- Institution applications
+
+Future extensions:
+
+- Feed items / community uploads
+- Experiences and vertical-specific submissions
 
 Rule:
-No submission becomes publicly visible without passing through moderation.
 
-Kids Mode surfaces are filtered even before moderation via kids-safe flags and discovery rules.
+> No submission becomes publicly visible without passing through moderation.
 
-Launch doctrine:
-Kids Mode is in PILOT OFF state at ROOTED Community launch.
-All Kids Mode rules in this document are design law for when Education / Kids verticals go live, but no Kids-specific surfaces are enabled until then.
+Kids Mode surfaces are additionally filtered before moderation via kids-safe flags and discovery rules. At ROOTED Community launch, **Kids Mode UI is PILOT OFF**, but Moderation rules are written for the future Education / Kids verticals.
 
-2. Core Tables
-2.1 public.moderation_queue
+---
+
+## 2. Core Tables
+
+### 2.1 `public.moderation_queue`
 
 Single source of truth for all pending and historical moderation actions.
 
-Canonical Fields:
+Canonical fields:
 
-id (uuid, PK)
-
-entity_type (text)
-→ event | landmark | vendor_application | institution_application | feed_item (future) | other future types
-
-entity_id (uuid)
-→ FK to specific entity table
-
-submitted_by (uuid → auth.users.id)
-
-status (text)
-→ pending | approved | rejected | auto_approved
-
-reason (text, nullable)
-→ rejection / context notes
-
-reviewed_at (timestamp, nullable)
-
-reviewed_by (uuid → auth.users.id, nullable)
-
-created_at (timestamp)
+- `id` (uuid, PK)
+- `entity_type` (text)  
+  → `event | landmark | vendor_application | institution_application | feed_item` (future) | other types
+- `entity_id` (uuid)  
+  → FK to specific entity table
+- `submitted_by` (uuid → `auth.users.id`)
+- `status` (text)  
+  → `pending | approved | rejected | auto_approved`
+- `reason` (text, nullable)  
+  → rejection / context notes
+- `reviewed_at` (timestamp, nullable)
+- `reviewed_by` (uuid → `auth.users.id`, nullable)
+- `created_at` (timestamp)
 
 All moderation behavior keys off this table.
 
-2.2 Entity Columns
+### 2.2 Entity Columns
 
-Entities that require moderation must have:
+Entities that require moderation MUST have:
 
-moderation_status (text)
-→ pending | approved | rejected | auto_approved (if used)
+- `moderation_status` (text)  
+  → `pending | approved | rejected | auto_approved`
 
 Examples:
 
-events.moderation_status
+- `events.moderation_status`
+- `landmarks.moderation_status`
+- `vendor_applications.moderation_status`
+- `institution_applications.moderation_status`
+- (future) `feed_items.moderation_status`
 
-landmarks.moderation_status
+Public-facing queries MUST check both:
 
-vendor_applications.moderation_status
+- `moderation_status = 'approved'`
+- `account_status` / `feature_flags` where relevant  
+  (see `ADMIN_AUTH_MODEL.md` and role/tier docs)
 
-institution_applications.moderation_status
+---
 
-(Future) feed_items.moderation_status
+## 3. Canonical Approval Flow (Events & Landmarks)
 
-Public-facing queries must check both:
-
-moderation_status = 'approved'
-
-account_status / feature_flags where relevant
-
-3. Canonical Approval Flow (Events & Landmarks)
-3.1 Submission
+### 3.1 Submission
 
 When a user submits an event or landmark:
 
-Entity row is created with:
+- Entity row is created with:
+  - `moderation_status = 'pending'`
+  - Any kids-safe / category flags set by submitter (if available)
+- A row is inserted into `public.moderation_queue` with:
+  - `entity_type = 'event'` or `'landmark'`
+  - `entity_id = <entity UUID>`
+  - `submitted_by = auth.uid()`
+  - `status = 'pending'`
 
-moderation_status = 'pending'
+### 3.2 Admin Review
 
-Any kids-safe / category flags set by submitter (if available)
+Admins see pending items via:
 
-A record is inserted into public.moderation_queue with:
-
-entity_type = 'event' or 'landmark'
-
-entity_id = entity UUID
-
-submitted_by = auth.uid()
-
-status = 'pending'
-
-3.2 Admin Review
-
-Admins see all pending items via:
-
-Admin UI: Moderation → Queue
-
-Backend: SELECT from public.moderation_queue filtered by status = 'pending'
+- Admin UI → “Moderation / Queue”
+- Backend: `SELECT` from `public.moderation_queue WHERE status = 'pending'`
 
 They can inspect:
 
-Event / landmark details
+- Event/landmark details
+- Submitter
+- Kids-safe flags
+- Vertical / category tags
+- Provider / application context
 
-Submitter
+### 3.3 Approval (Admin Only)
 
-Kids-safe flags
-
-Vertical / category tags
-
-Provider / application context
-
-3.3 Approval (Admin Only)
+```sql
 select public.admin_moderate_submission(
   '<MODERATION_UUID>',
   'approved',
   'Looks good'
 );
-
-
 This function:
 
-Validates public.is_admin() using public.user_tiers (role = 'admin', account_status = 'active')
+Validates public.is_admin() (role = admin, account_status = 'active').
 
 Updates underlying entity:
 
 moderation_status = 'approved'
 
-Updates public.moderation_queue for that id:
+Updates public.moderation_queue:
 
 status = 'approved'
 
@@ -151,78 +145,62 @@ reviewed_at = now()
 
 reviewed_by = auth.uid()
 
-reason = 'Looks good' (or provided reason)
+reason = 'Looks good' (or custom text)
 
-Chains into notifications:
+Chains into Notifications System:
 
 Calls public.notify_submission_approved(...)
 
 Inserts a row into public.notifications
 
 3.4 Public Visibility
+ALL public queries for events & landmarks MUST include:
 
-ALL public queries for events + landmarks MUST include:
-
+sql
+Copy code
 WHERE moderation_status = 'approved'
+Kids Mode surfaces (when enabled) add:
 
-
-Kids Mode surfaces add:
-
+sql
+Copy code
 AND is_kids_safe = true
+Guarantees:
 
+No unreviewed content appears.
 
-This guarantees:
-
-No unreviewed content appears
-
-Kids Mode shows only pre-approved, kid-safe content (when it is eventually enabled)
+Kids Mode sees only pre-approved, flagged-safe content.
 
 4. Canonical Rejection Flow (Events & Landmarks)
+Rejection uses the same RPC:
 
-Rejection is symmetrical:
-
+sql
+Copy code
 select public.admin_moderate_submission(
   '<MODERATION_UUID>',
   'rejected',
   'Not appropriate'
 );
+This:
 
+Validates public.is_admin().
 
-This function:
+Updates entity: moderation_status = 'rejected'.
 
-Validates public.is_admin()
+Updates queue: status = 'rejected', reviewed_at, reviewed_by, reason.
 
-Updates entity:
-
-moderation_status = 'rejected'
-
-Updates public.moderation_queue:
-
-status = 'rejected'
-
-reviewed_at, reviewed_by
-
-reason = 'Not appropriate' (or custom text)
-
-Fires:
-
-public.notify_submission_rejected(...)
-
-Notification row → user sees rejection with reason
+Sends notification via public.notify_submission_rejected(...).
 
 Rejected content:
 
-Never appears in public discovery
+Never appears in public discovery.
 
-May be visible in internal admin views only
+May be visible to admins and (optionally) the submitter in private views.
 
 5. Vendor & Institution Application Moderation
-
-Vendor and Institution onboarding uses the same moderation pipeline.
+Vendor and Institution onboarding uses the same pipeline.
 
 5.1 Application Submission
-
-On submission:
+On submit:
 
 Row created in:
 
@@ -230,32 +208,34 @@ public.vendor_applications or
 
 public.institution_applications
 
-with moderation_status = 'pending'
+moderation_status = 'pending'
 
 Entry created in public.moderation_queue:
 
-entity_type  = 'vendor_application' or 'institution_application'
-entity_id    = application.id
-status       = 'pending'
+entity_type = 'vendor_application' | 'institution_application'
+
+entity_id = application.id
+
+status = 'pending'
+
 submitted_by = auth.uid()
 
 5.2 Approval
-
-Admin approves via admin_moderate_submission:
+Admin approves via public.admin_moderate_submission(...):
 
 Application row:
 
 moderation_status = 'approved'
 
-A provider is created and wired:
+Provider is created and wired:
 
-public.providers
+Insert into public.providers
 
-provider_type = 'vendor' or 'institution'
+provider_type = 'vendor' | 'institution'
 
 owner_user_id = applicant
 
-Vendor/Institution is activated according to:
+Vendor/Institution activation rules follow:
 
 public.user_tiers
 
@@ -265,51 +245,46 @@ account_status
 
 public.moderation_queue updated:
 
-status = 'approved'
+status = 'approved', reviewed_at, reviewed_by
 
-reviewed_at, reviewed_by
+Notification:
 
-Notification sent:
-
-submission_approved / *_application_approved
+*_application_approved
 
 5.3 Rejection
-
 Admin rejection:
 
 Application:
 
 moderation_status = 'rejected'
 
-No provider access is granted
+No provider is created.
 
-public.moderation_queue:
+Queue updated:
 
-status = 'rejected'
+status = 'rejected', reason stored.
 
-Reason stored
+Notification:
 
-Notification sent:
-
-submission_rejected / *_application_rejected
+*_application_rejected
 
 Rule:
+
 Applications are never auto-approved. They always enter moderation_queue.
 
 6. Internal SQL Override (Maintenance Only)
+Emergency internal helper:
 
-A protected internal function exists for emergency manual fixes:
-
+sql
+Copy code
 select public._admin_moderate_submission_internal(
   '<MODERATION_UUID>',
   '<new_status>',
   '<reason>'
 );
-
-
 Characteristics:
 
-Bypasses public.is_admin() check
+May bypass public.is_admin() because it is not exposed to clients.
 
 Intended for:
 
@@ -321,64 +296,61 @@ Hotfixes via SQL editor
 
 Rules:
 
-🚫 NEVER exposed in Supabase’s “Exposed Functions”
+🚫 Never exposed as an RPC.
 
-🚫 NEVER called from frontend / mobile clients
+🚫 Never called from frontend/mobile.
 
-✅ ONLY used manually by founder / root-level ops
+✅ Only used manually by founder / root-level ops with service-role keys.
 
-Pattern:
-Any function prefixed with _admin_ or _debug_ is considered internal-only.
+Pattern: any function prefixed with _admin_ or _debug_ is considered internal-only.
 
 7. Security Guarantees
+The Moderation System guarantees:
 
-The moderation system guarantees:
+✅ Only admins can approve/reject via admin_moderate_submission.
 
-✅ Only admins can approve or reject via admin_moderate_submission
+✅ All actions are auditable via:
 
-✅ All actions are auditable:
+public.moderation_queue
 
-moderation_queue
+public.user_admin_actions (for account changes)
 
-user_admin_actions (for account-level changes)
-
-notifications history
+public.notifications
 
 ✅ No public bypass paths exist:
 
-All discovery queries respect moderation_status = 'approved'
+All discovery queries respect moderation_status = 'approved'.
 
 ✅ RLS remains enforced:
 
-Non-admins see only their own submissions + allowed entities
+Non-admins see only their own submissions where applicable.
 
-✅ Kids Mode content is:
+✅ Kids Mode content:
 
-Filtered by is_kids_safe
+Filtered by is_kids_safe.
 
-Never shows unmoderated entities
+Shows no unmoderated entities.
 
-Not exposed at all while Kids Mode is in pilot OFF
+Is not exposed at all while Kids Mode is in PILOT OFF.
 
-✅ Sanctuary / rescue / nonprofit entities:
+✅ Sanctuary / rescue / nonprofits:
 
-May post volunteer events
+May post volunteer/education events.
 
-Are mission-only (no marketplace tools, no commercial ads)
+Are mission-only (no commercial marketplace tools or ads).
 
-Still pass through moderation
+Still pass through moderation.
 
-✅ Municipalities & civic entities:
+✅ Municipal / civic entities:
 
-May exist in schema/backend for later verticals
+May exist in schema/backend for later verticals.
 
-Are discovery-off in ROOTED Community by default
+Are discovery-off in ROOTED Community by default.
 
-Must go through moderation when/if surfaced in any vertical
+Must go through moderation when surfaced in future verticals.
 
 8. Vertical Compatibility
-
-The moderation system is vertical-agnostic and applies to:
+The Moderation System is vertical-agnostic and applies to:
 
 ✅ ROOTED Community
 
@@ -386,25 +358,24 @@ The moderation system is vertical-agnostic and applies to:
 
 ✅ ROOTED Arts & Culture
 
-✅ ROOTED Education
+✅ ROOTED Education / Kids
 
 ✅ ROOTED Experiences
 
 ✅ Future verticals
 
-Any new public-facing submission type must:
+Any new public-facing submission type MUST:
 
-Include moderation_status on its table
+Include moderation_status on its table.
 
-Insert a row into public.moderation_queue
+Insert a row into public.moderation_queue on submission.
 
-Use admin_moderate_submission as its approval/denial gate
+Use public.admin_moderate_submission(...) as its approval/denial gate.
 
-Respect moderation_status = 'approved' in discovery queries
+Respect moderation_status = 'approved' in all discovery queries.
 
 9. Admin Moderation & Governance Integration
-
-Admin identity is defined solely in public.user_tiers and the helper:
+Admin identity is defined solely in public.user_tiers and the helper in ADMIN_AUTH_MODEL.md:
 
 role = 'admin'
 
@@ -412,7 +383,7 @@ account_status = 'active'
 
 public.is_admin() returns true
 
-RPCs exposed to the frontend for admin are strictly limited to:
+Exposed admin RPCs (see ADMIN_AUTH_MODEL.md):
 
 public.admin_get_user_accounts
 
@@ -438,64 +409,49 @@ Each exposed admin RPC:
 
 Logs to moderation_queue
 
-Chains into notification helpers
+Chains into Notification helpers
 
-Internal helpers like:
+Internal helpers (_admin_*, _debug_*) are:
 
-_admin_moderate_submission_internal
-
-_admin_grant_default_badges_for_provider_internal
-
-_debug_*
-
-are:
-
-🚫 Not exposed as public RPCs
+🚫 Not exposed as RPCs
 
 ✅ Used only by outer admin RPCs or service-role contexts
 
 10. Community Uploads & Safety (Current Doctrine)
+Community uploads (e.g., user-submitted community spots) follow:
 
-Community uploads (e.g., community spots / user-submitted places) follow this policy:
+Schema-level support may exist.
 
-Schema-level support can exist.
+Feature-level behavior is globally gated behind a core setting / feature flag:
 
-Feature-level behavior is:
+e.g. community_uploads_enabled = false at launch.
 
-Globally gated behind a core app setting / feature flag
-(e.g. community_uploads_enabled = false in app_settings or config store)
+Launch default:
 
-Default: disabled for launch.
+Community uploads disabled for ROOTED Community.
 
-Kids Mode never has access to community upload flows.
+Kids Mode never has community upload flows.
 
-Municipal / civic uploads are discovery-off in Community vertical until the dedicated vertical is launched.
+Municipal/civic uploads are discovery-off until their vertical launches.
 
-When enabled in the future, all community uploads:
+When enabled in the future, all community uploads MUST:
 
-Enter moderation_queue
+Enter moderation_queue.
 
-Require admin approval
+Require admin approval.
 
-Are filtered out of Kids Mode unless explicitly marked kids-safe
-
-Until then:
-
-UI may show previews / read-only, but no production community upload path is active.
+Be excluded from Kids Mode unless explicitly marked kids-safe.
 
 11. Canonical Status
+This file is CANONICAL and platform-wide:
 
-This file is CANONICAL and applies platform-wide:
+Defines how all public submissions move from pending → approved/rejected.
 
-It defines how all public submissions move from:
-
-pending → approved or rejected
-
-It defines the only legal approval mechanism:
+Defines the only legal approval mechanism:
 
 public.admin_moderate_submission(...)
 
-It defines the relationship between:
+Defines the relationship between:
 
 Moderation
 
@@ -513,4 +469,4 @@ Municipal discovery hibernation
 
 If any future code, vertical, or AI suggestion conflicts with this Moderation System:
 
-This Moderation System wins.
+The Moderation System wins.
