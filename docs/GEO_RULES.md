@@ -1,17 +1,28 @@
+### `docs/GEO_RULES.md`
+
+```md
 # ROOTED – Global GEO Rules (Platform-Wide)
 
-## Purpose
+Status: ✅ Canonical  
+Scope: All ROOTED verticals and discovery/search surfaces  
 
-This document defines the single source of truth for how location, distance,
-fair exposure, and geographic filtering work across ALL ROOTED verticals.
+This document defines the single source of truth for **location, distance, fair exposure, and geographic filtering** across ALL ROOTED verticals.
 
-These rules apply to:
+Applies to:
+
 - ROOTED Community
 - ROOTED Construction
-- ROOTED Healthcare
-- Any future ROOTED vertical
+- ROOTED Healthcare (non-clinical)
+- Future verticals (Emergency, Workforce, etc.)
 
-No vertical is allowed to override these rules unless explicitly approved at the core level.
+Related docs:
+
+- `DISCOVERY_RULES.md`
+- `DISCOVERY_IMPLEMENTATION_MAP.md`
+- `DISCOVERY_BACKEND_PSEUDOCODE.md`
+- `UI_BACKEND_DISCOVERY_CONTRACT.md`
+
+No vertical is allowed to override these rules without an explicit, time-boxed exception documented in **rooted-platform** and implemented in **rooted-core**.
 
 ---
 
@@ -21,164 +32,172 @@ All discovery, vendor display, provider cards, and search results MUST follow:
 
 - ✅ Maximum radius: **50 miles**
 - ✅ Center point:
-  - User’s live location OR
-  - User’s manually selected home location
-- ✅ Results outside 50 miles are NEVER shown in discovery by default.
+  - User’s live location **or**
+  - User’s manually selected “home” / region
+- ✅ Results outside 50 miles are **never** shown by default in discovery.
 
-This ensures:
-- Fair competition
+Goals:
+
+- Fair competition between vendors
 - Local economic protection
-- No large vendors overpowering small local vendors
-- True community-first ranking
+- Prevent large actors from overwhelming small local providers
+- Reinforce community-first behavior
 
 ---
 
-## 2. Global Discovery Result Limits (UI + Backend Coupling)
+## 2. Global Discovery Result Limits
 
 For ANY discovery surface that shows providers:
 
-- ✅ Minimum shown: **6 vendors**
-- ✅ Maximum shown: **8 vendors**
-- ❌ Never fewer than 6 unless fewer than 6 exist within 50 miles
+- ✅ Minimum intended: **6 vendors**
+- ✅ Maximum: **8 vendors**
+- ❌ Never fewer than 6 unless there are simply fewer than 6 in range
 - ❌ Never more than 8 in a single row or discovery section
 
-This rule applies to:
+Applies to:
+
 - Home discovery rows
 - Category discovery sections
-- Vertical-specific discovery
+- Vertical-specific discovery areas
 - Featured vendor rows
-- Community highlights
+- Community highlight modules
 
 This prevents:
+
 - Infinite scroll bias
-- Algorithmic favoritism
-- Pay-to-dominate abuse
+- Algorithmic “rabbit hole” experiences
+- Pay-to-dominate behavior
 - UI overcrowding
 
 ---
 
 ## 3. Specialty Filtering Behavior (UI Contract Rule)
 
-When a user presses specialty filter buttons (e.g.):
+When a user presses specialty filter buttons (e.g., “Farms”, “Bakeries”, “Contractors”, “Clinics”):
 
-- Farms
-- Bakeries
-- Butchers
-- Contractors
-- Clinics
-- Providers
-- Specialists
+System MUST:
 
-The system MUST:
 - ✅ Keep the **6–8 card rule**
 - ✅ Keep the **50-mile GEO boundary**
-- ✅ Only change the **specialty filter parameter**
-- ❌ Must NOT load unlimited cards
-- ❌ Must NOT expand the radius
-- ❌ Must NOT show global results
+- ✅ Only change the **specialty parameter** (or similarly narrow filter)
 
-Filters refine — they DO NOT expand reach.
+System MUST NOT:
+
+- Expand radius implicitly
+- Increase result count beyond 8
+- Load global or cross-region results in discovery
+- Remove rotation or fairness enforcement
+
+Filters **narrow**, they never secretly expand reach.
 
 ---
 
 ## 4. Rotation & Fair Exposure Enforcement
 
-To ensure fair visibility over time:
+To avoid static “top results” that never move:
 
-- Vendors/providers inside the 50-mile radius MUST rotate exposure across sessions
-- No provider may appear in the same top discovery row permanently
-- Rotation factors MAY include:
-  - Last appearance timestamp
-  - Profile activity
-  - Community engagement
-  - Verification status
-- Rotation may NOT include:
-  - Pure payment priority
-  - Bid manipulation
-  - Algorithm-only favoritism
+- Vendors/providers inside the 50-mile radius MUST rotate appearance across sessions.
+- No provider may appear in the top discovery slots permanently.
 
-This ensures:
-- Small vendors get visibility
-- New vendors are discoverable
-- Large vendors cannot dominate
+Rotation factors MAY include:
+
+- `last_shown_at`
+- Profile completeness / activity
+- Community engagement signals
+- Verification / trust status
+
+Rotation MAY NOT be driven by:
+
+- Pure payment priority
+- Hidden bidding
+- Unclear algorithmic favoritism
 
 ---
 
-## 5. Fallback Behavior (Low Data Zones)
+## 5. Low-Data Zones (Sparse Regions)
 
 If fewer than 6 vendors exist within 50 miles:
 
-- ✅ Show all available vendors
-- ✅ Display system note: “Showing all available local providers”
-- ❌ Do not automatically expand radius without user consent
+- ✅ Show all available vendors.
+- ✅ Show helper copy such as “Showing all available local providers.”
+- ❌ Do not automatically expand radius.
 
-User must manually expand radius if they choose.
+If radius expansion is offered as a UX feature:
+
+- It must be **explicit** and user-initiated.
+- Even then, RADIUS_MAX remains governed by this file (or a clearly documented exception).
 
 ---
 
 ## 6. Vertical Enforcement Clause
 
-Every vertical MUST inherit and obey these rules:
+Every vertical MUST inherit and obey these GEO rules:
 
-- Community discovery
-- Construction contractor discovery
-- Healthcare provider discovery
-- Institutional discovery
-- Emergency provider discovery
+- Community discovery (ROOTED Community)
+- Contractor discovery (Construction)
+- Healthcare provider discovery (non-clinical)
+- Institutional discovery (schools, nonprofits, etc.)
+- Emergency provider discovery (future)
 
-If a vertical requires **temporary exception**:
-- It must be explicitly scope-limited
-- It must be documented in rooted-core
-- It must auto-expire
+If a vertical requires a **temporary exception** (e.g. rural regions):
+
+- Exception must be documented in `rooted-platform` governance.
+- Implementation must live in a dedicated, clearly named view/RPC.
+- Exception must have an explicit sunset / review date.
 
 ---
 
 ## 7. Backend API Contract (Forward Interface)
 
-All discovery-related APIs must eventually conform to:
+All discovery-related APIs must align to, or converge on:
 
-/api/discovery
-?lat=
-&lng=
-&radius=50
-&specialty=
-&limit=8
-
-yaml
-Copy code
-
+```text
+GET /api/discovery
+  ?lat=
+  &lng=
+  &radius=50
+  &specialty=
+  &limit=8
 The backend is REQUIRED to enforce:
-- Radius hard caps
-- Result count caps
-- Rotation eligibility
-- Verification filters
 
-UI is NOT allowed to override these limits.
+Radius hard caps
 
----
+Result count caps
 
-## 8. Anti-Gaming Rule
+Rotation eligibility
 
-The following behaviors are explicitly disallowed:
+Verification & moderation filters
 
-- Artificial account duplication to boost discovery
-- Paid permanent placement in discovery
-- Radius spoofing to escape local limits
-- Algorithm manipulation to suppress competitors
+UI is not permitted to override these caps.
+
+8. Anti-Gaming Rule
+Explicitly disallowed behaviors:
+
+Creating duplicate provider accounts to increase discovery odds
+
+Selling or accepting “permanent top spot” inside discovery rows
+
+Radius spoofing (e.g., misrepresenting location to appear local)
+
+Algorithm tweaks intended to suppress specific competitors
 
 Violations trigger:
-- Automatic suppression
-- Audit review
-- Possible permanent removal
 
----
+Automatic suppression where detectable
 
-## ✅ Final Authority Clause
+Human audit review
 
+Possible permanent removal per platform governance
+
+9. Final Authority Clause
 This document is:
 
-- The **authoritative GEO law of ROOTED**
-- The **binding contract** between UI, backend, and all verticals
-- The **permanent safeguard for fairness at scale**
+The authoritative GEO law of ROOTED
 
-Any violation of this document is considered a **platform-breaking defect**.
+The binding contract between UI, backend, and all verticals
+
+The permanent safeguard for fairness at scale
+
+If any implementation, PR, or AI suggestion conflicts with this file:
+
+GEO_RULES.md + DISCOVERY_RULES.md + DISCOVERY_IMPLEMENTATION_MAP.md win.
