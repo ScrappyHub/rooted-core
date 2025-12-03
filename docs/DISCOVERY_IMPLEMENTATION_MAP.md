@@ -1,13 +1,22 @@
 # ROOTED – Discovery Implementation Map (UI ↔ API ↔ DB)
 
-## Purpose
+Status: ✅ Canonical  
+Scope: All discovery surfaces in ROOTED Core  
 
-This document maps exactly how discovery rules are implemented across:
-- UI Components
+This document maps **how discovery rules are implemented end-to-end** across:
+
+- UI components
 - Backend APIs
-- Database Queries
+- Database queries / views
 
-This prevents logic drift and guarantees enforcement at every layer.
+It prevents logic drift and guarantees that **GEO_RULES**, **DISCOVERY_RULES**, and the **UI_BACKEND_DISCOVERY_CONTRACT** are all enforced together.
+
+Related docs:
+
+- `DISCOVERY_RULES.md`
+- `GEO_RULES.md`
+- `UI_BACKEND_DISCOVERY_CONTRACT.md` (rooted-core root)
+- `DISCOVERY_BACKEND_PSEUDOCODE.md`
 
 ---
 
@@ -15,90 +24,161 @@ This prevents logic drift and guarantees enforcement at every layer.
 
 All discovery endpoints MUST enforce:
 
-- radius = 50 miles (hard cap)
-- limit = 6–8 only (no override)
-- rotation = required
-- verification filters = required
+- `radius <= 50` miles (hard cap, see `GEO_RULES.md`)
+- `limit` between **6–8** (no override, see `DISCOVERY_RULES.md`)
+- Rotation rules (see `DISCOVERY_BACKEND_PSEUDOCODE.md`)
+- Verification / visibility filters (platform trust layer)
 
-Canonical discovery endpoint:
+Canonical discovery endpoint shape:
 
-/api/discovery
-?lat=
-&lng=
-&radius=50
-&specialty=
-&limit=8
-
+```text
+GET /api/discovery
+  ?lat=<required>
+  &lng=<required>
+  &radius=50        # optional, backend clamps to ≤ 50
+  &specialty=<code> # optional, from specialty_types.code
+  &limit=8          # optional, backend clamps to 6–8
 Backend MUST:
-- Reject radius > 50
-- Reject limit > 8
-- Apply rotation before returning results
-- Apply visibility + verification filters
 
----
+Reject / clamp radius > 50
 
-## 2. Database Query Rules
+Clamp limit to [6, 8]
 
-Discovery queries MUST:
+Apply rotation before returning results
 
-- Filter by geodistance ≤ 50 miles
-- Exclude suppressed / unverified providers when required
-- Apply rotation seed via:
-  - last_seen
-  - engagement_score
-  - verification_level
+Apply visibility + verification filters inside the query, not in UI
 
-No raw unrestricted SELECT queries allowed for discovery.
+2. Database Query Rules
+Discovery SQL (tables or views) MUST:
 
----
+Filter by geodistance ≤ 50 miles from the supplied point
 
-## 3. UI Component Contract
+Exclude:
 
-All verticals MUST use a shared component pattern:
+Suspended providers
 
-- CuratedDiscoveryRow
-- Receives data ONLY from /api/discovery
-- Renders exactly 6–8 cards returned
-- Does NOT:
-  - paginate
-  - reshuffle
-  - override order
-  - expand radius
+Soft-deleted providers
 
----
+Providers failing trust / verification filters where required
 
-## 4. Filter Button Behavior
+Apply rotation seed via some combination of:
 
-Filter buttons ONLY update:
+last_shown_at
 
-- specialty parameter
+engagement_score
+
+created_at
+
+randomized tie-breaker (random())
+
+Forbidden:
+
+Raw SELECT * FROM providers for discovery surfaces
+
+Queries that ignore moderation_status = 'approved' (see MODERATION_SYSTEM.md)
+
+Queries that bypass sanctuary / kids / municipal discovery rules
+
+All discovery queries should be implemented via views or RPCs defined in this repo, not handwritten ad-hoc SQL in each client.
+
+3. UI Component Contract
+All verticals MUST use a shared component pattern, for example:
+
+CuratedDiscoveryRow / CuratedVendorSection
+
+Characteristics:
+
+Receives its data only from /api/discovery (or the canonical discovery RPC/view).
+
+Renders exactly the 6–8 cards returned.
+
+Does not:
+
+Paginate within a single discovery row
+
+Reshuffle or re-order cards
+
+Override the backend limit
+
+Auto-expand radius
+
+If the backend returns fewer than 6 providers:
+
+Component shows all returned cards.
+
+Component displays a “low data zone” helper text (per UX spec).
+
+UI must treat backend as source of truth for:
+
+Count
+
+Order
+
+Radius
+
+Curation
+
+4. Filter Button Behavior
+Filter controls (chips / buttons / tabs) may only update:
+
+specialty (e.g., FARM, BAKERY, GENERAL_CONTRACTOR)
+
+Optional lightweight filters explicitly allowed by DISCOVERY_RULES.md
 
 They MUST NOT:
-- change radius
-- change limit
-- change rotation
-- change ranking
 
----
+Change radius beyond what backend already enforces
 
-## 5. Vertical Inheritance
+Change result limit
 
-This implementation map applies to:
+Disable rotation or fairness rules
 
-- ROOTED Community
-- ROOTED Construction
-- ROOTED Healthcare
-- Emergency response
-- Future verticals
+Change ranking weights
+
+Pattern:
+
+User taps “Farms” → call /api/discovery with specialty=FARM
+
+User taps “Bakeries” → specialty=BAKERY
+
+Everything else (radius, limit, rotation) remains unchanged.
+
+5. Vertical Inheritance
+This implementation map applies to every vertical that uses provider discovery:
+
+✅ ROOTED Community
+
+✅ ROOTED Construction (future)
+
+✅ ROOTED Healthcare (future, non-clinical)
+
+✅ Emergency / disaster & workforce verticals (future)
+
+✅ Any future vertical that wants discovery rows
+
+Using discovery at all means inheriting:
+
+GEO_RULES.md
+
+DISCOVERY_RULES.md
+
+UI_BACKEND_DISCOVERY_CONTRACT.md
+
+This DISCOVERY_IMPLEMENTATION_MAP.md
 
 Violation = critical platform defect.
 
----
+6. Final Authority
+This document is the executable wiring diagram for discovery:
 
-## Final Authority
+GEO_RULES.md → defines the radius + locality law
 
-This document is the executable interpretation of:
+DISCOVERY_RULES.md → defines fairness, caps, and curation doctrine
 
-- GEO_RULES.md
-- DISCOVERY_RULES.md (all verticals)
-- UI_BACKEND_DISCOVERY_CONTRACT.md
+UI_BACKEND_DISCOVERY_CONTRACT.md → defines the UI contract (6–8 cards, no pay-to-win)
+
+DISCOVERY_BACKEND_PSEUDOCODE.md → defines the backend algorithm
+
+If any implementation in UI, API, or DB conflicts with these:
+
+These four discovery documents, together, win.
