@@ -1,8 +1,3 @@
----
-
-### `docs/DISCOVERY_RULES.md`
-
-```md
 # ROOTED – Discovery & Curation Rules (Canonical)
 
 Status: ✅ Canonical  
