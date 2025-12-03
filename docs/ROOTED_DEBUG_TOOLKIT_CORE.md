@@ -1,9 +1,27 @@
-✅ ROOTED DEBUG TOOLKIT (v3)
+# ✅ ROOTED DEBUG TOOLKIT (CANONICAL AUTHORITY)
 
-For Founder, Engineers, QA, & Future You
+This document is the **only legal debugging method** for ROOTED.
 
-Status: Aligned with locked backend + ROOTED Community launch
-Scope: Supabase + App-level sanity checks (ROOTED Core + Community + early vertical prep)
+It is enforced by:
+
+- ROOTED_PLATFORM_CONSTITUTION.md
+- ADMIN_AUTH_MODEL.md
+- MODERATION_SYSTEM.md
+- NOTIFICATIONS_SYSTEM.md
+- ROOTED_GIT_HANDOFF.md
+
+If a debug method violates:
+- RLS
+- Kids Safety
+- Sanctuary protections
+- Account deletion law
+- Feature flag law
+
+→ That debug method is **ILLEGAL** even for founder use.
+
+Debugging is never allowed to weaken safety or governance.
+
+---
 
 🧠 0. CORE PRINCIPLES
 
