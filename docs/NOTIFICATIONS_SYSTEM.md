@@ -1,44 +1,38 @@
-# ✅ ROOTED — NOTIFICATIONS SYSTEM (CANONICAL)
+# ROOTED — NOTIFICATIONS SYSTEM (CANONICAL)
 
 Status: ✅ Canonical  
-Scope: All moderation, account governance, and system-triggered notifications  
-Applies To: ROOTED Core (all verticals)  
+Scope: All ROOTED verticals  
+Applies To: Moderation, Admin Actions, Applications, System Events  
 
-The Notifications System provides **auditable, multi-channel delivery** for all governed platform events.
+This document defines the **single, auditable, multi-channel notifications system** for ROOTED.
 
-It currently supports:
+All moderation approvals, rejections, application decisions, and system governance actions flow through this system.
 
-- ✅ In-app delivery (primary)
-- ✅ Push delivery (APNs + FCM ready)
-- 🟠 Email delivery (future expansion, opt-in only)
-
-All **moderation approvals, rejections, and admin account actions** flow through this system.
-
-Related docs:
-
-- `ADMIN_AUTH_MODEL.md`
-- `MODERATION_SYSTEM.md`
-- `ROOTED_PLATFORM_CONSTITUTION.md`
-- `ROOTED_DEBUG_TOOLKIT_CORE.md`
+Related Canonical Docs:
+- ADMIN_AUTH_MODEL.md
+- MODERATION_SYSTEM.md
+- ROOTED_DEBUG_TOOLKIT_CORE.md
+- ROOTED_PLATFORM_CONSTITUTION.md (reference copy)
 
 ---
 
-## 1. Design Principles
+## 1. Purpose
 
-The Notifications System is:
+The Notifications System provides:
 
-- ✅ Audit-first
-- ✅ Delivery-channel agnostic
-- ✅ Admin-triggered for governance actions
-- ✅ User-scoped via RLS
-- ✅ Compatible with Kids Mode suppression rules
-- ✅ Non-commercial (no marketing spam by default)
+- ✅ In-app notifications (current)
+- ✅ Push delivery (APNs + FCM ready)
+- ✅ Future email expansion (opt-in only)
 
-It is **not**:
+It guarantees:
 
-- ❌ A real-time chat system
-- ❌ A marketing broadcast engine by default
-- ❌ A social engagement driver
+- Auditability
+- User delivery control via opt-in
+- Kids Mode safety
+- Sanctuary & nonprofit protection
+- Admin traceability
+
+No moderation, approval, rejection, suspension, or governance action is considered complete without a corresponding notification record.
 
 ---
 
@@ -46,10 +40,10 @@ It is **not**:
 
 ### 2.1 `public.notifications`
 
-**Canonical Fields:**
+Canonical Fields:
 
 - `id` (uuid, PK)
-- `user_id` (uuid → `auth.users.id`)
+- `user_id` (uuid → auth.users.id)
 - `type` (text)
 - `title` (text)
 - `body` (text)
@@ -59,173 +53,119 @@ It is **not**:
 - `delivered_at` (timestamp)
 - `created_at` (timestamp)
 
-This table is the **single source of truth for notification state**.
+RLS Requirements:
+
+- ✅ Users may read only their own notifications
+- ✅ Admins may audit all notifications
+- ✅ Service-role may update `delivered` fields only
 
 ---
 
 ### 2.2 `public.user_devices`
 
-Used only for **push delivery targeting**.
+Used for push delivery.
 
-Canonical Fields:
+Fields:
 
-- `id` (uuid, PK)
-- `user_id` (uuid → `auth.users.id`)
+- `id`
+- `user_id`
 - `platform` (`ios | android | web`)
 - `device_token`
 - `created_at`
 
-Devices are **never exposed publicly** and are only used by the delivery worker.
+RLS:
+
+- ✅ Users may insert/update their own devices
+- ✅ Admins + service-role may read all devices
+- ❌ No public reads
 
 ---
 
-## 3. Moderation Approval Notifications
+## 3. Moderation Notifications
+
+### 3.1 Approval
 
 Triggered by:
 
-```sql
-public.notify_submission_approved(...)
-Creates a notification row with:
+`public.notify_submission_approved(...)`
 
-type = 'submission_approved'
-
-delivery_channel = 'push'
-
-delivered = false
-
-data includes:
-
-entity_type
-
-entity_id
-
-approved_by
-
-Delivery Worker later sends via:
-
-APNs (iOS)
-
-FCM (Android / Web)
-
-4. Moderation Rejection Notifications
-Triggered by:
-
-sql
-Copy code
-public.notify_submission_rejected(...)
 Creates:
 
-type = 'submission_rejected'
+- `type = 'submission_approved'`
+- `delivery_channel = 'push'`
+- `delivered = false`
 
-Includes rejection reason in body and data.reason
+The worker later assigns:
 
-delivered = false
+`delivered = true`, `delivered_at = now()`
 
-Worker delivers via push / in-app
+---
 
-5. Vendor & Institution Application Notifications
-Action	Notification Type
-Vendor Application Approved	vendor_application_approved
-Vendor Application Rejected	vendor_application_rejected
-Institution Approved	institution_application_approved
-Institution Rejected	institution_application_rejected
+### 3.2 Rejection
 
-All use the same public.notifications table and delivery pipeline.
+Triggered by:
 
-These are always triggered from:
+`public.notify_submission_rejected(...)`
 
-sql
-Copy code
-public.admin_moderate_submission(...)
-Never directly from UI.
+Creates:
 
-6. Worker Delivery Flow (Push)
-Delivery workers (Edge / cron / background jobs) follow this exact pattern:
+- `type = 'submission_rejected'`
+- `body` includes rejection reason
+- `delivered = false`
 
-Fetch all undelivered push notifications:
+---
 
-sql
-Copy code
-select *
-from public.notifications
-where delivered = false
-  and delivery_channel = 'push';
-For each row:
+## 4. Vendor & Institution Application Notifications
 
-Lookup user devices in public.user_devices
+| Action | Notification Type |
+|--------|-------------------|
+| Vendor Approved | `vendor_application_approved` |
+| Vendor Rejected | `vendor_application_rejected` |
+| Institution Approved | `institution_application_approved` |
+| Institution Rejected | `institution_application_rejected` |
 
-Send via:
+All use **one unified notifications table**.
 
-APNs (iOS)
+---
 
-FCM (Android/Web)
+## 5. Push Worker Delivery Flow
 
-On successful send:
+1. Worker queries:
 
-sql
-Copy code
-update public.notifications
-set delivered = true, delivered_at = now()
-where id = '<NOTIFICATION_ID>';
-No retries are infinite. Failure logic is handled in the worker, not the DB.
+```sql
+SELECT * 
+FROM public.notifications
+WHERE delivered = false 
+AND delivery_channel = 'push';
+Worker fetches:
 
-7. Security & RLS (REQUIRED)
-7.1 User Access
-✅ Users may only read their own notifications:
+public.user_devices
 
-sql
-Copy code
-user_id = auth.uid()
-✅ No user may delete arbitrary notifications.
+Sends via:
 
-✅ No user may mark notifications as delivered.
+APNs (Apple)
 
-7.2 Admin Access
-Admins may:
+FCM (Android)
 
-Audit notification delivery
-
-Diagnose failures
-
-Re-send (future tool)
-
-Admin identity is governed by:
+Updates:
 
 sql
 Copy code
-public.is_admin()
-as defined in ADMIN_AUTH_MODEL.md.
+delivered = true,
+delivered_at = now()
+6. Security Guarantees
+✅ Notifications never expose admin identity publicly
 
-7.3 Service Role Access
-Only service role / worker role may:
+✅ No notification can be spoofed from the frontend
 
-Mark delivered = true
+✅ All moderation messages are system-authored
 
-Insert system-level notification records
+✅ Kids Mode never receives monetization notifications
 
-8. Kids Mode Restrictions
-When Kids Mode is active:
+✅ Sanctuary entities never receive commercial notifications
 
-❌ No marketing, pricing, or sales notifications
-
-✅ Only safety, education, or guardian-approved system messages
-
-✅ No push notifications for:
-
-Bids
-
-Bulk offers
-
-Vendor marketing
-
-Paid promotions
-
-✅ Moderation notifications still deliver to the parent account only
-
-Kids Mode message suppression must happen at UI + worker layer, not only DB.
-
-9. Marketplace & Analytics RLS Audit (Required Companion)
-For all of the following:
+7. Marketplace & Analytics RLS Audit (Required)
+For all commercial and analytics tables:
 
 bids
 
@@ -235,60 +175,25 @@ bulk_offer_analytics
 
 vendor_analytics_*
 
-You MUST ensure there are no legacy policies that:
+ENFORCE:
 
-Use USING (true) for authenticated users
+❌ No USING (true) policies
 
-Ignore ownership (owner_user_id)
+✅ Provider ownership enforcement:
+owner_user_id = auth.uid()
 
-Ignore feature_flags
+✅ Feature flag enforcement:
+public.has_feature(auth.uid(), 'can_use_*')
 
-Ignore subscription_tier
+8. Canonical Status
+This system is required for:
 
-Each table must enforce at least ONE policy checking:
+✅ Moderation (events, landmarks, applications)
 
-Provider ownership
+✅ Admin governance
 
-AND the correct feature flag via:
+✅ Account enforcement
 
-sql
-Copy code
-public.has_feature(auth.uid(), '<FEATURE_NAME>')
-This is required to prevent:
+✅ Seasonal and safety messaging
 
-False notifications
-
-Unauthorized analytics reads
-
-Marketplace leakage
-
-10. Auditing & Debug Integration
-Notifications integrate directly with:
-
-public.moderation_queue
-
-public.user_admin_actions
-
-public.notifications
-
-Primary debug queries live in:
-
-ROOTED_DEBUG_TOOLKIT_CORE.md
-(Section: Moderation & Notifications)
-
-11. Canonical Status
-This file is CANONICAL across all ROOTED verticals.
-
-If any future vertical attempts to:
-
-Bypass notifications
-
-Trigger moderation without notification
-
-Silence admin actions
-
-→ That vertical is invalid by design until corrected.
-
-If a future script, worker, PR, or AI recommendation conflicts with this doc:
-
-NOTIFICATIONS_SYSTEM.md wins.
+If any feature bypasses notifications → it violates platform law.
