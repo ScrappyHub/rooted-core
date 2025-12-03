@@ -1,231 +1,312 @@
-# ROOTED Billing Abuse Test Matrix
-Status: Canonical  
-Scope: All billing flows (vendors + institutions)  
+
+---
+
+### File: `docs/BILLING_ABUSE_TEST_MATRIX.md`
+
+```md
+# ROOTED — BILLING ABUSE TEST MATRIX (CANONICAL)
+
+Status: ✅ Canonical  
+Scope: All billing & subscription flows (vendors + institutions)  
 Purpose: Validate fraud resistance, governance compliance, and child/sanctuary protection.
 
-This matrix must be completed **before** enabling real Stripe billing.
+This matrix must be completed **before** enabling real Stripe billing in any vertical.
+
+Related docs:
+
+- `BILLING_ARCHITECTURE.md`
+- `ADMIN_AUTH_MODEL.md`
+- Platform Pre-Launch Abuse Test Matrix (`rooted-platform/docs/ROOTED_PRE-LAUNCH_ABUSE_TEST_MATRIX.md`)
 
 ---
 
-# 1. SUBSCRIPTION LIFECYCLE ABUSE TESTS
+## 1. SUBSCRIPTION LIFECYCLE ABUSE TESTS
 
-## 1.1 Fake Upgrade Attempt (UI Only)
-Goal: Ensure UI cannot upgrade tier without Stripe.
+### 1.1 Fake Upgrade Attempt (UI Only)
+
+Goal: Ensure UI cannot upgrade tier without Stripe + backend validation.
 
 Test:
-- Run JS injection in browser console.
-- Attempt to modify `subscription_tier` in React state.
-- Attempt to send forged POST to upgrade endpoint.
+
+- Inject JS into browser console.
+- Manually set client-side state to `subscription_tier = 'premium_plus'`.
+- Forge POST/PUT to any “upgrade” endpoint.
 
 Expected:
-- Server rejects; RLS blocks unauthorized field updates.
-- No DB mutation occurs.
+
+- Server ignores client-claimed tier.
+- RLS or business logic checks canonical tier from DB.
+- No `subscription_tier` or `subscription_status` change in `public.providers`.
+- No new privileges when calling protected endpoints.
 
 ---
 
-## 1.2 Webhook Forgery
-Goal: Prevent forged Stripe events.
+### 1.2 Webhook Forgery
+
+Goal: Prevent forged Stripe webhooks.
 
 Test:
-- Send a manual POST to webhook endpoint.
-- Spoof as if coming from Stripe.
+
+- Send manual POST to webhook endpoint, mimicking Stripe payload.
+- Use invalid or missing Stripe signature header.
 
 Expected:
+
 - Signature verification fails.
 - No DB writes.
-- Audit log entry for suspicious webhook.
+- Optional: internal log entry flagged as suspicious.
 
 ---
 
-## 1.3 Cancel Subscription → Still Getting Premium Tools
+### 1.3 Cancel Subscription → Still Getting Premium Tools
+
 Test:
-- Create subscription → cancel in Stripe Dashboard.
+
+- Start subscription for a test vendor.
+- Cancel subscription from Stripe Dashboard (simulate real customer cancel).
 
 Expected:
-- Webhook sets:
-  - `subscription_status = 'canceled'`
-  - Tier unchanged or reverted per policy
-- UI gates immediately disable:
+
+- Webhook updates provider:
+  - `subscription_status = 'canceled'` or `'past_due'` per design.
+- Feature gates immediately disable:
+  - Bid marketplace
   - Bulk marketplace
-  - RFQs
   - Premium analytics
+- UI reflects loss of access on next refresh/session.
 
 ---
 
-# 2. PROVIDER MANIPULATION ABUSE
+## 2. PROVIDER MANIPULATION ABUSE
 
-## 2.1 Provider tries to bypass to Premium Plus
+### 2.1 Provider Tries to Self-Promote to Premium Plus
+
 Test:
-- Provider changes localStorage or intercepts network calls to pretend they’re Premium Plus.
+
+- Provider tampers with network requests or localStorage to claim `premium_plus`.
 
 Expected:
-- Server RLS enforces canonical tier grid.
-- All commercial endpoints verify `subscription_tier`.
+
+- All commercial endpoints re-check `subscription_tier` AND `subscription_status` from DB.
+- RLS denies access to endpoints that require Premium Plus.
+- UI may show optimistic state briefly, but server responses enforce truth.
 
 ---
 
-## 2.2 Sanctuary sets own tier to commercial
+### 2.2 Sanctuary Attempts Commercial Upgrade
+
 Test:
-- Sanctuary attempts upgrade via UI or API.
+
+- Sanctuary or rescue entity attempts to upgrade via UI or API.
 
 Expected:
-- RLS blocks.
-- UI hides upgrade paths.
-- Webhook handler overrides any commercial plan with:
-  - `subscription_tier = 'free'`
-  - `subscription_status = 'non_commercial'`
+
+- Sanctuary detection (`provider_is_sanctuary(...)`) overrides:
+  - `subscription_tier` forced to a non-commercial option (e.g. `free`).
+  - Commercial feature flags remain `false`.
+- UI hides or disables all commercial upgrade paths.
+- Webhook handler refuses to grant commercial tools even if Stripe shows paid status.
 
 ---
 
-## 2.3 Kids Mode Exposure Blocks Billing
+### 2.3 Kids Mode Exposure Blocks Billing
+
 Test:
-- Activate Kids Mode → attempt to upgrade.
+
+- Enable Kids Mode (or simulate).
+- Attempt to navigate directly to billing routes, upgrade screens, or Stripe checkout URLs.
 
 Expected:
-- Zero billing UI rendered.
-- No Stripe session created.
-- Billing route redirects to adult gateway.
+
+- No billing UI surfaces render in Kids Mode.
+- No Stripe sessions are created.
+- Requests are redirected to a kids-safe guard route (e.g. `/kids/restricted`).
 
 ---
 
-# 3. STRIPE FRAUD & PAYMENT ABUSE
+## 3. STRIPE FRAUD & PAYMENT ABUSE
 
-## 3.1 Chargeback attempt
+### 3.1 Chargeback Attempt
+
 Test:
-- Create subscription → force chargeback in Stripe Dashboard.
+
+- Create subscription for a test provider.
+- Initiate chargeback / dispute in Stripe Dashboard.
 
 Expected:
-- Webhook sets:
-  - `subscription_status = 'past_due'` or `'canceled'`
-- RLS revokes premium tools.
+
+- Stripe lifecycle webhooks update `subscription_status` appropriately (e.g. `'past_due'` or `'canceled'`).
+- Core feature gates disable paid tools when status is not `'active'`.
+- Optional: internal alert or log for disputed account.
 
 ---
 
-## 3.2 Stolen Card / Invalid Payment
+### 3.2 Stolen Card / Invalid Payment
+
+Test:
+
+- Intentionally use invalid card on test checkout.
+
 Expected:
-- Stripe rejects at checkout.
-- No provider DB entries change.
-- No ghost customers created.
+
+- Stripe rejects payment client-side.
+- ROOTED receives no “active subscription” webhook.
+- No provider DB fields change.
+- No “ghost” premium access is granted.
 
 ---
 
-## 3.3 Repeated Failed Payments
+### 3.3 Repeated Failed Payments
+
+Test:
+
+- Create subscription, then simulate repeated failures (test cards).
+
 Expected:
-- Stripe retries automatically.
-- After retry window → webhook sets `subscription_status = 'past_due'`.
-- Premium tools disabled automatically.
+
+- Stripe moves subscription to `past_due` or similar.
+- Webhook updates `subscription_status`.
+- Feature gates revoke premium access when status is not `active`.
 
 ---
 
-# 4. PRIVACY & ETHICAL SAFETY TESTS
+## 4. PRIVACY & ETHICAL SAFETY TESTS
 
-## 4.1 Kids Mode Billing Leakage
+### 4.1 Kids Mode Billing Leakage
+
 Attempt:
-- Access billing from Kids Mode URL manually.
+
+- Hit billing URLs while Kids Mode flag/session is active.
 
 Expected:
-- Server rejects; redirect to `/kids/restricted`.
+
+- Server and/or UI redirect to kids guard.
+- No billing content, prices, or upgrade options are shown.
 
 ---
 
-## 4.2 Religious / Cultural Tracking
+### 4.2 Religious / Cultural Tracking
+
 Attempt:
-- Force-add cultural preference via network spoof.
+
+- Inject or spoof “cultural preference” fields on billing forms or customer metadata.
 
 Expected:
-- Server rejects; consent is user-driven and stored only on UI layer.
-- No inference or logging of identity traits.
+
+- Server rejects unknown/illegal metadata fields OR stores only neutral, non-profiling flags that are explicitly allowed by Data Sovereignty law.
+- No implicit inference of religion, ethnicity, or protected traits.
+- No billing record is used as a proxy for demographics.
 
 ---
 
-## 4.3 No Commercial Data in Kids Surfaces
+### 4.3 No Commercial Data in Kids Surfaces
+
 Attempt:
-- Force-load pricing components inside Kids Mode.
+
+- Force-load billing summary or pricing components inside a Kids Mode route.
 
 Expected:
-- UI blocks component mount.
-- Server-level RLS blocks revenue endpoints entirely.
+
+- Kids-mode layout prevents component mount or hides them.
+- Any billing API endpoints called from Kids Mode are blocked by RLS / auth checks.
 
 ---
 
-# 5. ADMIN / INSIDER ABUSE
+## 5. ADMIN / INSIDER ABUSE
 
-## 5.1 Admin attempts silent tier change
+### 5.1 Admin Attempts Silent Tier Change
+
 Attempt:
-- Admin panel change without logging.
+
+- Use internal tools or direct SQL to change `subscription_tier` without logging.
 
 Expected:
-- Write triggers log in `user_admin_actions`.
-- No silent changes allowed.
+
+- Official admin flows must go through RPCs that write to `public.user_admin_actions`.
+- Direct manual changes are restricted to service-role maintenance and must be treated as incident activity.
+- Governance: no “silent” plan changes in production.
 
 ---
 
-## 5.2 Developer bypasses RLS
+### 5.2 Developer Bypasses RLS with Service Key
+
 Attempt:
-- Use service-level key from client by mistake.
+
+- Accidentally or intentionally embed service key into client code.
 
 Expected:
-- Service keys never shipped to frontend.
-- Access is blocked and logged.
+
+- Deployment checks prevent shipping service keys.
+- Any request from web client using service key is treated as misconfiguration and rotated out.
+- This is considered a security incident, not a valid usage pattern.
 
 ---
 
-## 5.3 Rogue worker attempts to grant bid access
+### 5.3 Rogue Worker Grants Bid Access
+
 Attempt:
-- Change sanctuary tier to Premium Plus.
+
+- Background worker sets `subscription_tier = 'premium_plus'` for arbitrary providers.
 
 Expected:
-- Policy overrides:
-  - RFQs blocked
-  - Bids blocked
-  - Bulk market blocked
+
+- Only billing pipeline workers are allowed to write billing state.
+- Any other worker must be denied by RLS or by separation of concerns.
+- Sanctuary / nonprofit protections still block commercial markets even if tier is set.
 
 ---
 
-# 6. GOVERNANCE VIOLATION TESTS
+## 6. GOVERNANCE VIOLATION TESTS
 
-## 6.1 “Override Kids Mode for Growth”
+### 6.1 “Override Kids Mode for Growth”
+
 Attempt:
-- Add pricing inside Kids Mode to “boost conversions”.
+
+- Add or test any pricing UI inside Kids Mode with the justification of “conversion”.
 
 Expected:
-- Platform Constitution invalidates change.
-- Contributor governance clause blocks merges.
-- RLS + UI + policy triple-layer rejects.
+
+- Platform governance and Kids Mode law invalidate this change.
+- PRs / migrations violating this rule must be rejected.
+- UI tests should detect billing components in Kids routes and fail.
 
 ---
 
-## 6.2 “Holiday injection without consent”
+### 6.2 “Holiday Injection Without Consent”
+
 Attempt:
-- Force-christmas-tree icon for all users.
+
+- Force a religious or cultural holiday promotion (e.g. Christmas tree icon) in billing UI for all users.
 
 Expected:
-- UI blocks.
-- Holiday engine requires:
-  - user opted in
-  - business opted in
-  - cultural set enabled
-  - in-date-range
-  - kids-safe
+
+- Holiday engine and template logic enforce:
+  - User opted in
+  - Business opted in
+  - Holiday is active in settings
+- If consent is not present, the overlay must not render.
 
 ---
 
-## 6.3 “Upsell during emergency content”
+### 6.3 “Upsell During Emergency Content”
+
 Attempt:
-- Show an upgrade banner on crisis or health info.
+
+- Show upgrade banners on crisis, safety, or health-related informational pages.
 
 Expected:
-- UI blocks.
-- High-safety layers disable monetization.
+
+- Emergency / crisis surfaces forbid monetization overlays.
+- Billing components must not render on any crisis-related routes.
 
 ---
 
-# Completion Standard
+## Completion Standard
 
-ROOTED may only activate live billing when:
+ROOTED may only activate **live billing** when:
 
-- 100% of matrix tests are green
-- Governance rules remain uncompromised
-- All holiday, cultural, kids, sanctuary protections remain intact
+- ✅ 100% of matrix tests are green  
+- ✅ Governance rules remain uncompromised  
+- ✅ Kids, sanctuary, and cultural protections all remain intact  
 
-This matrix is canonical.
+This matrix is canonical and binds all future billing implementations.
