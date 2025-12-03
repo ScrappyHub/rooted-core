@@ -1,7 +1,20 @@
-# ROOTED – GIT COMPREHENSIVE HANDOFF (v2)
+# ROOTED — GIT COMPREHENSIVE HANDOFF (PLATFORM LAW)
 
-This repo is NOT a new build.  
-It is the live code + schema for the ROOTED platform, which is already architected.
+This file is governed by:
+
+- ROOTED_PLATFORM_CONSTITUTION.md
+- ROOTED_CORE_ARCHITECTURE.md
+- ADMIN_AUTH_MODEL.md
+- MODERATION_SYSTEM.md
+- NOTIFICATIONS_SYSTEM.md
+- ROOTED_DEBUG_TOOLKIT_CORE.md
+
+If any PR, commit, migration, UI feature, or AI output conflicts with this file:
+→ **This file wins.**
+
+No exceptions.
+
+---
 
 All work from here is:
 - Audit
@@ -910,6 +923,6 @@ Always respect:
 - Account governance + opt-in/opt-out + deletion pipeline
 - Safety constraints for sanctuaries, nonprofits, and community uploads
 
-Use the BACKEND HARDENING ROADMAP in ROOTED_GIT_HANDOFF_v2.md and tell me which STEP you’re working on when you make changes.
-End of ROOTED – GIT COMPREHENSIVE HANDOFF (v2)
+Use the BACKEND HARDENING ROADMAP in ROOTED_GIT_HANDOFF.md and tell me which STEP you’re working on when you make changes.
+End of ROOTED – GIT COMPREHENSIVE HANDOFF
 This file lives at the repo root and is treated as platform law.
