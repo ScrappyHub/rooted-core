@@ -1,17 +1,19 @@
-# ROOTED – UI ↔ Backend Discovery Contract
+# ROOTED — UI ↔ Backend Discovery Contract
 
 ## Purpose
 
 This document defines the non-negotiable contract between:
-- Backend discovery APIs
-- Frontend UI discovery layouts
-- Card rendering behavior across ALL ROOTED verticals
+
+- Backend discovery APIs  
+- Frontend UI discovery layouts  
+- Card rendering behavior across ALL ROOTED verticals  
 
 This contract ensures:
-- Fair exposure
-- Visual consistency
-- Anti-manipulation enforcement
-- Backend and frontend never drift apart
+
+- Fair exposure  
+- Visual consistency  
+- Anti-manipulation enforcement  
+- Backend and frontend never drift apart  
 
 ---
 
@@ -19,11 +21,12 @@ This contract ensures:
 
 For all discovery surfaces:
 
-- ✅ Backend MUST return 6–8 results MAX
-- ✅ UI MUST render exactly what backend returns
-- ❌ UI may NOT request unlimited results
-- ❌ UI may NOT paginate discovery rows by default
-- ❌ UI may NOT override result limits
+✅ Backend MUST return 6–8 results MAX  
+✅ UI MUST render exactly what backend returns  
+
+❌ UI may NOT request unlimited results  
+❌ UI may NOT paginate discovery rows by default  
+❌ UI may NOT override result limits  
 
 Backend is the source of truth.
 
@@ -33,35 +36,37 @@ Backend is the source of truth.
 
 All discovery UI components MUST obey:
 
-- One discovery row = one 6–8 vendor set
-- Cards must be equal visual weight
-- No visual stacking or priority highlighting unless globally approved
-- No “sponsored” positioning inside discovery rows
+- One discovery row = one 6–8 vendor set  
+- Cards must be equal visual weight  
+- No visual stacking or priority highlighting unless globally approved  
+- No “sponsored” positioning inside discovery rows  
 
 ---
 
 ## 3. Filter Behavior Contract
 
 Filters MAY change:
-- Specialty
-- Vendor type
-- Program type
+
+- Specialty  
+- Vendor type  
+- Program type  
 
 Filters MAY NOT change:
-- Result count
-- Radius
-- Rotation behavior
-- Discovery ranking weight
+
+- Result count  
+- Radius  
+- Rotation behavior  
+- Discovery ranking weight  
 
 ---
 
 ## 4. Rotation Sync Rule
 
-- Backend controls rotation order
-- UI receives pre-rotated results
-- UI is NOT allowed to reshuffle discovery order
-- Page reloads MAY cause rotation
-- Button presses MAY trigger new rotated pulls
+- Backend controls rotation order  
+- UI receives pre-rotated results  
+- UI is NOT allowed to reshuffle discovery order  
+- Page reloads MAY cause rotation  
+- Button presses MAY trigger new rotated pulls  
 
 ---
 
@@ -69,12 +74,12 @@ Filters MAY NOT change:
 
 This document applies to:
 
-- ROOTED Community
-- ROOTED Construction
-- ROOTED Healthcare
-- Any future ROOTED vertical
+- ROOTED Community  
+- ROOTED Construction  
+- ROOTED Healthcare  
+- Any future ROOTED vertical  
 
-Violation = platform-breaking defect.
+Violation = **platform-breaking defect**.
 
 ---
 
