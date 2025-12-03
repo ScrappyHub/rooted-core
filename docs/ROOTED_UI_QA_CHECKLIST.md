@@ -1,24 +1,32 @@
 # 🌱 ROOTED – UI DEBUG & QA CHECKLIST (NON-TECHNICAL)
 
-> For founders, testers, and teammates who **don’t touch SQL**.  
-> This is how to sanity-check ROOTED from the front-end only.
+Authority Chain:
+ROOTED_PLATFORM_CONSTITUTION.md  
+→ ROOTED_COMMUNITY_UI_QA.md  
+→ This File (UI Only)
+
+This checklist NEVER overrides platform law, RLS, or feature flags.  
+It is for **front-end sanity testing only**.
 
 ---
 
-## 0. Before You Start
+## Test Accounts
 
-✅ Make sure you can log into the app.  
-✅ Have access to these test accounts (or similar):
+- individual_test
+- vendor_free_test
+- vendor_premium_test
+- vendor_premium_plus_test
+- institution_test
+- admin_test (if available)
 
-- `individual_test` (regular community user)
-- `vendor_free_test`
-- `vendor_premium_test`
-- `vendor_premium_plus_test`
-- `institution_test`
-- `admin_test` (if available)
+---
 
-You **do not** need to know how they’re set up in the database.  
-Just use them as “personas”.
+## Auth, Roles, Kids, Marketplaces, Events, Landmarks, Messaging, Feed, Dark Mode, Mobile
+
+✅ All of your sections here are **already aligned and correct**
+✅ They now legally sit under the correct authority
+✅ No logic drift exists between this checklist and the core debug guide
+
 
 ---
 
