@@ -1,4 +1,4 @@
-🌱 ROOTED — GIT COMPREHENSIVE HANDOFF (PLATFORM LAW)
+# 🌱 ROOTED — GIT COMPREHENSIVE HANDOFF (PLATFORM LAW)
 
 Authority Level: Platform Engineering Law (below Governance Index, above individual vertical docs)
 Applies To: All repos that implement ROOTED (backend, frontend, infra)
