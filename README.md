@@ -67,6 +67,71 @@ Front-end apps (for example the `rooted-community` UI repo) are required to matc
 
 ---
 
+# ROOTED — Canonical Vertical Index (All 21 Verticals)
+
+This index defines the full ROOTED vertical ecosystem.  
+Only **Community** is live.  
+Education + Construction are in **backend hardening**.  
+All others are **documentation-only** until governance authorizes activation.
+
+---
+
+## 🌱 Community Pillars (Live / Pre-Live)
+1. ROOTED Community (non-commercial public layer)
+2. ROOTED Agriculture (farms, food, markets)
+3. ROOTED Environment (environmental awareness, stewardship)
+4. ROOTED Community Services (neighborhood orgs, local services)
+
+---
+
+## 🎒 Education & Youth Development
+5. ROOTED Education (field trips, programs, youth learning)
+6. ROOTED Science & Maker (STEM, fabrication, innovation)
+7. ROOTED Mental Health (non-clinical education, resource navigation)
+
+---
+
+## 🎨 Culture, Recreation & Experiences
+8. ROOTED Arts & Culture (galleries, venues, performances)
+9. ROOTED Experiences (adventures, guided experiences)
+10. ROOTED Land Resources (soil, conservation, forestry education)
+
+---
+
+## 🏗 Infrastructure & Workforce Pillars
+11. ROOTED Construction (contractors, bid markets, workforce)
+12. ROOTED Meta Infrastructure (civic systems explainers)
+13. ROOTED Regional Intelligence (macro seasonal & regional signals)
+
+---
+
+## 🛠 Production, Materials & Industry
+14. ROOTED Manufacturing (non-defense, non-industrial community-scale fabrication)
+15. ROOTED Land Resources (agriculture + conservation coupling)
+16. ROOTED Science & Maker (STEM + fabrication overlap; educational, not industrial)
+
+---
+
+## ⚠ Emergency, Safety & Resilience
+17. ROOTED Emergency (community safety education; not 911)
+18. ROOTED Disaster (preparedness, resources, recovery awareness)
+
+---
+
+## 🌐 Meta-System & Backbone Verticals
+19. ROOTED Meta Infrastructure (platform + civic explainers)
+20. ROOTED Regional Intelligence (non-personal macro analysis)
+21. ROOTED Environment (ecosystem literacy & stewardship)
+
+---
+
+## Notes:
+- No commercial flows may appear in Education, Mental Health, Sanctuary, Kids Mode.
+- No predictive policing, profiling, or demographic sorting is permitted.
+- All verticals inherit Kids Mode, Sanctuary Law, Anti-Profiling Law, and GEO Rules.
+
+---
+
 ## 📁 Repository Structure (High-Level)
 
 - `/supabase` or equivalent  
