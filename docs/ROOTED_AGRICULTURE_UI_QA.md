@@ -1,7 +1,7 @@
 # ROOTED — FULL SYSTEM DEBUG GUIDE (HONEST PASS)
 
 Status: ✅ Canonical  
-Scope: ROOTED Core + ROOTED Community (LIVE vertical only)  
+Scope: ROOTED Core + ROOTED Agriculture (LIVE vertical only)  
 Authority Chain:
 ROOTED_PLATFORM_CONSTITUTION.md  
 → ROOTED_GIT_HANDOFF.md  
