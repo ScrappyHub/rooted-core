@@ -5,11 +5,9 @@
 begin;
 
 -- ------------------------------------------------------------
--- 0) Ensure "migration/service_role" context for canonical locks
---    (many of your canonical tables are guarded by triggers)
+-- 0) Migration bypass for canonical locks (required by your trigger)
 -- ------------------------------------------------------------
-select set_config('request.jwt.claim.role', 'service_role', true);
-select set_config('request.jwt.claim.sub',  '00000000-0000-0000-0000-000000000000', true);
+select set_config('rooted.migration_bypass', 'on', true);
 
 -- ------------------------------------------------------------
 -- 1) Ensure the default specialty exists (canonical_specialties is code-only)
@@ -32,7 +30,7 @@ insert into public.canonical_verticals (
 values (
   'INTERESTS_HOBBIES',
   'Interests & Hobbies',
-  'Skill-based, hobby-based, and lifestyle activities (discovery → events → registrations).',
+  'Skill-based, hobby-based, and lifestyle activities (discovery -> events -> registrations).',
   999,
   'INTERESTS_GENERAL'
 )
@@ -45,10 +43,9 @@ set
 
 -- ------------------------------------------------------------
 -- 3) Ensure default mapping exists (vertical_canonical_specialties)
---    We also force "only one default" for this vertical.
+--    Force "only one default" for this vertical.
 -- ------------------------------------------------------------
 -- NOTE: this assumes your table has (vertical_code, specialty_code, is_default)
--- which matches what you’ve been using earlier.
 insert into public.vertical_canonical_specialties (vertical_code, specialty_code, is_default)
 values ('INTERESTS_HOBBIES', 'INTERESTS_GENERAL', true)
 on conflict (vertical_code, specialty_code) do update
