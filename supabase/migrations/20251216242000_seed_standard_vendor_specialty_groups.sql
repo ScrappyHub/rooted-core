@@ -52,7 +52,6 @@ insert into public.specialty_governance_group_members (specialty_code, group_key
 select distinct s.specialty_code, 'STANDARD_VENDOR'
 from (
   values
-     values
     ('ASSEMBLY_PLANT'),
     ('RESEARCH_CENTER'),
     ('FARM'),
