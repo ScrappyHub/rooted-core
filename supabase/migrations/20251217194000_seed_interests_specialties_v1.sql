@@ -109,55 +109,15 @@ from seed s
 where not exists (select 1 from public.specialty_types st where st.code = s.code);
 
 -- ------------------------------------------------------------
--- 1C) vertical_canonical_specialties (membership; default stays INTERESTS_GENERAL)
+-- 1C) vertical_canonical_specialties
+-- IMPORTANT: in your DB this table is "one row per vertical" (default mapping),
+-- not a membership table. Membership comes from specialty_types.vertical_code.
 -- ------------------------------------------------------------
-with seed(code) as (
-  values
-    ('INTERESTS_GENERAL'),
-    ('INTERESTS_HOBBY_STORE'),
-    ('INTERESTS_ART_STUDIO'),
-    ('INTERESTS_PHOTOGRAPHY'),
-    ('INTERESTS_POTTERY_GLASS'),
-    ('INTERESTS_MUSIC_LESSONS'),
-    ('INTERESTS_DANCE_STUDIO'),
-    ('INTERESTS_THEATER_WORKSHOP'),
-    ('INTERESTS_CODING_WORKSHOP'),
-    ('INTERESTS_GAME_DEV_CLASS'),
-    ('INTERESTS_ROBOTICS_CLUB'),
-    ('INTERESTS_MAKER_STUDIO'),
-    ('INTERESTS_3D_PRINTING'),
-    ('INTERESTS_COOKING_CLASS'),
-    ('INTERESTS_BAKING_WORKSHOP'),
-    ('INTERESTS_WOODWORKING'),
-    ('INTERESTS_GARDENING'),
-    ('INTERESTS_DIY_SKILLS'),
-    ('INTERESTS_SURF_LESSONS'),
-    ('INTERESTS_SKI_SNOWBOARD_LESSONS'),
-    ('INTERESTS_SKATE_SCOOTER'),
-    ('INTERESTS_CLIMBING_GYM'),
-    ('INTERESTS_WATER_SPORTS'),
-    ('INTERESTS_DISC_GOLF'),
-    ('INTERESTS_GOLF_CLINIC'),
-    ('INTERESTS_OUTDOOR_SKILLS')
-)
-insert into public.vertical_canonical_specialties (vertical_code, specialty_code, is_default)
-select 'INTERESTS_HOBBIES', s.code, (s.code = 'INTERESTS_GENERAL')
-from seed s
-on conflict (vertical_code, specialty_code) do update
-set is_default = excluded.is_default;
 
--- Force single default (defensive)
-update public.vertical_canonical_specialties
-set is_default = (specialty_code = 'INTERESTS_GENERAL')
-where vertical_code = 'INTERESTS_HOBBIES'
-  and specialty_code in (
-    'INTERESTS_GENERAL',
-    'INTERESTS_HOBBY_STORE','INTERESTS_ART_STUDIO','INTERESTS_PHOTOGRAPHY','INTERESTS_POTTERY_GLASS',
-    'INTERESTS_MUSIC_LESSONS','INTERESTS_DANCE_STUDIO','INTERESTS_THEATER_WORKSHOP',
-    'INTERESTS_CODING_WORKSHOP','INTERESTS_GAME_DEV_CLASS','INTERESTS_ROBOTICS_CLUB','INTERESTS_MAKER_STUDIO','INTERESTS_3D_PRINTING',
-    'INTERESTS_COOKING_CLASS','INTERESTS_BAKING_WORKSHOP','INTERESTS_WOODWORKING','INTERESTS_GARDENING','INTERESTS_DIY_SKILLS',
-    'INTERESTS_SURF_LESSONS','INTERESTS_SKI_SNOWBOARD_LESSONS','INTERESTS_SKATE_SCOOTER','INTERESTS_CLIMBING_GYM','INTERESTS_WATER_SPORTS',
-    'INTERESTS_DISC_GOLF','INTERESTS_GOLF_CLINIC','INTERESTS_OUTDOOR_SKILLS'
-  );
+insert into public.vertical_canonical_specialties (vertical_code, specialty_code, is_default)
+values ('INTERESTS_HOBBIES', 'INTERESTS_GENERAL', true)
+on conflict (vertical_code) do update
+set specialty_code = excluded.specialty_code,
+    is_default = excluded.is_default;
 
 commit;
