@@ -9,11 +9,34 @@ select set_config('rooted.migration_bypass', 'on', true);
 
 -- ------------------------------------------------------------
 -- 1) Ensure the default specialty exists in the FK target table
---    canonical_verticals.default_specialty -> specialty_types
+--    canonical_verticals.default_specialty -> specialty_types(code)
 -- ------------------------------------------------------------
-insert into public.specialty_types (specialty_code)
-values ('INTERESTS_GENERAL')
-on conflict (specialty_code) do nothing;
+insert into public.specialty_types (
+  code,
+  label,
+  vertical_group,
+  requires_compliance,
+  kids_allowed,
+  default_visibility,
+  vertical_code
+)
+values (
+  'INTERESTS_GENERAL',
+  'Interests (General)',
+  'INTERESTS',
+  false,
+  true,
+  true,
+  'INTERESTS_HOBBIES'
+)
+on conflict (code) do update
+set
+  label = excluded.label,
+  vertical_group = excluded.vertical_group,
+  requires_compliance = excluded.requires_compliance,
+  kids_allowed = excluded.kids_allowed,
+  default_visibility = excluded.default_visibility,
+  vertical_code = excluded.vertical_code;
 
 -- (Optional) Keep this too if other logic references canonical_specialties
 insert into public.canonical_specialties (specialty_code)
@@ -21,7 +44,7 @@ values ('INTERESTS_GENERAL')
 on conflict (specialty_code) do nothing;
 
 -- ------------------------------------------------------------
--- 2) Add the new vertical to canonical_verticals
+-- 2) Add / upsert the new vertical in canonical_verticals
 -- ------------------------------------------------------------
 insert into public.canonical_verticals (
   vertical_code,
