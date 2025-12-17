@@ -1,12 +1,33 @@
 -- 20251216224500_specialty_capabilities_and_events_rls_v6.sql
--- Canonical: specialty-driven capabilities (NOT vertical-wide access)
--- Applies to vendor-hosted events (host_vendor_id).
--- Locks Sanctuary specialty to volunteer-only at DB layer.
+-- Add canonical_specialties table, specialty capabilities, and Events RLS v6 (vendor-host)
+-- Anchors specialty_code to a real PK table to avoid “table does not exist” errors.
 
 begin;
 
 -- ---------------------------------------------------------------------
--- A) Capability tables (keyed off specialty_code)
+-- A) Canonical specialties (PK table)
+-- ---------------------------------------------------------------------
+
+create table if not exists public.canonical_specialties (
+  specialty_code text primary key,
+  created_at timestamptz not null default now()
+);
+
+-- Seed from your canonical sources (idempotent)
+insert into public.canonical_specialties (specialty_code)
+select distinct specialty_code
+from public.vertical_specialties_v1
+where specialty_code is not null and btrim(specialty_code) <> ''
+on conflict do nothing;
+
+insert into public.canonical_specialties (specialty_code)
+select distinct specialty_code
+from public.vertical_canonical_specialties
+where specialty_code is not null and btrim(specialty_code) <> ''
+on conflict do nothing;
+
+-- ---------------------------------------------------------------------
+-- B) Capability tables
 -- ---------------------------------------------------------------------
 
 create table if not exists public.specialty_capabilities (
@@ -24,27 +45,49 @@ create table if not exists public.specialty_capability_grants (
   primary key (specialty_code, capability_key)
 );
 
--- Sanctuary specialties live here (so you can have 8-9 of them cleanly)
 create table if not exists public.sanctuary_specialties (
   specialty_code text primary key
     references public.canonical_specialties(specialty_code) on delete cascade,
   created_at timestamptz not null default now()
 );
 
--- seed canonical capability keys
+-- Capability keys (idempotent)
 insert into public.specialty_capabilities (capability_key, description) values
   ('can_host_events', 'Specialty can create/update/delete hosted events (draft/submitted; publish requires approval)'),
   ('can_host_volunteer_events', 'Specialty can create volunteer events'),
   ('can_publish_if_approved', 'Allows publish only when moderation_status=approved (still enforced by RLS)'),
-  ('can_host_kids_safe_events', 'Specialty may mark events as kids-safe (still subject to moderation)'),
+  ('can_host_kids_safe_events', 'Specialty may set events kids-safe (still subject to moderation and Kids Mode overlays)'),
   ('can_host_large_scale_volunteer', 'Specialty may set is_large_scale_volunteer=true')
 on conflict (capability_key) do nothing;
 
 -- ---------------------------------------------------------------------
--- B) Helper functions (SECURITY DEFINER, stable)
+-- C) Default grants (safe baseline)
+-- ---------------------------------------------------------------------
+-- Baseline: everyone can host events, but publish is still blocked unless approved by existing moderation policy gates.
+-- You can later tighten per-vertical via specialty_vertical_overlays / specialty_kids_mode_overlays.
+
+insert into public.specialty_capability_grants (specialty_code, capability_key, is_allowed)
+select cs.specialty_code, 'can_host_events', true
+from public.canonical_specialties cs
+on conflict do nothing;
+
+insert into public.specialty_capability_grants (specialty_code, capability_key, is_allowed)
+select cs.specialty_code, 'can_publish_if_approved', true
+from public.canonical_specialties cs
+on conflict do nothing;
+
+-- Sanctuary: explicitly allow volunteer hosting (but RLS will force volunteer-only)
+-- NOTE: You still need to seed sanctuary_specialties with the actual specialty_codes you consider “sanctuary”.
+insert into public.specialty_capability_grants (specialty_code, capability_key, is_allowed)
+select s.specialty_code, 'can_host_volunteer_events', true
+from public.sanctuary_specialties s
+on conflict do nothing;
+
+-- ---------------------------------------------------------------------
+-- D) Helper functions (vendor-hosted uses host_vendor_id)
 -- ---------------------------------------------------------------------
 
-create or replace function public._provider_owned(vendor_id uuid)
+create or replace function public._provider_owned(p_vendor_id uuid)
 returns boolean
 language sql
 stable
@@ -54,22 +97,22 @@ as $$
   select exists (
     select 1
     from public.providers p
-    where p.id = vendor_id
+    where p.id = p_vendor_id
       and p.owner_user_id = auth.uid()
   );
 $$;
 
-create or replace function public._provider_is_verified(vendor_id uuid)
+create or replace function public._provider_is_verified(p_vendor_id uuid)
 returns boolean
 language sql
 stable
 security definer
 set search_path = public
 as $$
-  select coalesce((select p.is_verified from public.providers p where p.id = vendor_id), false);
+  select coalesce((select p.is_verified from public.providers p where p.id = p_vendor_id), false);
 $$;
 
-create or replace function public._provider_effective_vertical(vendor_id uuid)
+create or replace function public._provider_effective_vertical(p_vendor_id uuid)
 returns text
 language sql
 stable
@@ -78,10 +121,10 @@ set search_path = public
 as $$
   select coalesce(p.primary_vertical, p.vertical)
   from public.providers p
-  where p.id = vendor_id;
+  where p.id = p_vendor_id;
 $$;
 
-create or replace function public._provider_specialty_code(vendor_id uuid)
+create or replace function public._provider_specialty_code(p_vendor_id uuid)
 returns text
 language sql
 stable
@@ -90,7 +133,7 @@ set search_path = public
 as $$
   select p.specialty
   from public.providers p
-  where p.id = vendor_id;
+  where p.id = p_vendor_id;
 $$;
 
 create or replace function public._specialty_has_capability(p_specialty text, p_capability text)
@@ -124,15 +167,18 @@ as $$
 $$;
 
 -- ---------------------------------------------------------------------
--- C) Replace vendor-host event policies with capability-aware v6
--- IMPORTANT: policies are OR'd, so we must drop v5 or it will bypass v6.
+-- E) Replace vendor-host policies with capability-aware v6
+-- Policies are OR'd -> drop the older vendor-host ones so there’s no bypass.
 -- ---------------------------------------------------------------------
 
 drop policy if exists events_host_vendor_insert_v5 on public.events;
 drop policy if exists events_host_vendor_update_v5 on public.events;
 drop policy if exists events_host_vendor_delete_v5 on public.events;
 
--- INSERT (vendor-hosted)
+drop policy if exists events_host_vendor_insert_v6 on public.events;
+drop policy if exists events_host_vendor_update_v6 on public.events;
+drop policy if exists events_host_vendor_delete_v6 on public.events;
+
 create policy events_host_vendor_insert_v6
 on public.events
 for insert
@@ -141,25 +187,22 @@ with check (
   created_by = auth.uid()
   and host_vendor_id is not null
   and public._provider_owned(host_vendor_id)
-  -- vertical must match provider effective vertical
   and event_vertical = public._provider_effective_vertical(host_vendor_id)
 
-  -- capability gate: must be allowed to host events
   and public._specialty_has_capability(public._provider_specialty_code(host_vendor_id), 'can_host_events')
 
-  -- volunteer gate
   and (
     coalesce(is_volunteer,false) = false
     or public._specialty_has_capability(public._provider_specialty_code(host_vendor_id), 'can_host_volunteer_events')
   )
 
-  -- sanctuary hard-lock: volunteer only (no exceptions)
+  -- Sanctuary volunteer-only (hard law)
   and (
     public._specialty_is_sanctuary(public._provider_specialty_code(host_vendor_id)) = false
     or coalesce(is_volunteer,false) = true
   )
 
-  -- unverified providers: draft only
+  -- Unverified providers: draft only
   and (
     (public._provider_is_verified(host_vendor_id) = false and coalesce(status,'') = 'draft')
     or
@@ -171,14 +214,12 @@ with check (
     )
   )
 
-  -- large scale volunteer is an explicit capability
   and (
     coalesce(is_large_scale_volunteer,false) = false
     or public._specialty_has_capability(public._provider_specialty_code(host_vendor_id), 'can_host_large_scale_volunteer')
   )
 );
 
--- UPDATE (vendor-hosted)
 create policy events_host_vendor_update_v6
 on public.events
 for update
@@ -192,7 +233,6 @@ with check (
   created_by = auth.uid()
   and host_vendor_id is not null
   and public._provider_owned(host_vendor_id)
-
   and event_vertical = public._provider_effective_vertical(host_vendor_id)
 
   and public._specialty_has_capability(public._provider_specialty_code(host_vendor_id), 'can_host_events')
@@ -207,7 +247,6 @@ with check (
     or coalesce(is_volunteer,false) = true
   )
 
-  -- publish requires approval even for verified providers
   and (
     (public._provider_is_verified(host_vendor_id) = false and coalesce(status,'') = 'draft')
     or
@@ -225,7 +264,6 @@ with check (
   )
 );
 
--- DELETE (vendor-hosted)
 create policy events_host_vendor_delete_v6
 on public.events
 for delete
