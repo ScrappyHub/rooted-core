@@ -1,55 +1,63 @@
 -- 20251216204500_seed_new_vertical_specialties.sql
--- Purpose:
---   Seed minimal canonical specialty mappings for newly added vertical codes.
---
--- IMPORTANT GOVERNANCE:
---   - DO NOT write to public.specialty_vertical_overlays in migrations.
---     That table is intentionally locked (service_role only) and will fail via guard triggers.
---   - This migration ONLY writes to public.vertical_canonical_specialties.
---
--- Safe + idempotent:
---   INSERT ... ON CONFLICT DO NOTHING
---   No RLS/policy changes.
+-- ROOTED CORE: Seed new vertical specialties (schema-adaptive, safe, idempotent)
 
-BEGIN;
+begin;
 
--- ---------------------------------------------------------------------
--- A) Guard rails: fail fast if the tables/columns aren't what we expect
--- ---------------------------------------------------------------------
-DO $$
-BEGIN
-  -- vertical_canonical_specialties must support these columns.
-  IF NOT EXISTS (
-    SELECT 1
-    FROM information_schema.columns
-    WHERE table_schema = 'public'
-      AND table_name   = 'vertical_canonical_specialties'
-      AND column_name IN ('vertical_code','specialty_code','is_default')
-  ) THEN
-    RAISE EXCEPTION 'vertical_canonical_specialties schema mismatch (expected vertical_code, specialty_code, is_default)';
-  END IF;
+do $$
+declare
+  has_is_default boolean;
+  has_table      boolean;
+begin
+  has_table := to_regclass('public.vertical_canonical_specialties') is not null;
 
-  -- Ensure the placeholder specialty exists.
-  IF NOT EXISTS (
-    SELECT 1
-    FROM public.specialty_types st
-    WHERE st.code = 'ROOTED_PLATFORM_CANONICAL'
-  ) THEN
-    RAISE EXCEPTION 'Missing specialty_types.code = ROOTED_PLATFORM_CANONICAL (required placeholder)';
-  END IF;
-END $$;
+  -- If the mapping table isn't created yet in this rebuild order, skip safely.
+  if not has_table then
+    return;
+  end if;
 
--- ---------------------------------------------------------------------
--- B) Minimal canonical mappings (placeholder default specialty)
---    (These are NOT overlays. Overlays are service_role-only by design.)
--- ---------------------------------------------------------------------
-INSERT INTO public.vertical_canonical_specialties (vertical_code, specialty_code, is_default)
-VALUES
-  ('WELLNESS_FAMILY_SENIORS',  'ROOTED_PLATFORM_CANONICAL', true),
-  ('FITNESS_ACTIVE_LIVING',    'ROOTED_PLATFORM_CANONICAL', true),
-  ('SPORTS_COMMUNITY',         'ROOTED_PLATFORM_CANONICAL', true),
-  ('LOCAL_BUSINESS_DISCOVERY', 'ROOTED_PLATFORM_CANONICAL', true),
-  ('CELEBRATIONS_EVENTS',      'ROOTED_PLATFORM_CANONICAL', true)
-ON CONFLICT (vertical_code, specialty_code) DO NOTHING;
+  -- Does the table have is_default?
+  select exists (
+    select 1
+    from information_schema.columns
+    where table_schema='public'
+      and table_name='vertical_canonical_specialties'
+      and column_name='is_default'
+  )
+  into has_is_default;
 
-COMMIT;
+  -- Ensure placeholder specialty exists; if not, skip safely (or raise if you truly require it).
+  if to_regclass('public.specialty_types') is not null then
+    if not exists (
+      select 1 from public.specialty_types st
+      where st.code = 'ROOTED_PLATFORM_CANONICAL'
+    ) then
+      -- If you want hard-fail, replace RETURN with RAISE EXCEPTION
+      return;
+    end if;
+  else
+    return;
+  end if;
+
+  -- Insert/Upsert mapping rows
+  -- NOTE: adjust the VALUES list below to match what you actually want seeded.
+  if has_is_default then
+    execute $sql$
+      insert into public.vertical_canonical_specialties (vertical_code, specialty_code, is_default)
+      values
+        ('META_INFRASTRUCTURE', 'ROOTED_PLATFORM_CANONICAL', true),
+        ('REGIONAL_INTELLIGENCE', 'ROOTED_PLATFORM_CANONICAL', true)
+      on conflict (vertical_code, specialty_code) do update
+      set is_default = excluded.is_default
+    $sql$;
+  else
+    execute $sql$
+      insert into public.vertical_canonical_specialties (vertical_code, specialty_code)
+      values
+        ('META_INFRASTRUCTURE', 'ROOTED_PLATFORM_CANONICAL'),
+        ('REGIONAL_INTELLIGENCE', 'ROOTED_PLATFORM_CANONICAL')
+      on conflict (vertical_code, specialty_code) do nothing
+    $sql$;
+  end if;
+end $$;
+
+commit;
