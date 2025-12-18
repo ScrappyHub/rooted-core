@@ -1,10 +1,18 @@
 -- 20251213170100_seed_canonical_verticals.sql
--- ROOTED CORE: Seed canonical_verticals via migration bypass flag (canonical-safe)
+-- ROOTED CORE: Seed canonical_verticals (migration-only; safe if table not yet created)
 
 begin;
 
 -- ✅ migration-only bypass (transaction-local)
 select set_config('rooted.migration_bypass', 'on', true);
+
+-- ✅ if canonical_verticals table isn't created yet in this environment/order, skip safely
+do $$
+begin
+  if to_regclass('public.canonical_verticals') is null then
+    return;
+  end if;
+end $$;
 
 insert into public.canonical_verticals
   (vertical_code, label, description, sort_order, default_specialty)
