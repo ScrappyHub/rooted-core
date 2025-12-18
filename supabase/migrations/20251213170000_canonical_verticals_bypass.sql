@@ -4,13 +4,11 @@
 
 begin;
 
--- 0) Canonical lock trigger function (always safe to create)
 create or replace function public.prevent_canonical_verticals_changes()
 returns trigger
 language plpgsql
 as $$
 begin
-  -- ✅ allow only when migration explicitly sets a local bypass flag
   if current_setting('rooted.migration_bypass', true) = 'on' then
     if tg_op = 'DELETE' then
       return old;
@@ -23,12 +21,13 @@ begin
 end;
 $$;
 
--- 1) Ensure trigger exists IF (and only if) the table exists
---    IMPORTANT: never cast ::regclass unless to_regclass() proves it exists
 do $$
+declare
+  _tbl regclass;
 begin
-  if to_regclass('public.canonical_verticals') is null then
-    -- Fresh local DB: table not created yet; skip safely.
+  _tbl := to_regclass('public.canonical_verticals');
+
+  if _tbl is null then
     return;
   end if;
 
@@ -36,7 +35,7 @@ begin
     select 1
     from pg_trigger
     where tgname = 'prevent_canonical_verticals_changes'
-      and tgrelid = 'public.canonical_verticals'::regclass
+      and tgrelid = _tbl
   ) then
     create trigger prevent_canonical_verticals_changes
     before insert or update or delete on public.canonical_verticals
@@ -45,3 +44,4 @@ begin
 end $$;
 
 commit;
+
