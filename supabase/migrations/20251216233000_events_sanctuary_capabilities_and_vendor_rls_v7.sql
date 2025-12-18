@@ -1,6 +1,8 @@
 -- 20251216233000_events_sanctuary_capabilities_and_vendor_rls_v7.sql
 -- Adds a minimal capability framework + hard-locks sanctuary specialties to volunteer-only events
 -- by replacing the vendor-hosted event RLS policies with capability-aware v7.
+--
+-- GUARDED: safe if events/providers/canonical_specialties/sanctuary_specialties don't exist yet.
 
 begin;
 
@@ -41,7 +43,6 @@ on conflict (capability_key) do update
   set description = excluded.description,
       default_allowed = excluded.default_allowed;
 
-
 -- Helper: effective capability check
 create or replace function public._specialty_capability_allowed(
   p_specialty_code text,
@@ -80,113 +81,152 @@ as $$
 $$;
 
 -- Sanctuary grants (explicitly deny non-volunteer; publish stays denied by default)
-insert into public.specialty_capability_grants (specialty_code, capability_key, is_allowed)
-values
-  ('AGRI_ANIMAL_SANCTUARY',        'EVENT_NON_VOLUNTEER', false),
-  ('AGRI_WILDLIFE_RESCUE_REHAB',   'EVENT_NON_VOLUNTEER', false),
-  ('AGRI_ANIMAL_SANCTUARY',        'EVENT_VOLUNTEER',     true),
-  ('AGRI_WILDLIFE_RESCUE_REHAB',   'EVENT_VOLUNTEER',     true)
-on conflict (specialty_code, capability_key) do update
-  set is_allowed = excluded.is_allowed;
+-- NOTE: only safe to run if canonical_specialties exists due to FK on specialty_capability_grants.
+do $seed$
+begin
+  if to_regclass('public.canonical_specialties') is null then
+    raise notice 'Skipping sanctuary capability grants: public.canonical_specialties does not exist.';
+    return;
+  end if;
+
+  if to_regclass('public.specialty_capability_grants') is null then
+    raise notice 'Skipping sanctuary capability grants: public.specialty_capability_grants does not exist.';
+    return;
+  end if;
+
+  insert into public.specialty_capability_grants (specialty_code, capability_key, is_allowed)
+  values
+    ('AGRI_ANIMAL_SANCTUARY',        'EVENT_NON_VOLUNTEER', false),
+    ('AGRI_WILDLIFE_RESCUE_REHAB',   'EVENT_NON_VOLUNTEER', false),
+    ('AGRI_ANIMAL_SANCTUARY',        'EVENT_VOLUNTEER',     true),
+    ('AGRI_WILDLIFE_RESCUE_REHAB',   'EVENT_VOLUNTEER',     true)
+  on conflict (specialty_code, capability_key) do update
+    set is_allowed = excluded.is_allowed;
+end
+$seed$;
 
 -- ------------------------------------------------------------
 -- B) Replace vendor-hosted event RLS with capability-aware v7
 --    (Your events table uses host_vendor_id, not provider_id)
 -- ------------------------------------------------------------
+do $do$
+begin
+  if to_regclass('public.events') is null then
+    raise notice 'Skipping v7 events RLS: public.events does not exist.';
+    return;
+  end if;
 
--- Drop prior vendor-host policies (safe if they don't exist)
-drop policy if exists events_host_vendor_insert_v5 on public.events;
-drop policy if exists events_host_vendor_update_v5 on public.events;
-drop policy if exists events_host_vendor_delete_v5 on public.events;
+  if to_regclass('public.providers') is null then
+    raise notice 'Skipping v7 events RLS: public.providers does not exist.';
+    return;
+  end if;
 
--- V7 INSERT: must own host_vendor_id provider, vertical must match provider vertical,
---           sanctuary specialties are volunteer-only, publish requires approved moderation.
-create policy events_host_vendor_insert_v7
-on public.events
-for insert
-to authenticated
-with check (
-  created_by = auth.uid()
-  and host_vendor_id is not null
-  and exists (
-    select 1
-    from public.providers p
-    where p.id = host_vendor_id
-      and p.owner_user_id = auth.uid()
-      and event_vertical = coalesce(p.primary_vertical, p.vertical)
-      -- Sanctuary hard lock: volunteer only
-      and (
-        not public._is_sanctuary_specialty(p.specialty)
-        or coalesce(is_volunteer,false) = true
-      )
-      -- Capability lock: sanctuary explicitly denies non-volunteer
-      and (
-        (coalesce(is_volunteer,false) = true  and public._specialty_capability_allowed(p.specialty,'EVENT_VOLUNTEER'))
-        or
-        (coalesce(is_volunteer,false) = false and public._specialty_capability_allowed(p.specialty,'EVENT_NON_VOLUNTEER'))
-      )
-  )
-  -- Publish bypass blocked: publishing requires approved moderation
-  and (
-    coalesce(status,'') <> 'published'
-    or (coalesce(status,'') = 'published' and coalesce(moderation_status,'') = 'approved')
-  )
-);
+  -- RLS enable guarded
+  execute 'alter table public.events enable row level security';
 
--- V7 UPDATE: must own the provider; keep vertical match; sanctuary volunteer-only; publish requires approval
-create policy events_host_vendor_update_v7
-on public.events
-for update
-to authenticated
-using (
-  created_by = auth.uid()
-  and host_vendor_id is not null
-  and exists (
-    select 1
-    from public.providers p
-    where p.id = host_vendor_id
-      and p.owner_user_id = auth.uid()
-  )
-)
-with check (
-  created_by = auth.uid()
-  and host_vendor_id is not null
-  and exists (
-    select 1
-    from public.providers p
-    where p.id = host_vendor_id
-      and p.owner_user_id = auth.uid()
-      and event_vertical = coalesce(p.primary_vertical, p.vertical)
-      and (
-        not public._is_sanctuary_specialty(p.specialty)
-        or coalesce(is_volunteer,false) = true
-      )
-      and (
-        (coalesce(is_volunteer,false) = true  and public._specialty_capability_allowed(p.specialty,'EVENT_VOLUNTEER'))
-        or
-        (coalesce(is_volunteer,false) = false and public._specialty_capability_allowed(p.specialty,'EVENT_NON_VOLUNTEER'))
-      )
-  )
-  and (
-    coalesce(status,'') <> 'published'
-    or (coalesce(status,'') = 'published' and coalesce(moderation_status,'') = 'approved')
-  )
-);
+  -- Drop prior vendor-host policies (must be EXECUTE to avoid parse-time binding)
+  execute 'drop policy if exists events_host_vendor_insert_v5 on public.events';
+  execute 'drop policy if exists events_host_vendor_update_v5 on public.events';
+  execute 'drop policy if exists events_host_vendor_delete_v5 on public.events';
 
--- V7 DELETE: must own the provider + row created_by (prevents deleting someone else's row)
-create policy events_host_vendor_delete_v7
-on public.events
-for delete
-to authenticated
-using (
-  created_by = auth.uid()
-  and host_vendor_id is not null
-  and exists (
-    select 1
-    from public.providers p
-    where p.id = host_vendor_id
-      and p.owner_user_id = auth.uid()
-  )
-);
+  execute 'drop policy if exists events_host_vendor_insert_v7 on public.events';
+  execute 'drop policy if exists events_host_vendor_update_v7 on public.events';
+  execute 'drop policy if exists events_host_vendor_delete_v7 on public.events';
+
+  -- Create policies via EXECUTE so the block is fully guarded
+  execute $pol$
+    create policy events_host_vendor_insert_v7
+    on public.events
+    for insert
+    to authenticated
+    with check (
+      created_by = auth.uid()
+      and host_vendor_id is not null
+      and exists (
+        select 1
+        from public.providers p
+        where p.id = host_vendor_id
+          and p.owner_user_id = auth.uid()
+          and event_vertical = coalesce(p.primary_vertical, p.vertical)
+          -- Sanctuary hard lock: volunteer only
+          and (
+            not public._is_sanctuary_specialty(p.specialty)
+            or coalesce(is_volunteer,false) = true
+          )
+          -- Capability lock: sanctuary explicitly denies non-volunteer
+          and (
+            (coalesce(is_volunteer,false) = true  and public._specialty_capability_allowed(p.specialty,'EVENT_VOLUNTEER'))
+            or
+            (coalesce(is_volunteer,false) = false and public._specialty_capability_allowed(p.specialty,'EVENT_NON_VOLUNTEER'))
+          )
+      )
+      -- Publish bypass blocked: publishing requires approved moderation
+      and (
+        coalesce(status,'') <> 'published'
+        or (coalesce(status,'') = 'published' and coalesce(moderation_status,'') = 'approved')
+      )
+    );
+  $pol$;
+
+  execute $pol$
+    create policy events_host_vendor_update_v7
+    on public.events
+    for update
+    to authenticated
+    using (
+      created_by = auth.uid()
+      and host_vendor_id is not null
+      and exists (
+        select 1
+        from public.providers p
+        where p.id = host_vendor_id
+          and p.owner_user_id = auth.uid()
+      )
+    )
+    with check (
+      created_by = auth.uid()
+      and host_vendor_id is not null
+      and exists (
+        select 1
+        from public.providers p
+        where p.id = host_vendor_id
+          and p.owner_user_id = auth.uid()
+          and event_vertical = coalesce(p.primary_vertical, p.vertical)
+          and (
+            not public._is_sanctuary_specialty(p.specialty)
+            or coalesce(is_volunteer,false) = true
+          )
+          and (
+            (coalesce(is_volunteer,false) = true  and public._specialty_capability_allowed(p.specialty,'EVENT_VOLUNTEER'))
+            or
+            (coalesce(is_volunteer,false) = false and public._specialty_capability_allowed(p.specialty,'EVENT_NON_VOLUNTEER'))
+          )
+      )
+      and (
+        coalesce(status,'') <> 'published'
+        or (coalesce(status,'') = 'published' and coalesce(moderation_status,'') = 'approved')
+      )
+    );
+  $pol$;
+
+  execute $pol$
+    create policy events_host_vendor_delete_v7
+    on public.events
+    for delete
+    to authenticated
+    using (
+      created_by = auth.uid()
+      and host_vendor_id is not null
+      and exists (
+        select 1
+        from public.providers p
+        where p.id = host_vendor_id
+          and p.owner_user_id = auth.uid()
+      )
+    );
+  $pol$;
+
+end
+$do$;
 
 commit;
