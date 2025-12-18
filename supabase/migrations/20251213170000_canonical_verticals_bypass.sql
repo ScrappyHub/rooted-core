@@ -4,6 +4,7 @@
 
 begin;
 
+-- 0) Canonical lock trigger function (always safe to create)
 create or replace function public.prevent_canonical_verticals_changes()
 returns trigger
 language plpgsql
@@ -22,9 +23,15 @@ begin
 end;
 $$;
 
--- Ensure trigger exists (idempotent)
+-- 1) Ensure trigger exists IF (and only if) the table exists
+--    IMPORTANT: never cast ::regclass unless to_regclass() proves it exists
 do $$
 begin
+  if to_regclass('public.canonical_verticals') is null then
+    -- Fresh local DB: table not created yet; skip safely.
+    return;
+  end if;
+
   if not exists (
     select 1
     from pg_trigger
