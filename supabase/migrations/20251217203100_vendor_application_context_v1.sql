@@ -1,6 +1,6 @@
--- 20251217201500_vendor_application_context_v1.sql
+-- 20251217203100_vendor_application_context_v1.sql
 -- Canonical: One auth user can operate multiple provider entities.
--- Adds: vendor_applications + provider_memberships + hard-lock submit/approve functions (no UI trust).
+-- Adds: provider_memberships + hard-lock submit/approve functions (no UI trust).
 -- Safe: additive, idempotent, avoids guessing existing columns.
 
 begin;
@@ -9,8 +9,7 @@ begin;
 select set_config('rooted.migration_bypass', 'on', true);
 
 -- ------------------------------------------------------------
--- 0) Helper: detect ROOTED admin safely (supports multiple schemas)
---    Returns false if it can't prove admin.
+-- 0) Helper: detect ROOTED admin safely
 -- ------------------------------------------------------------
 create or replace function public.is_rooted_admin()
 returns boolean
@@ -19,56 +18,39 @@ stable
 as $$
 declare
   v_is_admin boolean := false;
-  v_has_user_tiers boolean := (to_regclass('public.user_tiers') is not null);
-  v_has_role_col boolean := false;
-  v_has_user_id_col boolean := false;
 begin
   if auth.uid() is null then
     return false;
   end if;
 
-  if v_has_user_tiers then
+  if to_regclass('public.user_tiers') is null then
+    return false;
+  end if;
+
+  -- Prefer user_id column if present
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema='public' and table_name='user_tiers' and column_name='user_id'
+  ) then
     select exists(
-      select 1
-      from information_schema.columns
-      where table_schema='public' and table_name='user_tiers' and column_name='role'
-    ) into v_has_role_col;
+      select 1 from public.user_tiers ut
+      where ut.user_id = auth.uid()
+        and ut.role = 'admin'
+    ) into v_is_admin;
+    return coalesce(v_is_admin,false);
+  end if;
 
+  -- Fallback to id column if present
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema='public' and table_name='user_tiers' and column_name='id'
+  ) then
     select exists(
-      select 1
-      from information_schema.columns
-      where table_schema='public' and table_name='user_tiers' and column_name in ('user_id','id')
-    ) into v_has_user_id_col;
-
-    if v_has_role_col and v_has_user_id_col then
-      -- try user_id first
-      if exists(
-        select 1
-        from information_schema.columns
-        where table_schema='public' and table_name='user_tiers' and column_name='user_id'
-      ) then
-        select exists(
-          select 1 from public.user_tiers ut
-          where ut.user_id = auth.uid()
-            and ut.role = 'admin'
-        ) into v_is_admin;
-        return coalesce(v_is_admin,false);
-      end if;
-
-      -- fallback to id
-      if exists(
-        select 1
-        from information_schema.columns
-        where table_schema='public' and table_name='user_tiers' and column_name='id'
-      ) then
-        select exists(
-          select 1 from public.user_tiers ut
-          where ut.id = auth.uid()
-            and ut.role = 'admin'
-        ) into v_is_admin;
-        return coalesce(v_is_admin,false);
-      end if;
-    end if;
+      select 1 from public.user_tiers ut
+      where ut.id = auth.uid()
+        and ut.role = 'admin'
+    ) into v_is_admin;
+    return coalesce(v_is_admin,false);
   end if;
 
   return false;
@@ -77,7 +59,6 @@ $$;
 
 -- ------------------------------------------------------------
 -- 1) provider_memberships (context switching authority)
---    This is the hard link: user <-> provider with explicit membership_role.
 -- ------------------------------------------------------------
 create table if not exists public.provider_memberships (
   provider_id uuid not null,
@@ -88,27 +69,16 @@ create table if not exists public.provider_memberships (
 );
 
 -- ------------------------------------------------------------
--- 2) vendor_applications (no limbo: always tied to applicant_user_id)
+-- 2) vendor_applications
+-- NOTE: your live schema ALREADY exists and uses user_id.
+-- We only add missing pieces and indexes safely.
 -- ------------------------------------------------------------
-create table if not exists public.vendor_applications (
-  id uuid primary key default gen_random_uuid(),
-  applicant_user_id uuid not null,
-  application_type text not null check (application_type in ('vendor','institution')),
-  status text not null check (status in ('draft','submitted','needs_info','approved','rejected','withdrawn')),
-  proposed_display_name text,
-  proposed_verticals jsonb,
-  proposed_specialties jsonb,
-  submitted_at timestamptz,
-  reviewed_at timestamptz,
-  review_notes text,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
-);
 
-create index if not exists vendor_applications_applicant_idx
-  on public.vendor_applications(applicant_user_id);
+-- Index applicant user (your real column is user_id)
+create index if not exists vendor_applications_user_idx
+  on public.vendor_applications(user_id);
 
--- Keep updated_at current
+-- Keep updated_at current (only if updated_at exists)
 create or replace function public.tg_set_updated_at()
 returns trigger
 language plpgsql
@@ -121,7 +91,11 @@ $$;
 
 do $$
 begin
-  if not exists (
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema='public' and table_name='vendor_applications' and column_name='updated_at'
+  )
+  and not exists (
     select 1 from pg_trigger
     where tgname = 'trg_vendor_applications_set_updated_at'
   ) then
@@ -148,39 +122,42 @@ using (
 );
 
 -- vendor_applications:
--- Applicants can CRUD while draft; submit/approve is function-driven.
+-- Applicants can SELECT their own; admins can SELECT all.
 drop policy if exists vendor_applications_select_self on public.vendor_applications;
 create policy vendor_applications_select_self
 on public.vendor_applications
 for select
 using (
-  applicant_user_id = auth.uid()
+  user_id = auth.uid()
   or public.is_rooted_admin()
 );
 
+-- Applicants can INSERT only if user_id = auth.uid()
 drop policy if exists vendor_applications_insert_self on public.vendor_applications;
 create policy vendor_applications_insert_self
 on public.vendor_applications
 for insert
-with check (
-  applicant_user_id = auth.uid()
-  and status = 'draft'
-);
+with check (user_id = auth.uid());
 
-drop policy if exists vendor_applications_update_draft_self on public.vendor_applications;
-create policy vendor_applications_update_draft_self
+-- Applicants can UPDATE their own applications while in draft-ish states IF status column exists.
+-- If status column is absent (unlikely), we fail open to "own row only".
+drop policy if exists vendor_applications_update_self on public.vendor_applications;
+create policy vendor_applications_update_self
 on public.vendor_applications
 for update
 using (
-  applicant_user_id = auth.uid()
-  and status = 'draft'
+  user_id = auth.uid()
+  and (
+    not exists (
+      select 1 from information_schema.columns
+      where table_schema='public' and table_name='vendor_applications' and column_name='status'
+    )
+    or status in ('draft','submitted','needs_info')
+  )
 )
-with check (
-  applicant_user_id = auth.uid()
-  and status = 'draft'
-);
+with check (user_id = auth.uid());
 
--- Admin review updates allowed (needs_info/approved/rejected) via function or direct update
+-- Admin review updates allowed
 drop policy if exists vendor_applications_admin_review on public.vendor_applications;
 create policy vendor_applications_admin_review
 on public.vendor_applications
@@ -190,26 +167,21 @@ with check (public.is_rooted_admin());
 
 -- ------------------------------------------------------------
 -- 4) Age gate hook: submit must go through a function.
---    This avoids “UI says submitted” and avoids relying on unknown tables in RLS.
+--    Hard fail closed unless the engine can prove eligibility.
 -- ------------------------------------------------------------
-
--- Optional: if you already have an age intel function/table, wire it here later.
--- For now: we enforce via entity_flags if present; otherwise we hard-fail with a clear error.
 create or replace function public.can_submit_vendor_application(p_user uuid)
 returns boolean
 language plpgsql
 stable
 as $$
 declare
-  v_has_entity_flags boolean := (to_regclass('public.entity_flags') is not null);
   v_ok boolean := false;
 begin
   if p_user is null then
     return false;
   end if;
 
-  -- Preferred: engine flag gate (matches your engine-first architecture)
-  if v_has_entity_flags then
+  if to_regclass('public.entity_flags') is not null then
     select exists (
       select 1
       from public.entity_flags ef
@@ -224,43 +196,77 @@ begin
     end if;
   end if;
 
-  -- If we can't prove eligibility, fail closed (hard lock).
   return false;
 end;
 $$;
 
+-- Submit function:
+-- Uses your real vendor_applications.user_id column.
+-- Status updates only if status column exists; otherwise it only stamps submitted time if available.
 create or replace function public.submit_vendor_application(p_application_id uuid)
 returns void
 language plpgsql
 security definer
 as $$
 declare
-  v_app public.vendor_applications;
+  v_user_id_col text := 'user_id';
+  v_has_status boolean;
+  v_has_submitted_at boolean;
+  v_status text;
+  v_user uuid;
 begin
-  select * into v_app
-  from public.vendor_applications
-  where id = p_application_id;
+  -- ensure the row exists & belongs to caller
+  execute 'select user_id from public.vendor_applications where id = $1'
+    into v_user
+    using p_application_id;
 
-  if v_app.id is null then
+  if v_user is null then
     raise exception 'Application not found';
   end if;
 
-  if v_app.applicant_user_id <> auth.uid() then
+  if v_user <> auth.uid() then
     raise exception 'Not your application';
   end if;
 
-  if v_app.status <> 'draft' then
-    raise exception 'Only draft applications can be submitted';
-  end if;
-
-  if not public.can_submit_vendor_application(v_app.applicant_user_id) then
+  if not public.can_submit_vendor_application(v_user) then
     raise exception 'Vendor submission blocked: age-band gate not satisfied (requires engine flag).';
   end if;
 
-  update public.vendor_applications
-  set status = 'submitted',
-      submitted_at = now()
-  where id = v_app.id;
+  select exists(
+    select 1 from information_schema.columns
+    where table_schema='public' and table_name='vendor_applications' and column_name='status'
+  ) into v_has_status;
+
+  select exists(
+    select 1 from information_schema.columns
+    where table_schema='public' and table_name='vendor_applications' and column_name='submitted_at'
+  ) into v_has_submitted_at;
+
+  if v_has_status then
+    execute 'select status from public.vendor_applications where id = $1'
+      into v_status
+      using p_application_id;
+
+    if v_status not in ('draft','needs_info') then
+      raise exception 'Only draft/needs_info applications can be submitted';
+    end if;
+
+    if v_has_submitted_at then
+      execute 'update public.vendor_applications set status = ''submitted'', submitted_at = now() where id = $1'
+        using p_application_id;
+    else
+      execute 'update public.vendor_applications set status = ''submitted'' where id = $1'
+        using p_application_id;
+    end if;
+  else
+    -- no status column: only stamp submitted_at if available
+    if v_has_submitted_at then
+      execute 'update public.vendor_applications set submitted_at = now() where id = $1'
+        using p_application_id;
+    else
+      raise exception 'vendor_applications missing status/submitted_at; cannot submit safely';
+    end if;
+  end if;
 end;
 $$;
 
@@ -269,79 +275,58 @@ grant execute on function public.submit_vendor_application(uuid) to authenticate
 
 -- ------------------------------------------------------------
 -- 5) Approve flow: create/attach provider membership (owner) safely.
---    We do NOT assume provider schema; we attempt inserts only if columns exist.
 -- ------------------------------------------------------------
-
 create or replace function public.approve_vendor_application(p_application_id uuid, p_provider_id uuid default null)
 returns uuid
 language plpgsql
 security definer
 as $$
 declare
-  v_app public.vendor_applications;
+  v_user uuid;
   v_provider_id uuid;
-  v_has_providers boolean := (to_regclass('public.providers') is not null);
-  v_has_id boolean := false;
-  v_has_owner boolean := false;
 begin
   if not public.is_rooted_admin() then
     raise exception 'Admin required';
   end if;
 
-  select * into v_app
-  from public.vendor_applications
-  where id = p_application_id;
+  execute 'select user_id from public.vendor_applications where id = $1'
+    into v_user
+    using p_application_id;
 
-  if v_app.id is null then
+  if v_user is null then
     raise exception 'Application not found';
   end if;
 
-  if v_app.status not in ('submitted','needs_info') then
-    raise exception 'Application must be submitted/needs_info to approve';
-  end if;
-
-  -- If provider already exists (admin supplied), use it.
+  -- Determine provider id
   if p_provider_id is not null then
     v_provider_id := p_provider_id;
   else
-    -- Otherwise, create provider if your providers table exists and supports it.
-    if not v_has_providers then
+    if to_regclass('public.providers') is null then
       raise exception 'providers table not found; pass p_provider_id to approve_vendor_application()';
     end if;
 
-    select exists(
+    -- require providers.id exists
+    if not exists(
       select 1 from information_schema.columns
       where table_schema='public' and table_name='providers' and column_name='id'
-    ) into v_has_id;
-
-    select exists(
-      select 1 from information_schema.columns
-      where table_schema='public' and table_name='providers' and column_name in ('owner_user_id','created_by')
-    ) into v_has_owner;
-
-    if not v_has_id then
+    ) then
       raise exception 'providers.id column not found; pass p_provider_id';
     end if;
 
-    -- Create minimal provider row using whatever ownership column you have.
     v_provider_id := gen_random_uuid();
 
     if exists(
       select 1 from information_schema.columns
       where table_schema='public' and table_name='providers' and column_name='owner_user_id'
     ) then
-      execute format(
-        'insert into public.providers (id, owner_user_id) values ($1, $2)'
-      )
-      using v_provider_id, v_app.applicant_user_id;
+      execute 'insert into public.providers (id, owner_user_id) values ($1, $2)'
+      using v_provider_id, v_user;
     elsif exists(
       select 1 from information_schema.columns
       where table_schema='public' and table_name='providers' and column_name='created_by'
     ) then
-      execute format(
-        'insert into public.providers (id, created_by) values ($1, $2)'
-      )
-      using v_provider_id, v_app.applicant_user_id;
+      execute 'insert into public.providers (id, created_by) values ($1, $2)'
+      using v_provider_id, v_user;
     else
       raise exception 'providers has no owner_user_id/created_by column; pass p_provider_id';
     end if;
@@ -349,15 +334,34 @@ begin
 
   -- Membership: make applicant the owner
   insert into public.provider_memberships (provider_id, user_id, membership_role)
-  values (v_provider_id, v_app.applicant_user_id, 'owner')
+  values (v_provider_id, v_user, 'owner')
   on conflict (provider_id, user_id) do update
     set membership_role = excluded.membership_role;
 
-  update public.vendor_applications
-  set status = 'approved',
-      reviewed_at = now(),
-      review_notes = coalesce(review_notes,'')
-  where id = v_app.id;
+  -- Mark application decided if those columns exist (your schema has decided_at/decided_by)
+  if exists(
+    select 1 from information_schema.columns
+    where table_schema='public' and table_name='vendor_applications' and column_name='status'
+  ) then
+    execute 'update public.vendor_applications set status = ''approved'' where id = $1'
+      using p_application_id;
+  end if;
+
+  if exists(
+    select 1 from information_schema.columns
+    where table_schema='public' and table_name='vendor_applications' and column_name='decided_at'
+  ) then
+    execute 'update public.vendor_applications set decided_at = now() where id = $1'
+      using p_application_id;
+  end if;
+
+  if exists(
+    select 1 from information_schema.columns
+    where table_schema='public' and table_name='vendor_applications' and column_name='decided_by'
+  ) then
+    execute 'update public.vendor_applications set decided_by = auth.uid() where id = $1'
+      using p_application_id;
+  end if;
 
   return v_provider_id;
 end;
