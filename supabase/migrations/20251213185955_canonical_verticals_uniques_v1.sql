@@ -1,4 +1,4 @@
-﻿-- 20251213185955_canonical_verticals_uniques_v1.sql
+-- 20251213185955_canonical_verticals_uniques_v1.sql
 -- Fix: ON CONFLICT (vertical_code) requires a UNIQUE/PK constraint.
 -- Also ensures vertical_canonical_specialties supports ON CONFLICT (vertical_code) used in reseed.
 
