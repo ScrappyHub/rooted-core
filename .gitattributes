@@ -1,0 +1,5 @@
+# Keep SQL migrations stable across OS
+*.sql text eol=lf
+
+# Optional: keep shell scripts stable too
+*.sh text eol=lf
