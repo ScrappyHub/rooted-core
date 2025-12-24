@@ -1,0 +1,6 @@
+# Supabase migration backup artifacts (never commit)
+supabase/migrations/_backup_*/
+supabase/_migrations_archive/
+supabase/migrations_disabled/
+supabase/.env.functions
+scripts/
