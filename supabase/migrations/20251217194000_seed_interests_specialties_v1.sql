@@ -1,15 +1,13 @@
 -- 20251217194000_seed_interests_specialties_v1.sql
 -- CANONICAL PATCH (pipeline rewrite - schema agnostic):
 -- Fix: specialty_types schema differs across environments (may not have id and other columns).
--- Approach:
---   - Insert/Upsert by code (stable key)
---   - Only include columns that exist (dynamic SQL)
+-- Fix: DO blocks cannot declare procedures → inline schema-aware upsert in a loop.
 
 begin;
 
 do $$
 declare
-  -- helper flags for optional columns
+  -- optional columns
   has_label boolean;
   has_vertical_group boolean;
   has_vertical_code boolean;
@@ -18,21 +16,67 @@ declare
   has_default_visibility boolean;
   has_description boolean;
 
-  -- build dynamic statement pieces
+  -- seed loop vars
+  seeds jsonb;
+  item jsonb;
+
+  p_code text;
+  p_label text;
+  p_vertical_group text;
+  p_vertical_code text;
+
   cols text[];
   vals text[];
   sets text[];
 
-  procedure upsert_specialty(p_code text, p_label text, p_vertical_group text, p_vertical_code text) as $proc$
-  declare
-    col_list text;
-    val_list text;
-    set_list text;
-    sql text;
-  begin
+  col_list text;
+  val_list text;
+  set_list text;
+  sql text;
+begin
+  -- discover what columns exist
+  select exists (select 1 from information_schema.columns where table_schema='public' and table_name='specialty_types' and column_name='label')
+    into has_label;
+
+  select exists (select 1 from information_schema.columns where table_schema='public' and table_name='specialty_types' and column_name='vertical_group')
+    into has_vertical_group;
+
+  select exists (select 1 from information_schema.columns where table_schema='public' and table_name='specialty_types' and column_name='vertical_code')
+    into has_vertical_code;
+
+  select exists (select 1 from information_schema.columns where table_schema='public' and table_name='specialty_types' and column_name='requires_compliance')
+    into has_requires_compliance;
+
+  select exists (select 1 from information_schema.columns where table_schema='public' and table_name='specialty_types' and column_name='kids_allowed')
+    into has_kids_allowed;
+
+  select exists (select 1 from information_schema.columns where table_schema='public' and table_name='specialty_types' and column_name='default_visibility')
+    into has_default_visibility;
+
+  select exists (select 1 from information_schema.columns where table_schema='public' and table_name='specialty_types' and column_name='description')
+    into has_description;
+
+  -- canonical interests seed set (small + stable)
+  seeds := jsonb_build_array(
+    jsonb_build_object('code','INTERESTS_GENERAL','label','Interests (General)','vertical_group','INTERESTS','vertical_code','INTERESTS'),
+    jsonb_build_object('code','INTERESTS_HOBBIES','label','Hobbies','vertical_group','INTERESTS','vertical_code','INTERESTS'),
+    jsonb_build_object('code','INTERESTS_SPORTS','label','Sports','vertical_group','INTERESTS','vertical_code','INTERESTS'),
+    jsonb_build_object('code','INTERESTS_ARTS','label','Arts','vertical_group','INTERESTS','vertical_code','INTERESTS'),
+    jsonb_build_object('code','INTERESTS_TECH','label','Technology','vertical_group','INTERESTS','vertical_code','INTERESTS'),
+    jsonb_build_object('code','INTERESTS_MUSIC','label','Music','vertical_group','INTERESTS','vertical_code','INTERESTS'),
+    jsonb_build_object('code','INTERESTS_FOOD','label','Food','vertical_group','INTERESTS','vertical_code','INTERESTS')
+  );
+
+  for item in select * from jsonb_array_elements(seeds)
+  loop
+    p_code := item->>'code';
+    p_label := item->>'label';
+    p_vertical_group := item->>'vertical_group';
+    p_vertical_code := item->>'vertical_code';
+
     cols := array['code'];
     vals := array[quote_literal(p_code)];
-    sets := array['code = excluded.code']; -- no-op stable
+    sets := array['code = excluded.code'];
 
     if has_label then
       cols := cols || 'label';
@@ -76,11 +120,7 @@ declare
       sets := sets || 'description = excluded.description';
     end if;
 
-    col_list := array_to_string(
-      (select array_agg(format('%I', c)) from unnest(cols) c),
-      ', '
-    );
-
+    col_list := array_to_string((select array_agg(format('%I', c)) from unnest(cols) c), ', ');
     val_list := array_to_string(vals, ', ');
     set_list := array_to_string(sets, ', ');
 
@@ -90,41 +130,7 @@ declare
     );
 
     execute sql;
-  end;
-  $proc$ language plpgsql;
-
-begin
-  -- discover what columns exist
-  select exists (select 1 from information_schema.columns where table_schema='public' and table_name='specialty_types' and column_name='label')
-    into has_label;
-
-  select exists (select 1 from information_schema.columns where table_schema='public' and table_name='specialty_types' and column_name='vertical_group')
-    into has_vertical_group;
-
-  select exists (select 1 from information_schema.columns where table_schema='public' and table_name='specialty_types' and column_name='vertical_code')
-    into has_vertical_code;
-
-  select exists (select 1 from information_schema.columns where table_schema='public' and table_name='specialty_types' and column_name='requires_compliance')
-    into has_requires_compliance;
-
-  select exists (select 1 from information_schema.columns where table_schema='public' and table_name='specialty_types' and column_name='kids_allowed')
-    into has_kids_allowed;
-
-  select exists (select 1 from information_schema.columns where table_schema='public' and table_name='specialty_types' and column_name='default_visibility')
-    into has_default_visibility;
-
-  select exists (select 1 from information_schema.columns where table_schema='public' and table_name='specialty_types' and column_name='description')
-    into has_description;
-
-  -- Seed a minimal but stable interests taxonomy.
-  -- Keep it small + canonical: these can expand later via separate migrations.
-  perform upsert_specialty('INTERESTS_GENERAL', 'Interests (General)', 'INTERESTS', 'INTERESTS');
-  perform upsert_specialty('INTERESTS_HOBBIES', 'Hobbies', 'INTERESTS', 'INTERESTS');
-  perform upsert_specialty('INTERESTS_SPORTS', 'Sports', 'INTERESTS', 'INTERESTS');
-  perform upsert_specialty('INTERESTS_ARTS', 'Arts', 'INTERESTS', 'INTERESTS');
-  perform upsert_specialty('INTERESTS_TECH', 'Technology', 'INTERESTS', 'INTERESTS');
-  perform upsert_specialty('INTERESTS_MUSIC', 'Music', 'INTERESTS', 'INTERESTS');
-  perform upsert_specialty('INTERESTS_FOOD', 'Food', 'INTERESTS', 'INTERESTS');
+  end loop;
 end $$;
 
 commit;
