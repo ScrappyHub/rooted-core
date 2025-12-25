@@ -1,10 +1,20 @@
 -- 20251216241201_fix_specialty_effective_groups_drop_recreate_v1.sql
--- Fix: 41200 uses CREATE OR REPLACE VIEW specialty_effective_groups_v1 with a different column set.
--- Postgres forbids dropping columns via CREATE OR REPLACE VIEW.
--- We DROP + CREATE with a stable column contract (no SELECT *).
+-- CANONICAL PATCH (rewritten via pipeline):
+-- Fix Postgres dependency error:
+-- specialty_effective_capabilities_v1 depends on specialty_effective_groups_v1
+-- so we must drop capabilities FIRST, then groups.
 
 begin;
 
+-- Drop dependent view first (if it exists)
+do $$
+begin
+  if to_regclass('public.specialty_effective_capabilities_v1') is not null then
+    execute 'drop view public.specialty_effective_capabilities_v1';
+  end if;
+end $$;
+
+-- Now safe to drop groups view
 do $$
 begin
   if to_regclass('public.specialty_effective_groups_v1') is not null then
@@ -12,9 +22,8 @@ begin
   end if;
 end $$;
 
--- Canonical column contract for specialty_effective_groups_v1
--- Keep these columns stable so future "replace" doesn't break:
--- specialty_code, specialty_label, vertical_code, group_key
+-- Recreate specialty_effective_groups_v1 with STABLE column contract:
+-- (specialty_code, specialty_label, vertical_code, group_key)
 create view public.specialty_effective_groups_v1 as
 with base as (
   select distinct
