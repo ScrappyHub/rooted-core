@@ -1,7 +1,7 @@
 -- 20251217194000_seed_interests_specialties_v1.sql
 -- CANONICAL PATCH (pipeline rewrite - schema agnostic):
--- Fix: specialty_types schema differs across environments (may not have id and other columns).
 -- Fix: DO blocks cannot declare procedures → inline schema-aware upsert in a loop.
+-- Fix: array concat operator (||) is not "append element" → use array_append to avoid malformed array literal.
 
 begin;
 
@@ -79,45 +79,45 @@ begin
     sets := array['code = excluded.code'];
 
     if has_label then
-      cols := cols || 'label';
-      vals := vals || quote_literal(p_label);
-      sets := sets || 'label = excluded.label';
+      cols := array_append(cols, 'label');
+      vals := array_append(vals, quote_literal(p_label));
+      sets := array_append(sets, 'label = excluded.label');
     end if;
 
     if has_vertical_group then
-      cols := cols || 'vertical_group';
-      vals := vals || quote_literal(p_vertical_group);
-      sets := sets || 'vertical_group = excluded.vertical_group';
+      cols := array_append(cols, 'vertical_group');
+      vals := array_append(vals, quote_literal(p_vertical_group));
+      sets := array_append(sets, 'vertical_group = excluded.vertical_group');
     end if;
 
     if has_vertical_code then
-      cols := cols || 'vertical_code';
-      vals := vals || quote_literal(p_vertical_code);
-      sets := sets || 'vertical_code = excluded.vertical_code';
+      cols := array_append(cols, 'vertical_code');
+      vals := array_append(vals, quote_literal(p_vertical_code));
+      sets := array_append(sets, 'vertical_code = excluded.vertical_code');
     end if;
 
     if has_requires_compliance then
-      cols := cols || 'requires_compliance';
-      vals := vals || 'false';
-      sets := sets || 'requires_compliance = excluded.requires_compliance';
+      cols := array_append(cols, 'requires_compliance');
+      vals := array_append(vals, 'false');
+      sets := array_append(sets, 'requires_compliance = excluded.requires_compliance');
     end if;
 
     if has_kids_allowed then
-      cols := cols || 'kids_allowed';
-      vals := vals || 'true';
-      sets := sets || 'kids_allowed = excluded.kids_allowed';
+      cols := array_append(cols, 'kids_allowed');
+      vals := array_append(vals, 'true');
+      sets := array_append(sets, 'kids_allowed = excluded.kids_allowed');
     end if;
 
     if has_default_visibility then
-      cols := cols || 'default_visibility';
-      vals := vals || quote_literal('public');
-      sets := sets || 'default_visibility = excluded.default_visibility';
+      cols := array_append(cols, 'default_visibility');
+      vals := array_append(vals, quote_literal('public'));
+      sets := array_append(sets, 'default_visibility = excluded.default_visibility');
     end if;
 
     if has_description then
-      cols := cols || 'description';
-      vals := vals || quote_literal('Interests specialty seed');
-      sets := sets || 'description = excluded.description';
+      cols := array_append(cols, 'description');
+      vals := array_append(vals, quote_literal('Interests specialty seed'));
+      sets := array_append(sets, 'description = excluded.description');
     end if;
 
     col_list := array_to_string((select array_agg(format('%I', c)) from unnest(cols) c), ', ');
