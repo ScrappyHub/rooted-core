@@ -52,26 +52,18 @@ alter table "public"."specialty_governance_group_members" drop constraint IF EXI
 
 alter table "public"."vertical_canonical_specialties" drop constraint IF EXISTS "fk_vcs_vertical";
 drop index if exists "public"."vertical_canonical_specialties_one_default_per_vertical";
-
-
-  create table "public"."_backup_specialty_vertical_overlays" (
+create table if not exists "public"."_backup_specialty_vertical_overlays" (
     "specialty_code" text,
     "vertical_code" text,
     "created_at" timestamp with time zone,
     "created_by" uuid
       );
-
-
-
-  create table "public"."_backup_vertical_canonical_specialties" (
+create table if not exists "public"."_backup_vertical_canonical_specialties" (
     "vertical_code" text,
     "specialty_code" text,
     "is_default" boolean
       );
-
-
-
-  create table "public"."account_deletion_requests" (
+create table if not exists "public"."account_deletion_requests" (
     "id" uuid not null default gen_random_uuid(),
     "user_id" uuid not null,
     "status" text not null default 'pending'::text,
@@ -83,9 +75,7 @@ drop index if exists "public"."vertical_canonical_specialties_one_default_per_ve
 
 
 alter table "public"."account_deletion_requests" enable row level security;
-
-
-  create table "public"."app_settings" (
+create table if not exists "public"."app_settings" (
     "key" text not null,
     "value" jsonb not null,
     "updated_at" timestamp with time zone not null default now()
@@ -93,9 +83,7 @@ alter table "public"."account_deletion_requests" enable row level security;
 
 
 alter table "public"."app_settings" enable row level security;
-
-
-  create table "public"."arts_culture_event_context_profiles" (
+create table if not exists "public"."arts_culture_event_context_profiles" (
     "arts_culture_event_id" uuid not null,
     "best_at_sunset" boolean,
     "rainy_day_indoor" boolean,
@@ -109,9 +97,7 @@ alter table "public"."app_settings" enable row level security;
 
 
 alter table "public"."arts_culture_event_context_profiles" enable row level security;
-
-
-  create table "public"."arts_culture_events" (
+create table if not exists "public"."arts_culture_events" (
     "id" uuid not null default gen_random_uuid(),
     "provider_id" uuid not null,
     "title" text not null,
@@ -130,9 +116,7 @@ alter table "public"."arts_culture_event_context_profiles" enable row level secu
 
 
 alter table "public"."arts_culture_events" enable row level security;
-
-
-  create table "public"."badges" (
+create table if not exists "public"."badges" (
     "id" uuid not null default gen_random_uuid(),
     "code" text not null,
     "name" text not null,
@@ -143,9 +127,7 @@ alter table "public"."arts_culture_events" enable row level security;
 
 
 alter table "public"."badges" enable row level security;
-
-
-  create table "public"."bids" (
+create table if not exists "public"."bids" (
     "id" uuid not null default gen_random_uuid(),
     "rfq_id" uuid not null,
     "vendor_id" uuid not null,
@@ -161,9 +143,7 @@ alter table "public"."badges" enable row level security;
 
 
 alter table "public"."bids" enable row level security;
-
-
-  create table "public"."billing_customers" (
+create table if not exists "public"."billing_customers" (
     "user_id" uuid not null,
     "stripe_customer_id" text not null,
     "created_at" timestamp with time zone not null default now()
@@ -171,9 +151,7 @@ alter table "public"."bids" enable row level security;
 
 
 alter table "public"."billing_customers" enable row level security;
-
-
-  create table "public"."bulk_offer_analytics" (
+create table if not exists "public"."bulk_offer_analytics" (
     "id" uuid not null default gen_random_uuid(),
     "offer_id" uuid not null,
     "vendor_user_id" uuid not null,
@@ -187,9 +165,7 @@ alter table "public"."billing_customers" enable row level security;
 
 
 alter table "public"."bulk_offer_analytics" enable row level security;
-
-
-  create table "public"."bulk_offers" (
+create table if not exists "public"."bulk_offers" (
     "id" uuid not null default gen_random_uuid(),
     "provider_id" uuid not null,
     "created_by" uuid not null,
@@ -213,18 +189,13 @@ alter table "public"."bulk_offer_analytics" enable row level security;
 
 
 alter table "public"."bulk_offers" enable row level security;
-
-
-  create table "public"."capabilities" (
+create table if not exists "public"."capabilities" (
     "capability_key" text not null,
     "description" text,
     "default_allowed" boolean not null default false,
     "created_at" timestamp with time zone not null default now()
       );
-
-
-
-  create table "public"."community_nature_spots" (
+create table if not exists "public"."community_nature_spots" (
     "id" uuid not null default gen_random_uuid(),
     "created_by" uuid not null,
     "spot_type" text not null,
@@ -246,9 +217,7 @@ alter table "public"."bulk_offers" enable row level security;
 
 
 alter table "public"."community_nature_spots" enable row level security;
-
-
-  create table "public"."community_programs" (
+create table if not exists "public"."community_programs" (
     "id" uuid not null default gen_random_uuid(),
     "provider_id" uuid not null,
     "title" text not null,
@@ -267,9 +236,7 @@ alter table "public"."community_nature_spots" enable row level security;
 
 
 alter table "public"."community_programs" enable row level security;
-
-
-  create table "public"."community_specialty_registry" (
+create table if not exists "public"."community_specialty_registry" (
     "id" uuid not null default gen_random_uuid(),
     "slug" text not null,
     "display_name" text not null,
@@ -285,9 +252,7 @@ alter table "public"."community_programs" enable row level security;
 
 
 alter table "public"."community_specialty_registry" enable row level security;
-
-
-  create table "public"."compliance_overlays" (
+create table if not exists "public"."compliance_overlays" (
     "id" uuid not null default gen_random_uuid(),
     "code" text not null,
     "label" text not null,
@@ -296,9 +261,7 @@ alter table "public"."community_specialty_registry" enable row level security;
 
 
 alter table "public"."compliance_overlays" enable row level security;
-
-
-  create table "public"."construction_safety_incidents" (
+create table if not exists "public"."construction_safety_incidents" (
     "id" uuid not null default gen_random_uuid(),
     "provider_id" uuid not null,
     "reported_by" uuid not null,
@@ -312,9 +275,7 @@ alter table "public"."compliance_overlays" enable row level security;
 
 
 alter table "public"."construction_safety_incidents" enable row level security;
-
-
-  create table "public"."conversation_participants" (
+create table if not exists "public"."conversation_participants" (
     "conversation_id" uuid not null,
     "user_id" uuid not null,
     "role_in_conversation" text,
@@ -323,9 +284,7 @@ alter table "public"."construction_safety_incidents" enable row level security;
 
 
 alter table "public"."conversation_participants" enable row level security;
-
-
-  create table "public"."conversations" (
+create table if not exists "public"."conversations" (
     "id" uuid not null default gen_random_uuid(),
     "created_by" uuid not null,
     "rfq_id" uuid,
@@ -335,9 +294,7 @@ alter table "public"."conversation_participants" enable row level security;
 
 
 alter table "public"."conversations" enable row level security;
-
-
-  create table "public"."donations" (
+create table if not exists "public"."donations" (
     "id" uuid not null default gen_random_uuid(),
     "provider_id" uuid not null,
     "donor_user_id" uuid,
@@ -352,9 +309,7 @@ alter table "public"."conversations" enable row level security;
 
 
 alter table "public"."donations" enable row level security;
-
-
-  create table "public"."education_field_trips" (
+create table if not exists "public"."education_field_trips" (
     "id" uuid not null default gen_random_uuid(),
     "provider_id" uuid not null,
     "landmark_id" uuid,
@@ -377,9 +332,7 @@ alter table "public"."donations" enable row level security;
 
 
 alter table "public"."education_field_trips" enable row level security;
-
-
-  create table "public"."event_analytics_daily" (
+create table if not exists "public"."event_analytics_daily" (
     "id" uuid not null default gen_random_uuid(),
     "event_id" uuid,
     "stat_date" date not null,
@@ -392,9 +345,7 @@ alter table "public"."education_field_trips" enable row level security;
 
 
 alter table "public"."event_analytics_daily" enable row level security;
-
-
-  create table "public"."event_badges" (
+create table if not exists "public"."event_badges" (
     "id" uuid not null default gen_random_uuid(),
     "event_id" uuid,
     "badge_id" uuid,
@@ -403,9 +354,7 @@ alter table "public"."event_analytics_daily" enable row level security;
 
 
 alter table "public"."event_badges" enable row level security;
-
-
-  create table "public"."event_context_profiles" (
+create table if not exists "public"."event_context_profiles" (
     "event_id" uuid not null,
     "accessibility_tags" jsonb,
     "weather_impact_note" text,
@@ -417,9 +366,7 @@ alter table "public"."event_badges" enable row level security;
 
 
 alter table "public"."event_context_profiles" enable row level security;
-
-
-  create table "public"."event_registrations" (
+create table if not exists "public"."event_registrations" (
     "id" uuid not null default gen_random_uuid(),
     "created_at" timestamp with time zone default now(),
     "event_id" uuid not null,
@@ -432,9 +379,7 @@ alter table "public"."event_context_profiles" enable row level security;
 
 
 alter table "public"."event_registrations" enable row level security;
-
-
-  create table "public"."event_specialties" (
+create table if not exists "public"."event_specialties" (
     "id" uuid not null default gen_random_uuid(),
     "code" text not null,
     "label" text not null,
@@ -445,18 +390,14 @@ alter table "public"."event_registrations" enable row level security;
 
 
 alter table "public"."event_specialties" enable row level security;
-
-
-  create table "public"."event_specialty_links" (
+create table if not exists "public"."event_specialty_links" (
     "event_id" uuid not null,
     "event_specialty_id" uuid not null
       );
 
 
 alter table "public"."event_specialty_links" enable row level security;
-
-
-  create table "public"."events" (
+create table if not exists "public"."events" (
     "id" uuid not null default gen_random_uuid(),
     "created_at" timestamp with time zone default now(),
     "created_by" uuid not null,
@@ -487,9 +428,7 @@ alter table "public"."event_specialty_links" enable row level security;
 
 
 alter table "public"."events" enable row level security;
-
-
-  create table "public"."experience_context_profiles" (
+create table if not exists "public"."experience_context_profiles" (
     "experience_id" uuid not null,
     "difficulty_level" text,
     "first_timer_friendly" boolean,
@@ -505,16 +444,11 @@ alter table "public"."events" enable row level security;
 
 
 alter table "public"."experience_context_profiles" enable row level security;
-
-
-  create table "public"."experience_kids_mode_overlays" (
+create table if not exists "public"."experience_kids_mode_overlays" (
     "experience_code" text not null,
     "kids_code" text not null
       );
-
-
-
-  create table "public"."experience_requests" (
+create table if not exists "public"."experience_requests" (
     "id" uuid not null default gen_random_uuid(),
     "experience_id" uuid not null,
     "institution_user_id" uuid not null,
@@ -528,9 +462,7 @@ alter table "public"."experience_context_profiles" enable row level security;
 
 
 alter table "public"."experience_requests" enable row level security;
-
-
-  create table "public"."experience_types" (
+create table if not exists "public"."experience_types" (
     "id" uuid not null default gen_random_uuid(),
     "code" text not null,
     "label" text not null,
@@ -539,10 +471,7 @@ alter table "public"."experience_requests" enable row level security;
     "insurance_required" boolean not null default false,
     "seasonal_lockable" boolean not null default false
       );
-
-
-
-  create table "public"."experiences" (
+create table if not exists "public"."experiences" (
     "id" uuid not null default gen_random_uuid(),
     "provider_id" uuid not null,
     "title" text not null,
@@ -561,9 +490,7 @@ alter table "public"."experience_requests" enable row level security;
 
 
 alter table "public"."experiences" enable row level security;
-
-
-  create table "public"."feed_comments" (
+create table if not exists "public"."feed_comments" (
     "id" uuid not null default gen_random_uuid(),
     "feed_id" uuid,
     "user_id" uuid,
@@ -573,9 +500,7 @@ alter table "public"."experiences" enable row level security;
 
 
 alter table "public"."feed_comments" enable row level security;
-
-
-  create table "public"."feed_items" (
+create table if not exists "public"."feed_items" (
     "id" uuid not null default gen_random_uuid(),
     "author_id" uuid not null,
     "author_role" text,
@@ -595,9 +520,7 @@ alter table "public"."feed_comments" enable row level security;
 
 
 alter table "public"."feed_items" enable row level security;
-
-
-  create table "public"."feed_likes" (
+create table if not exists "public"."feed_likes" (
     "feed_id" uuid not null,
     "user_id" uuid not null,
     "created_at" timestamp with time zone default now()
@@ -605,9 +528,7 @@ alter table "public"."feed_items" enable row level security;
 
 
 alter table "public"."feed_likes" enable row level security;
-
-
-  create table "public"."institution_applications" (
+create table if not exists "public"."institution_applications" (
     "id" uuid not null default gen_random_uuid(),
     "user_id" uuid not null,
     "org_name" text not null,
@@ -630,9 +551,7 @@ alter table "public"."feed_likes" enable row level security;
 
 
 alter table "public"."institution_applications" enable row level security;
-
-
-  create table "public"."institution_specialties" (
+create table if not exists "public"."institution_specialties" (
     "id" uuid not null default gen_random_uuid(),
     "code" text not null,
     "label" text not null,
@@ -643,9 +562,7 @@ alter table "public"."institution_applications" enable row level security;
 
 
 alter table "public"."institution_specialties" enable row level security;
-
-
-  create table "public"."kids_mode_overlays" (
+create table if not exists "public"."kids_mode_overlays" (
     "id" uuid not null default gen_random_uuid(),
     "code" text not null,
     "label" text not null
@@ -653,63 +570,49 @@ alter table "public"."institution_specialties" enable row level security;
 
 
 alter table "public"."kids_mode_overlays" enable row level security;
-
-
-  create table "public"."kv_store_5bb94edf" (
+create table if not exists "public"."kv_store_5bb94edf" (
     "key" text not null,
     "value" jsonb not null
       );
 
 
 alter table "public"."kv_store_5bb94edf" enable row level security;
-
-
-  create table "public"."kv_store_80d2ab6d" (
+create table if not exists "public"."kv_store_80d2ab6d" (
     "key" text not null,
     "value" jsonb not null
       );
 
 
 alter table "public"."kv_store_80d2ab6d" enable row level security;
-
-
-  create table "public"."kv_store_9ca868c2" (
+create table if not exists "public"."kv_store_9ca868c2" (
     "key" text not null,
     "value" jsonb not null
       );
 
 
 alter table "public"."kv_store_9ca868c2" enable row level security;
-
-
-  create table "public"."kv_store_d3ca0863" (
+create table if not exists "public"."kv_store_d3ca0863" (
     "key" text not null,
     "value" jsonb not null
       );
 
 
 alter table "public"."kv_store_d3ca0863" enable row level security;
-
-
-  create table "public"."kv_store_f009e61d" (
+create table if not exists "public"."kv_store_f009e61d" (
     "key" text not null,
     "value" jsonb not null
       );
 
 
 alter table "public"."kv_store_f009e61d" enable row level security;
-
-
-  create table "public"."kv_store_fabed9c2" (
+create table if not exists "public"."kv_store_fabed9c2" (
     "key" text not null,
     "value" jsonb not null
       );
 
 
 alter table "public"."kv_store_fabed9c2" enable row level security;
-
-
-  create table "public"."landmark_badges" (
+create table if not exists "public"."landmark_badges" (
     "id" uuid not null default gen_random_uuid(),
     "landmark_id" uuid,
     "badge_id" uuid,
@@ -718,9 +621,7 @@ alter table "public"."kv_store_fabed9c2" enable row level security;
 
 
 alter table "public"."landmark_badges" enable row level security;
-
-
-  create table "public"."landmark_specialties" (
+create table if not exists "public"."landmark_specialties" (
     "id" uuid not null default gen_random_uuid(),
     "code" text not null,
     "label" text not null,
@@ -731,26 +632,19 @@ alter table "public"."landmark_badges" enable row level security;
 
 
 alter table "public"."landmark_specialties" enable row level security;
-
-
-  create table "public"."landmark_specialty_links" (
+create table if not exists "public"."landmark_specialty_links" (
     "landmark_id" uuid not null,
     "landmark_specialty_id" uuid not null
       );
 
 
 alter table "public"."landmark_specialty_links" enable row level security;
-
-
-  create table "public"."landmark_types" (
+create table if not exists "public"."landmark_types" (
     "id" uuid not null default gen_random_uuid(),
     "code" text not null,
     "label" text not null
       );
-
-
-
-  create table "public"."landmarks" (
+create table if not exists "public"."landmarks" (
     "id" uuid not null default gen_random_uuid(),
     "name" text not null,
     "description" text,
@@ -784,9 +678,7 @@ alter table "public"."landmark_specialty_links" enable row level security;
 
 
 alter table "public"."landmarks" enable row level security;
-
-
-  create table "public"."location_checkins" (
+create table if not exists "public"."location_checkins" (
     "id" uuid not null default gen_random_uuid(),
     "provider_id" uuid,
     "landmark_id" uuid,
@@ -798,9 +690,7 @@ alter table "public"."landmarks" enable row level security;
 
 
 alter table "public"."location_checkins" enable row level security;
-
-
-  create table "public"."market_session_locks" (
+create table if not exists "public"."market_session_locks" (
     "id" uuid not null default gen_random_uuid(),
     "user_id" uuid not null,
     "entity_type" text not null,
@@ -811,9 +701,7 @@ alter table "public"."location_checkins" enable row level security;
 
 
 alter table "public"."market_session_locks" enable row level security;
-
-
-  create table "public"."messages" (
+create table if not exists "public"."messages" (
     "id" uuid not null default gen_random_uuid(),
     "conversation_id" uuid not null,
     "sender_id" uuid not null,
@@ -824,9 +712,7 @@ alter table "public"."market_session_locks" enable row level security;
 
 
 alter table "public"."messages" enable row level security;
-
-
-  create table "public"."moderation_queue" (
+create table if not exists "public"."moderation_queue" (
     "id" uuid not null default gen_random_uuid(),
     "entity_type" text not null,
     "entity_id" uuid not null,
@@ -840,9 +726,7 @@ alter table "public"."messages" enable row level security;
 
 
 alter table "public"."moderation_queue" enable row level security;
-
-
-  create table "public"."notifications" (
+create table if not exists "public"."notifications" (
     "id" uuid not null default gen_random_uuid(),
     "user_id" uuid not null,
     "type" text not null,
@@ -857,9 +741,7 @@ alter table "public"."moderation_queue" enable row level security;
 
 
 alter table "public"."notifications" enable row level security;
-
-
-  create table "public"."password_history" (
+create table if not exists "public"."password_history" (
     "id" uuid not null default gen_random_uuid(),
     "user_id" uuid not null,
     "pw_fingerprint" text not null,
@@ -868,9 +750,7 @@ alter table "public"."notifications" enable row level security;
 
 
 alter table "public"."password_history" enable row level security;
-
-
-  create table "public"."provider_badges" (
+create table if not exists "public"."provider_badges" (
     "provider_id" uuid not null,
     "badge_id" uuid not null,
     "granted_by" uuid,
@@ -880,18 +760,14 @@ alter table "public"."password_history" enable row level security;
 
 
 alter table "public"."provider_badges" enable row level security;
-
-
-  create table "public"."provider_compliance_overlays" (
+create table if not exists "public"."provider_compliance_overlays" (
     "provider_id" uuid not null,
     "compliance_code" text not null
       );
 
 
 alter table "public"."provider_compliance_overlays" enable row level security;
-
-
-  create table "public"."provider_context_profiles" (
+create table if not exists "public"."provider_context_profiles" (
     "provider_id" uuid not null,
     "established_year" integer,
     "community_impact_summary" text,
@@ -906,9 +782,7 @@ alter table "public"."provider_compliance_overlays" enable row level security;
 
 
 alter table "public"."provider_context_profiles" enable row level security;
-
-
-  create table "public"."provider_employees" (
+create table if not exists "public"."provider_employees" (
     "id" uuid not null default gen_random_uuid(),
     "provider_id" uuid not null,
     "full_name" text,
@@ -923,9 +797,7 @@ alter table "public"."provider_context_profiles" enable row level security;
 
 
 alter table "public"."provider_employees" enable row level security;
-
-
-  create table "public"."provider_impact_snapshots" (
+create table if not exists "public"."provider_impact_snapshots" (
     "id" uuid not null default gen_random_uuid(),
     "provider_id" uuid not null,
     "snapshot_date" date not null,
@@ -943,27 +815,21 @@ alter table "public"."provider_employees" enable row level security;
 
 
 alter table "public"."provider_impact_snapshots" enable row level security;
-
-
-  create table "public"."provider_institution_specialties" (
+create table if not exists "public"."provider_institution_specialties" (
     "provider_id" uuid not null,
     "institution_specialty_id" uuid not null
       );
 
 
 alter table "public"."provider_institution_specialties" enable row level security;
-
-
-  create table "public"."provider_kids_mode_overlays" (
+create table if not exists "public"."provider_kids_mode_overlays" (
     "provider_id" uuid not null,
     "kids_code" text not null
       );
 
 
 alter table "public"."provider_kids_mode_overlays" enable row level security;
-
-
-  create table "public"."provider_media" (
+create table if not exists "public"."provider_media" (
     "id" uuid not null default gen_random_uuid(),
     "provider_id" uuid not null,
     "media_type" text not null default 'image'::text,
@@ -977,9 +843,7 @@ alter table "public"."provider_kids_mode_overlays" enable row level security;
 
 
 alter table "public"."provider_media" enable row level security;
-
-
-  create table "public"."provider_memberships" (
+create table if not exists "public"."provider_memberships" (
     "provider_id" uuid not null,
     "user_id" uuid not null,
     "membership_role" text not null,
@@ -988,27 +852,21 @@ alter table "public"."provider_media" enable row level security;
 
 
 alter table "public"."provider_memberships" enable row level security;
-
-
-  create table "public"."provider_specialties" (
+create table if not exists "public"."provider_specialties" (
     "provider_id" uuid not null,
     "specialty_id" uuid not null
       );
 
 
 alter table "public"."provider_specialties" enable row level security;
-
-
-  create table "public"."provider_vendor_specialties" (
+create table if not exists "public"."provider_vendor_specialties" (
     "provider_id" uuid not null,
     "vendor_specialty_id" uuid not null
       );
 
 
 alter table "public"."provider_vendor_specialties" enable row level security;
-
-
-  create table "public"."providers" (
+create table if not exists "public"."providers" (
     "id" uuid not null default gen_random_uuid(),
     "owner_user_id" uuid,
     "vertical" text not null,
@@ -1076,9 +934,7 @@ alter table "public"."provider_vendor_specialties" enable row level security;
 
 
 alter table "public"."providers" enable row level security;
-
-
-  create table "public"."rfqs" (
+create table if not exists "public"."rfqs" (
     "id" uuid not null default gen_random_uuid(),
     "institution_id" uuid not null,
     "title" text not null,
@@ -1096,9 +952,7 @@ alter table "public"."providers" enable row level security;
 
 
 alter table "public"."rfqs" enable row level security;
-
-
-  create table "public"."seasonal_content_analytics_daily" (
+create table if not exists "public"."seasonal_content_analytics_daily" (
     "content_type" text not null,
     "content_id" uuid not null,
     "date" date not null,
@@ -1109,9 +963,7 @@ alter table "public"."rfqs" enable row level security;
 
 
 alter table "public"."seasonal_content_analytics_daily" enable row level security;
-
-
-  create table "public"."seasonal_crafts" (
+create table if not exists "public"."seasonal_crafts" (
     "id" uuid not null default gen_random_uuid(),
     "month" integer not null,
     "title" text not null,
@@ -1128,9 +980,7 @@ alter table "public"."seasonal_content_analytics_daily" enable row level securit
 
 
 alter table "public"."seasonal_crafts" enable row level security;
-
-
-  create table "public"."seasonal_produce" (
+create table if not exists "public"."seasonal_produce" (
     "id" uuid not null default gen_random_uuid(),
     "month" integer not null,
     "title" text not null,
@@ -1144,9 +994,7 @@ alter table "public"."seasonal_crafts" enable row level security;
 
 
 alter table "public"."seasonal_produce" enable row level security;
-
-
-  create table "public"."seasonal_recipes" (
+create table if not exists "public"."seasonal_recipes" (
     "id" uuid not null default gen_random_uuid(),
     "month" integer not null,
     "title" text not null,
@@ -1162,9 +1010,7 @@ alter table "public"."seasonal_produce" enable row level security;
 
 
 alter table "public"."seasonal_recipes" enable row level security;
-
-
-  create table "public"."seasonal_seeds" (
+create table if not exists "public"."seasonal_seeds" (
     "id" uuid not null default gen_random_uuid(),
     "month" integer not null,
     "title" text not null,
@@ -1178,27 +1024,21 @@ alter table "public"."seasonal_recipes" enable row level security;
 
 
 alter table "public"."seasonal_seeds" enable row level security;
-
-
-  create table "public"."specialty_compliance_overlays" (
+create table if not exists "public"."specialty_compliance_overlays" (
     "specialty_code" text not null,
     "compliance_code" text not null
       );
 
 
 alter table "public"."specialty_compliance_overlays" enable row level security;
-
-
-  create table "public"."specialty_kids_mode_overlays" (
+create table if not exists "public"."specialty_kids_mode_overlays" (
     "specialty_code" text not null,
     "kids_code" text not null
       );
 
 
 alter table "public"."specialty_kids_mode_overlays" enable row level security;
-
-
-  create table "public"."specialty_vertical_overlays" (
+create table if not exists "public"."specialty_vertical_overlays" (
     "specialty_code" text not null,
     "vertical_code" text not null,
     "created_at" timestamp with time zone not null default now(),
@@ -1207,18 +1047,13 @@ alter table "public"."specialty_kids_mode_overlays" enable row level security;
 
 
 alter table "public"."specialty_vertical_overlays" enable row level security;
-
-
-  create table "public"."specialty_vertical_overlays_bak" (
+create table if not exists "public"."specialty_vertical_overlays_bak" (
     "specialty_code" text,
     "vertical_code" text,
     "created_at" timestamp with time zone,
     "created_by" uuid
       );
-
-
-
-  create table "public"."specialty_vertical_overlays_v1" (
+create table if not exists "public"."specialty_vertical_overlays_v1" (
     "id" uuid not null default gen_random_uuid(),
     "specialty_code" text not null,
     "vertical_group" text not null,
@@ -1226,10 +1061,7 @@ alter table "public"."specialty_vertical_overlays" enable row level security;
     "is_enabled" boolean not null default true,
     "created_at" timestamp with time zone not null default now()
       );
-
-
-
-  create table "public"."user_admin_actions" (
+create table if not exists "public"."user_admin_actions" (
     "id" uuid not null default gen_random_uuid(),
     "admin_id" uuid not null,
     "target_user_id" uuid not null,
@@ -1240,9 +1072,7 @@ alter table "public"."specialty_vertical_overlays" enable row level security;
 
 
 alter table "public"."user_admin_actions" enable row level security;
-
-
-  create table "public"."user_consents" (
+create table if not exists "public"."user_consents" (
     "id" uuid not null default gen_random_uuid(),
     "user_id" uuid not null,
     "consent_type" text not null,
@@ -1254,9 +1084,7 @@ alter table "public"."user_admin_actions" enable row level security;
 
 
 alter table "public"."user_consents" enable row level security;
-
-
-  create table "public"."user_devices" (
+create table if not exists "public"."user_devices" (
     "id" uuid not null default gen_random_uuid(),
     "user_id" uuid not null,
     "platform" text not null,
@@ -1268,9 +1096,7 @@ alter table "public"."user_consents" enable row level security;
 
 
 alter table "public"."user_devices" enable row level security;
-
-
-  create table "public"."user_password_history" (
+create table if not exists "public"."user_password_history" (
     "user_id" uuid not null,
     "pw_fingerprint" text not null,
     "changed_at" timestamp with time zone not null default now()
@@ -1278,9 +1104,7 @@ alter table "public"."user_devices" enable row level security;
 
 
 alter table "public"."user_password_history" enable row level security;
-
-
-  create table "public"."user_tier_memberships" (
+create table if not exists "public"."user_tier_memberships" (
     "id" uuid not null default gen_random_uuid(),
     "user_id" uuid not null,
     "tier" text not null,
@@ -1294,9 +1118,7 @@ alter table "public"."user_password_history" enable row level security;
 
 
 alter table "public"."user_tier_memberships" enable row level security;
-
-
-  create table "public"."user_tiers" (
+create table if not exists "public"."user_tiers" (
     "user_id" uuid not null,
     "role" text not null,
     "tier" text not null,
@@ -1311,9 +1133,7 @@ alter table "public"."user_tier_memberships" enable row level security;
 
 
 alter table "public"."user_tiers" enable row level security;
-
-
-  create table "public"."vendor_analytics_advanced_daily" (
+create table if not exists "public"."vendor_analytics_advanced_daily" (
     "vendor_id" uuid not null,
     "owner_user_id" uuid not null,
     "analytics_date" date not null,
@@ -1331,9 +1151,7 @@ alter table "public"."user_tiers" enable row level security;
 
 
 alter table "public"."vendor_analytics_advanced_daily" enable row level security;
-
-
-  create table "public"."vendor_analytics_basic_daily" (
+create table if not exists "public"."vendor_analytics_basic_daily" (
     "vendor_id" uuid not null,
     "owner_user_id" uuid not null,
     "analytics_date" date not null,
@@ -1348,9 +1166,7 @@ alter table "public"."vendor_analytics_advanced_daily" enable row level security
 
 
 alter table "public"."vendor_analytics_basic_daily" enable row level security;
-
-
-  create table "public"."vendor_analytics_daily" (
+create table if not exists "public"."vendor_analytics_daily" (
     "id" uuid not null default gen_random_uuid(),
     "vendor_id" uuid not null,
     "day" date not null,
@@ -1365,9 +1181,7 @@ alter table "public"."vendor_analytics_basic_daily" enable row level security;
 
 
 alter table "public"."vendor_analytics_daily" enable row level security;
-
-
-  create table "public"."vendor_applications" (
+create table if not exists "public"."vendor_applications" (
     "id" uuid not null default gen_random_uuid(),
     "user_id" uuid not null,
     "org_name" text not null,
@@ -1390,9 +1204,7 @@ alter table "public"."vendor_analytics_daily" enable row level security;
 
 
 alter table "public"."vendor_applications" enable row level security;
-
-
-  create table "public"."vendor_media" (
+create table if not exists "public"."vendor_media" (
     "id" uuid not null default gen_random_uuid(),
     "owner_user_id" uuid not null,
     "storage_bucket" text not null,
@@ -1404,9 +1216,7 @@ alter table "public"."vendor_applications" enable row level security;
 
 
 alter table "public"."vendor_media" enable row level security;
-
-
-  create table "public"."vendor_specialties" (
+create table if not exists "public"."vendor_specialties" (
     "id" uuid not null default gen_random_uuid(),
     "code" text not null,
     "label" text not null,
@@ -1417,26 +1227,18 @@ alter table "public"."vendor_media" enable row level security;
 
 
 alter table "public"."vendor_specialties" enable row level security;
-
-
-  create table "public"."vertical_canonical_specialties_bak" (
+create table if not exists "public"."vertical_canonical_specialties_bak" (
     "vertical_code" text,
     "specialty_code" text,
     "is_default" boolean
       );
-
-
-
-  create table "public"."vertical_capability_defaults" (
+create table if not exists "public"."vertical_capability_defaults" (
     "vertical_code" text not null,
     "capability_key" text not null,
     "is_allowed" boolean not null,
     "created_at" timestamp with time zone not null default now()
       );
-
-
-
-  create table "public"."vertical_conditions" (
+create table if not exists "public"."vertical_conditions" (
     "vertical_code" text not null,
     "allow_kids_mode" boolean not null default true,
     "allow_experiences" boolean not null default true,
@@ -1447,9 +1249,7 @@ alter table "public"."vendor_specialties" enable row level security;
 
 
 alter table "public"."vertical_conditions" enable row level security;
-
-
-  create table "public"."vertical_market_requirements" (
+create table if not exists "public"."vertical_market_requirements" (
     "vertical_code" text not null,
     "market_code" text not null,
     "required_badge_codes" text[],
@@ -1459,10 +1259,7 @@ alter table "public"."vertical_conditions" enable row level security;
     "created_at" timestamp with time zone not null default now(),
     "updated_at" timestamp with time zone not null default now()
       );
-
-
-
-  create table "public"."weather_snapshots" (
+create table if not exists "public"."weather_snapshots" (
     "id" uuid not null default gen_random_uuid(),
     "vertical" text not null,
     "scope_type" text not null,
@@ -3531,14 +3328,14 @@ DECLARE
   v_entity_id uuid;
   v_applicant_user_id uuid;
 BEGIN
-  -- ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦ Admin check
+  -- ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦ Admin check
   IF NOT public.is_admin() THEN
     RAISE EXCEPTION 'Not authorized';
   END IF;
 
   SELECT auth.uid() INTO v_admin_id;
 
-  -- ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦ Lock moderation row
+  -- ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦ Lock moderation row
   SELECT entity_type, entity_id
   INTO v_entity_type, v_entity_id
   FROM public.moderation_queue
@@ -3549,7 +3346,7 @@ BEGIN
     RAISE EXCEPTION 'Moderation record not found';
   END IF;
 
-  -- ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦ Apply status change by entity type
+  -- ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦ Apply status change by entity type
   IF v_entity_type = 'event' THEN
     UPDATE public.events
     SET moderation_status = new_status
@@ -3606,7 +3403,7 @@ BEGIN
     RAISE EXCEPTION 'Unsupported entity_type: %', v_entity_type;
   END IF;
 
-  -- ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦ Update moderation queue
+  -- ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦ Update moderation queue
   UPDATE public.moderation_queue
   SET
     status      = new_status,
@@ -3615,7 +3412,7 @@ BEGIN
     reviewed_by = v_admin_id
   WHERE id = moderation_id;
 
-  -- ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦ Notifications
+  -- ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦ Notifications
   IF new_status = 'approved' THEN
     PERFORM public.notify_submission_approved(moderation_id);
   ELSIF new_status = 'rejected' THEN
@@ -4695,7 +4492,7 @@ begin
         effective_radius := in_radius_miles;
     end if;
 
-    -- 2) Enforce global result limits (6ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ8 only)
+    -- 2) Enforce global result limits (6ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“8 only)
     if in_limit is null or in_limit < 6 then
         effective_limit := 6;
     elsif in_limit > 8 then
@@ -4965,12 +4762,12 @@ BEGIN
     NEW.vertical_code := v_primary;
   END IF;
 
-  -- If it matches primary vertical, weÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢re good
+  -- If it matches primary vertical, weÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¾ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢re good
   IF NEW.vertical_code = v_primary THEN
     RETURN NEW;
   END IF;
 
-  -- Otherwise, only allow if thereÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢s a specialty overlay
+  -- Otherwise, only allow if thereÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¾ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢s a specialty overlay
   SELECT EXISTS (
     SELECT 1
     FROM public.vertical_specialty_effective_v1 vse
@@ -5045,7 +4842,7 @@ BEGIN
   -- 2) If we still don't have one, hard stop.
   IF inst_vertical IS NULL THEN
     RAISE EXCEPTION
-      'Institution % has no primary vertical defined ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ RFQ cannot be saved.',
+      'Institution % has no primary vertical defined ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ RFQ cannot be saved.',
       NEW.institution_id
       USING ERRCODE = 'P0001';
   END IF;
@@ -5290,7 +5087,7 @@ begin
   end if;
 
   ----------------------------------------------------------------------
-  -- 1) Baseline ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“listedÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â badges (applies to seeded and unverified)
+  -- 1) Baseline ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œlistedÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â badges (applies to seeded and unverified)
   ----------------------------------------------------------------------
   if v_provider_type = 'vendor' then
     v_badge_code := 'LISTED_VENDOR';
@@ -6399,7 +6196,7 @@ BEGIN
   SELECT p.primary_vertical
   INTO v_vertical_code
   FROM public.providers p
-  WHERE p.id = NEW.provider_id;  -- ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â CHANGE provider_id IF YOUR COLUMN IS NAMED DIFFERENTLY
+  WHERE p.id = NEW.provider_id;  -- ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â CHANGE provider_id IF YOUR COLUMN IS NAMED DIFFERENTLY
 
   -- If we found one, assign it
   IF v_vertical_code IS NOT NULL THEN
