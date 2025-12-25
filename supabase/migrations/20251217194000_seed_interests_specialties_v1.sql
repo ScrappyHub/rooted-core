@@ -1,123 +1,130 @@
 -- 20251217194000_seed_interests_specialties_v1.sql
--- Seed Interests & Hobbies specialties into:
---  - canonical_specialties (code-only)
---  - specialty_types (FK target + labels)
---  - vertical_canonical_specialties (vertical membership; default stays INTERESTS_GENERAL)
+-- CANONICAL PATCH (pipeline rewrite - schema agnostic):
+-- Fix: specialty_types schema differs across environments (may not have id and other columns).
+-- Approach:
+--   - Insert/Upsert by code (stable key)
+--   - Only include columns that exist (dynamic SQL)
 
 begin;
 
-select set_config('rooted.migration_bypass', 'on', true);
+do $$
+declare
+  -- helper flags for optional columns
+  has_label boolean;
+  has_vertical_group boolean;
+  has_vertical_code boolean;
+  has_requires_compliance boolean;
+  has_kids_allowed boolean;
+  has_default_visibility boolean;
+  has_description boolean;
 
--- ------------------------------------------------------------
--- 0) Ensure the default specialty exists in FK target
--- ------------------------------------------------------------
-insert into public.canonical_specialties (specialty_code)
-values ('INTERESTS_GENERAL')
-on conflict (specialty_code) do nothing;
+  -- build dynamic statement pieces
+  cols text[];
+  vals text[];
+  sets text[];
 
-insert into public.specialty_types (
-  id, code, label, vertical_group, requires_compliance, kids_allowed, default_visibility, vertical_code
-)
-select gen_random_uuid(), 'INTERESTS_GENERAL', 'Interests (General)', 'INTERESTS', false, true, true, 'INTERESTS_HOBBIES'
-where not exists (select 1 from public.specialty_types where code = 'INTERESTS_GENERAL');
+  procedure upsert_specialty(p_code text, p_label text, p_vertical_group text, p_vertical_code text) as $proc$
+  declare
+    col_list text;
+    val_list text;
+    set_list text;
+    sql text;
+  begin
+    cols := array['code'];
+    vals := array[quote_literal(p_code)];
+    sets := array['code = excluded.code']; -- no-op stable
 
--- ------------------------------------------------------------
--- 1A) canonical_specialties (code-only)
--- ------------------------------------------------------------
-with seed(code, label) as (
-  values
-    ('INTERESTS_HOBBY_STORE',            'Hobby Store'),
-    ('INTERESTS_ART_STUDIO',             'Art Studio'),
-    ('INTERESTS_PHOTOGRAPHY',            'Photography Class / Club'),
-    ('INTERESTS_POTTERY_GLASS',          'Pottery / Ceramics / Glass Studio'),
-    ('INTERESTS_MUSIC_LESSONS',          'Music Lessons / Studio'),
-    ('INTERESTS_DANCE_STUDIO',           'Dance Studio'),
-    ('INTERESTS_THEATER_WORKSHOP',       'Theater / Acting Workshop'),
+    if has_label then
+      cols := cols || 'label';
+      vals := vals || quote_literal(p_label);
+      sets := sets || 'label = excluded.label';
+    end if;
 
-    ('INTERESTS_CODING_WORKSHOP',        'Coding Workshop / Club'),
-    ('INTERESTS_GAME_DEV_CLASS',         'Game Development Class'),
-    ('INTERESTS_ROBOTICS_CLUB',          'Robotics Club / Lab'),
-    ('INTERESTS_MAKER_STUDIO',           'Maker Studio / Fabrication Lab'),
-    ('INTERESTS_3D_PRINTING',            '3D Printing / CAD Studio'),
+    if has_vertical_group then
+      cols := cols || 'vertical_group';
+      vals := vals || quote_literal(p_vertical_group);
+      sets := sets || 'vertical_group = excluded.vertical_group';
+    end if;
 
-    ('INTERESTS_COOKING_CLASS',          'Cooking Class'),
-    ('INTERESTS_BAKING_WORKSHOP',        'Baking Workshop'),
-    ('INTERESTS_WOODWORKING',            'Woodworking / Carpentry Workshop'),
-    ('INTERESTS_GARDENING',              'Gardening / Horticulture Workshop'),
-    ('INTERESTS_DIY_SKILLS',             'DIY Skills / Home Projects Class'),
+    if has_vertical_code then
+      cols := cols || 'vertical_code';
+      vals := vals || quote_literal(p_vertical_code);
+      sets := sets || 'vertical_code = excluded.vertical_code';
+    end if;
 
-    ('INTERESTS_SURF_LESSONS',           'Surf Lessons'),
-    ('INTERESTS_SKI_SNOWBOARD_LESSONS',  'Ski / Snowboard Lessons'),
-    ('INTERESTS_SKATE_SCOOTER',          'Skateboarding / Scooter Lessons'),
-    ('INTERESTS_CLIMBING_GYM',           'Climbing Gym / Instruction'),
-    ('INTERESTS_WATER_SPORTS',           'Water Sports Lessons'),
-    ('INTERESTS_DISC_GOLF',              'Disc Golf League / Clinic'),
-    ('INTERESTS_GOLF_CLINIC',            'Golf Clinic / Lessons'),
-    ('INTERESTS_OUTDOOR_SKILLS',         'Outdoor Skills / Survival / Navigation')
-)
-insert into public.canonical_specialties (specialty_code)
-select code from seed
-on conflict (specialty_code) do nothing;
+    if has_requires_compliance then
+      cols := cols || 'requires_compliance';
+      vals := vals || 'false';
+      sets := sets || 'requires_compliance = excluded.requires_compliance';
+    end if;
 
--- ------------------------------------------------------------
--- 1B) specialty_types (labels + FK target + vertical attachment)
--- ------------------------------------------------------------
-with seed(code, label) as (
-  values
-    ('INTERESTS_HOBBY_STORE',            'Hobby Store'),
-    ('INTERESTS_ART_STUDIO',             'Art Studio'),
-    ('INTERESTS_PHOTOGRAPHY',            'Photography Class / Club'),
-    ('INTERESTS_POTTERY_GLASS',          'Pottery / Ceramics / Glass Studio'),
-    ('INTERESTS_MUSIC_LESSONS',          'Music Lessons / Studio'),
-    ('INTERESTS_DANCE_STUDIO',           'Dance Studio'),
-    ('INTERESTS_THEATER_WORKSHOP',       'Theater / Acting Workshop'),
+    if has_kids_allowed then
+      cols := cols || 'kids_allowed';
+      vals := vals || 'true';
+      sets := sets || 'kids_allowed = excluded.kids_allowed';
+    end if;
 
-    ('INTERESTS_CODING_WORKSHOP',        'Coding Workshop / Club'),
-    ('INTERESTS_GAME_DEV_CLASS',         'Game Development Class'),
-    ('INTERESTS_ROBOTICS_CLUB',          'Robotics Club / Lab'),
-    ('INTERESTS_MAKER_STUDIO',           'Maker Studio / Fabrication Lab'),
-    ('INTERESTS_3D_PRINTING',            '3D Printing / CAD Studio'),
+    if has_default_visibility then
+      cols := cols || 'default_visibility';
+      vals := vals || quote_literal('public');
+      sets := sets || 'default_visibility = excluded.default_visibility';
+    end if;
 
-    ('INTERESTS_COOKING_CLASS',          'Cooking Class'),
-    ('INTERESTS_BAKING_WORKSHOP',        'Baking Workshop'),
-    ('INTERESTS_WOODWORKING',            'Woodworking / Carpentry Workshop'),
-    ('INTERESTS_GARDENING',              'Gardening / Horticulture Workshop'),
-    ('INTERESTS_DIY_SKILLS',             'DIY Skills / Home Projects Class'),
+    if has_description then
+      cols := cols || 'description';
+      vals := vals || quote_literal('Interests specialty seed');
+      sets := sets || 'description = excluded.description';
+    end if;
 
-    ('INTERESTS_SURF_LESSONS',           'Surf Lessons'),
-    ('INTERESTS_SKI_SNOWBOARD_LESSONS',  'Ski / Snowboard Lessons'),
-    ('INTERESTS_SKATE_SCOOTER',          'Skateboarding / Scooter Lessons'),
-    ('INTERESTS_CLIMBING_GYM',           'Climbing Gym / Instruction'),
-    ('INTERESTS_WATER_SPORTS',           'Water Sports Lessons'),
-    ('INTERESTS_DISC_GOLF',              'Disc Golf League / Clinic'),
-    ('INTERESTS_GOLF_CLINIC',            'Golf Clinic / Lessons'),
-    ('INTERESTS_OUTDOOR_SKILLS',         'Outdoor Skills / Survival / Navigation')
-)
-insert into public.specialty_types (
-  id, code, label, vertical_group, requires_compliance, kids_allowed, default_visibility, vertical_code
-)
-select
-  gen_random_uuid(),
-  s.code,
-  s.label,
-  'INTERESTS',
-  false,
-  true,
-  true,
-  'INTERESTS_HOBBIES'
-from seed s
-where not exists (select 1 from public.specialty_types st where st.code = s.code);
+    col_list := array_to_string(
+      (select array_agg(format('%I', c)) from unnest(cols) c),
+      ', '
+    );
 
--- ------------------------------------------------------------
--- 1C) vertical_canonical_specialties
--- IMPORTANT: in your DB this table is "one row per vertical" (default mapping),
--- not a membership table. Membership comes from specialty_types.vertical_code.
--- ------------------------------------------------------------
+    val_list := array_to_string(vals, ', ');
+    set_list := array_to_string(sets, ', ');
 
-insert into public.vertical_canonical_specialties (vertical_code, specialty_code, is_default)
-values ('INTERESTS_HOBBIES', 'INTERESTS_GENERAL', true)
-on conflict (vertical_code) do update
-set specialty_code = excluded.specialty_code,
-    is_default = excluded.is_default;
+    sql := format(
+      'insert into public.specialty_types (%s) values (%s) on conflict (code) do update set %s',
+      col_list, val_list, set_list
+    );
+
+    execute sql;
+  end;
+  $proc$ language plpgsql;
+
+begin
+  -- discover what columns exist
+  select exists (select 1 from information_schema.columns where table_schema='public' and table_name='specialty_types' and column_name='label')
+    into has_label;
+
+  select exists (select 1 from information_schema.columns where table_schema='public' and table_name='specialty_types' and column_name='vertical_group')
+    into has_vertical_group;
+
+  select exists (select 1 from information_schema.columns where table_schema='public' and table_name='specialty_types' and column_name='vertical_code')
+    into has_vertical_code;
+
+  select exists (select 1 from information_schema.columns where table_schema='public' and table_name='specialty_types' and column_name='requires_compliance')
+    into has_requires_compliance;
+
+  select exists (select 1 from information_schema.columns where table_schema='public' and table_name='specialty_types' and column_name='kids_allowed')
+    into has_kids_allowed;
+
+  select exists (select 1 from information_schema.columns where table_schema='public' and table_name='specialty_types' and column_name='default_visibility')
+    into has_default_visibility;
+
+  select exists (select 1 from information_schema.columns where table_schema='public' and table_name='specialty_types' and column_name='description')
+    into has_description;
+
+  -- Seed a minimal but stable interests taxonomy.
+  -- Keep it small + canonical: these can expand later via separate migrations.
+  perform upsert_specialty('INTERESTS_GENERAL', 'Interests (General)', 'INTERESTS', 'INTERESTS');
+  perform upsert_specialty('INTERESTS_HOBBIES', 'Hobbies', 'INTERESTS', 'INTERESTS');
+  perform upsert_specialty('INTERESTS_SPORTS', 'Sports', 'INTERESTS', 'INTERESTS');
+  perform upsert_specialty('INTERESTS_ARTS', 'Arts', 'INTERESTS', 'INTERESTS');
+  perform upsert_specialty('INTERESTS_TECH', 'Technology', 'INTERESTS', 'INTERESTS');
+  perform upsert_specialty('INTERESTS_MUSIC', 'Music', 'INTERESTS', 'INTERESTS');
+  perform upsert_specialty('INTERESTS_FOOD', 'Food', 'INTERESTS', 'INTERESTS');
+end $$;
 
 commit;
