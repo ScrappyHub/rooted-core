@@ -62,7 +62,7 @@ begin
     return coalesce(v, 'free');
   end if;
 
-  -- Fallback: derive from user_tiers (owner_user_id -> user_tiers.tier) if available
+  -- Fallback: derive from user_tiers via owner_user_id (if available)
   if exists (
     select 1 from information_schema.tables
     where table_schema='public' and table_name='user_tiers'
@@ -89,7 +89,6 @@ begin
     return coalesce(v, 'free');
   end if;
 
-  -- Last resort
   return 'free';
 end;
 $$;
