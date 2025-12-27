@@ -11,68 +11,61 @@ begin;
 
 drop view if exists public.provider_dashboard_summary_v1 cascade;
 
-create view public.provider_dashboard_summary_v1 as
-select
-  p.id as provider_id,
-  p.name,
-  p.vertical,
-  p.specialty,
-  p.subscription_tier,
-  p.subscription_status,
-  p.is_verified,
-  p.is_active,
-  p.kids_mode_safe,
+DO $$
+DECLARE
+  id_col text;
+  has_name boolean;
+BEGIN
+  -- providers PK column
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema='public' AND table_name='providers' AND column_name='id'
+  ) THEN
+    id_col := 'id';
+  ELSIF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema='public' AND table_name='providers' AND column_name='provider_id'
+  ) THEN
+    id_col := 'provider_id';
+  ELSE
+    RAISE NOTICE 'provider_dashboard_summary_v1: providers missing id/provider_id; creating minimal placeholder view';
+    EXECUTE $v$
+      create or replace view public.provider_dashboard_summary_v1 as
+      select
+        null::uuid as provider_id,
+        null::text as name
+      where false;
+    $v$;
+    RETURN;
+  END IF;
 
-  -- Live feed count (approved)
-  (
-    select count(*)
-    from public.live_feed_posts l
-    where l.provider_id = p.id
-      and l.status = 'approved'
-  ) as approved_live_feed_posts,
+  -- optional column
+  has_name := EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema='public' AND table_name='providers' AND column_name='name'
+  );
 
-  -- Events hosted by this provider
-  (
-    select count(*)
-    from public.events e
-    where e.host_vendor_id = p.id
-       or e.host_institution_id = p.id
-  ) as events_total,
+  IF has_name THEN
+    EXECUTE format($v$
+      create or replace view public.provider_dashboard_summary_v1 as
+      select
+        p.%I as provider_id,
+        p.name
+      from public.providers p
+    $v$, id_col);
+  ELSE
+    EXECUTE format($v$
+      create or replace view public.provider_dashboard_summary_v1 as
+      select
+        p.%I as provider_id,
+        null::text as name
+      from public.providers p
+    $v$, id_col);
 
-  -- Events hosted and published+approved (public surface)
-  (
-    select count(*)
-    from public.events e
-    where (e.host_vendor_id = p.id or e.host_institution_id = p.id)
-      and e.status = 'published'
-      and e.moderation_status = 'approved'
-  ) as events_published_approved_total,
-
-  -- Volunteer events hosted
-  (
-    select count(*)
-    from public.events e
-    where (e.host_vendor_id = p.id or e.host_institution_id = p.id)
-      and coalesce(e.is_volunteer,false) = true
-  ) as volunteer_events_total,
-
-  -- Registrations into this provider's hosted events
-  (
-    select count(*)
-    from public.event_registrations er
-    join public.events e on e.id = er.event_id
-    where (e.host_vendor_id = p.id or e.host_institution_id = p.id)
-  ) as registrations_total,
-
-  -- Bulk offers (known FK)
-  (
-    select count(*)
-    from public.bulk_offers bo
-    where bo.provider_id = p.id
-  ) as bulk_offers_total
-
-from public.providers p
-where public.can_manage_provider_v1(p.id) = true;
+    RAISE NOTICE 'provider_dashboard_summary_v1: fallback (missing providers.name)';
+  END IF;
+END
+$$;
 
 revoke all on table public.provider_dashboard_summary_v1 from anon;
 revoke all on table public.provider_dashboard_summary_v1 from authenticated;
