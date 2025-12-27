@@ -25,14 +25,73 @@ grant execute on function public.is_admin_v1() to service_role;
 
 create or replace function public.provider_tier_v1(p_provider_id uuid)
 returns text
-language sql
+language plpgsql
 stable
 security definer
 set search_path = public, pg_temp
 as $$
-  select p.subscription_tier
-  from public.providers p
-  where p.id = p_provider_id;
+declare
+  v text;
+  id_col text;
+begin
+  -- Identify provider PK column (id vs provider_id)
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema='public' and table_name='providers' and column_name='id'
+  ) then
+    id_col := 'id';
+  elsif exists (
+    select 1 from information_schema.columns
+    where table_schema='public' and table_name='providers' and column_name='provider_id'
+  ) then
+    id_col := 'provider_id';
+  else
+    raise notice 'provider_tier_v1: providers has no id/provider_id column; returning free';
+    return 'free';
+  end if;
+
+  -- Preferred: providers.subscription_tier (if present)
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema='public' and table_name='providers' and column_name='subscription_tier'
+  ) then
+    execute format('select p.subscription_tier from public.providers p where p.%I = $1', id_col)
+      into v
+      using p_provider_id;
+
+    return coalesce(v, 'free');
+  end if;
+
+  -- Fallback: derive from user_tiers (owner_user_id -> user_tiers.tier) if available
+  if exists (
+    select 1 from information_schema.tables
+    where table_schema='public' and table_name='user_tiers'
+  ) and exists (
+    select 1 from information_schema.columns
+    where table_schema='public' and table_name='providers' and column_name='owner_user_id'
+  ) and exists (
+    select 1 from information_schema.columns
+    where table_schema='public' and table_name='user_tiers' and column_name='user_id'
+  ) and exists (
+    select 1 from information_schema.columns
+    where table_schema='public' and table_name='user_tiers' and column_name='tier'
+  ) then
+    execute format(
+      'select ut.tier
+         from public.providers p
+         join public.user_tiers ut on ut.user_id = p.owner_user_id
+        where p.%I = $1',
+      id_col
+    )
+    into v
+    using p_provider_id;
+
+    return coalesce(v, 'free');
+  end if;
+
+  -- Last resort
+  return 'free';
+end;
 $$;
 
 revoke all on function public.provider_tier_v1(uuid) from anon;

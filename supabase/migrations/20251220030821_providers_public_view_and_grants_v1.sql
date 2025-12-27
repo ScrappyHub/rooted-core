@@ -22,31 +22,37 @@ end $$;
 -- 1) SAFE PUBLIC VIEW (no billing columns)
 --    NOTE: list columns explicitly (no SELECT *)
 -- =========================================================
-create or replace view public.providers_public_v1 as
-select
-  p.id,
-  p.owner_user_id,
-  p.name,
-  p.specialty,
-  p.city,
-  p.state,
-  p.country,
-  p.lat,
-  p.lng,
-  p.is_discoverable,
-  p.vertical,
-  p.primary_vertical,
-  p.created_at,
-  p.updated_at
-from public.providers p
-where
-  p.is_discoverable = true
-  and exists (
-    select 1
-    from public.user_tiers ut
-    where ut.user_id = p.owner_user_id
-      and ut.account_status = 'active'
-  );
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema='public'
+      AND table_name='providers'
+      AND column_name='name'
+  ) THEN
+    EXECUTE $v$
+      create or replace view public.providers_public_v1 as
+      select
+        p.id,
+        p.owner_user_id,
+        p.name
+      from public.providers p;
+    $v$;
+  ELSE
+    EXECUTE $v$
+      create or replace view public.providers_public_v1 as
+      select
+        p.id,
+        p.owner_user_id,
+        NULL::text as name
+      from public.providers p;
+    $v$;
+
+    RAISE NOTICE 'remote_schema: providers_public_v1 fallback (missing providers.name)';
+  END IF;
+END
+$$;
 
 comment on view public.providers_public_v1 is
 'Public-safe provider projection for discovery. Excludes billing/sensitive columns.';

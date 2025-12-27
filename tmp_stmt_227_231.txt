@@ -1,0 +1,48 @@
+===== STATEMENT 227 =====
+alter table "public"."specialty_types" add column "kids_allowed" boolean not null default true;
+
+===== STATEMENT 228 =====
+alter table "public"."specialty_types" add column "requires_compliance" boolean not null default true;
+
+===== STATEMENT 229 =====
+alter table "public"."specialty_types" add column "vertical_code" text;
+
+===== STATEMENT 230 =====
+do $$
+begin
+  if exists (
+    select 1
+    from information_schema.columns
+    where table_schema='public'
+      and table_name='specialty_types'
+      and column_name='vertical_group'
+  ) then
+    alter table public.specialty_types alter column vertical_group set not null;
+  else
+    raise notice 'remote_schema: skipping SET NOT NULL (missing column) public.specialty_types.vertical_group';
+  end if;
+END $\$;
+alter table "public"."vertical_canonical_specialties" drop column if exists "created_at";
+
+alter table "public"."vertical_canonical_specialties" drop column if exists "updated_at";
+
+alter table "public"."vertical_canonical_specialties" alter column "is_default" set default false;
+
+alter table "public"."vertical_canonical_specialties" alter column "is_default" drop not null;
+
+alter table "public"."vertical_policy" alter column "allowed_roles" set default ARRAY['individual'::text, 'vendor'::text, 'institution'::text, 'admin'::text];
+
+do $$
+begin
+  if exists (
+    select 1
+    from information_schema.columns
+    where table_schema='public'
+      and table_name='specialty_types'
+      and column_name='vertical_group'
+  ) then
+    alter table public.specialty_types alter column vertical_group set not null;
+
+===== STATEMENT 231 =====
+else
+    raise notice 'remote_schema: skipping SET NOT NULL (missing column) public.specialty_types.vertical_group';

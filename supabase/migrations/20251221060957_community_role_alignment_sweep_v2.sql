@@ -68,8 +68,14 @@ select * from function_hits;
 
 -- Lock down diagnostics view to admins only (RLS doesnâ€™t apply to views; use grants)
 revoke all on public.admin_role_string_hits_v1 from public;
-grant select on public.admin_role_string_hits_v1 to authenticated;
-
+DO $$
+BEGIN
+  IF to_regclass('public.admin_role_string_hits_v1') IS NOT NULL THEN
+    EXECUTE 'grant select on public.admin_role_string_hits_v1 to authenticated';
+  ELSE
+    RAISE NOTICE 'remote_schema: skip grant missing view public.admin_role_string_hits_v1 to authenticated';
+  END IF;
+END $$;
 -- (Optional) if you have an is_admin() function (you do), we keep this as *convention*:
 comment on view public.admin_role_string_hits_v1
 is 'Admin diagnostics: shows any policy/function code containing the string "individual".';
