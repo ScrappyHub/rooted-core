@@ -1,3 +1,20 @@
+-- =========================================
+-- ROOTED CORE: PASSWORD ROTATION GATE (compat stub)
+-- - Some RLS policies reference public.password_rotation_required(uuid)
+-- - If your schema hasn't implemented rotation tracking yet, this returns FALSE (no lockout)
+-- - Later you can upgrade this to real enforcement without changing policy signatures.
+-- =========================================
+
+create or replace function public.password_rotation_required(p_user_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public, pg_temp
+as $$
+  select false::boolean;
+$$;
+
 -- =========================================================
 -- ROOTED HARDENING v2:
 -- Gate sensitive writes if password rotation required
