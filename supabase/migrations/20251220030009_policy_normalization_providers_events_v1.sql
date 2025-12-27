@@ -44,19 +44,35 @@ drop policy if exists "Enable insert for authenticated users only" on public.pro
 -- =========================================
 
 -- 1) Public/Anon discovery read: ONLY discoverable + active owner account
-create policy providers_public_read_discoverable_v2
-on public.providers
-for select
-to anon, authenticated
-using (
-  is_discoverable = true
-  and exists (
-    select 1
-    from public.user_tiers ut
-    where ut.user_id = providers.owner_user_id
-      and ut.account_status = 'active'
-  )
-);
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name   = 'providers'
+      AND column_name  = 'is_discoverable'
+  ) THEN
+    EXECUTE $pol$
+      create policy providers_public_read_discoverable_v2
+      on public.providers
+      for select
+      to anon, authenticated
+      using (
+        is_discoverable = true
+        and exists (
+          select 1
+          from public.user_tiers ut
+          where ut.user_id = providers.owner_user_id
+            and ut.account_status = 'active'
+        )
+      );
+    $pol$;
+  ELSE
+    RAISE NOTICE 'remote_schema: skipped providers_public_read_discoverable_v2 (missing providers.is_discoverable)';
+  END IF;
+END
+$$;
 
 -- 2) Owner can read their own row (authenticated only)
 create policy providers_owner_read_v2

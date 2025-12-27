@@ -40,8 +40,14 @@ select * from function_hits;
 revoke all on public.admin_role_string_hits_v2 from public;
 
 -- NOTE: keep same behavior as your v1 for now; if you want admin-only weâ€™ll change grants next.
-grant select on public.admin_role_string_hits_v2 to authenticated;
-
+DO $$
+BEGIN
+  IF to_regclass('public.admin_role_string_hits_v2') IS NOT NULL THEN
+    EXECUTE 'grant select on public.admin_role_string_hits_v2 to authenticated';
+  ELSE
+    RAISE NOTICE 'remote_schema: skip grant missing view public.admin_role_string_hits_v2 to authenticated';
+  END IF;
+END $$;
 comment on view public.admin_role_string_hits_v2
 is 'Admin diagnostics (v2): finds string "individual" in policies and in functions via pg_proc.prosrc (no pg_get_functiondef).';
 
