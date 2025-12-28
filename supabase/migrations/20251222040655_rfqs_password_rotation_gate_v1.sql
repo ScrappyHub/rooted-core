@@ -1,4 +1,4 @@
-﻿BEGIN;
+BEGIN;
 
 DROP POLICY IF EXISTS rfqs_deny_write_if_password_rotation_required_v1
 ON public.rfqs;

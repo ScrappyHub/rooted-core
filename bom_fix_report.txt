@@ -1,0 +1,6 @@
+RepoRoot: C:/rooted-live/rooted-core
+Timestamp: 12/27/2025 8:10:22 PM
+files_changed=1 utf8_boms_removed=1 utf16_converted=0
+
+Changed files:
+Removed UTF-8 BOM x1 in: C:\rooted-live\rooted-core\supabase\migrations\20251222040655_rfqs_password_rotation_gate_v1.sql
