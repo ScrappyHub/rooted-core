@@ -13,7 +13,7 @@ begin;
 -- ============================================================
 -- 0) Canonical normalization: keep codes consistent with provider normalization
 -- ============================================================
-do \$\$
+do $$
 begin
   if exists (
     select 1
@@ -27,18 +27,18 @@ begin
     where vertical_code  <> upper(vertical_code)
        or specialty_code <> upper(specialty_code);
   end if;
-end \$\$;
+end $$;
 
 create or replace function public.vertical_canonical_specialties_normalize_v1()
 returns trigger
 language plpgsql
-as \$\$
+as $$
 begin
   if new.vertical_code is not null then new.vertical_code := upper(new.vertical_code); end if;
   if new.specialty_code is not null then new.specialty_code := upper(new.specialty_code); end if;
   return new;
 end;
-\$\$;
+$$;
 
 drop trigger if exists trg_vertical_canonical_specialties_normalize_v1 on public.vertical_canonical_specialties;
 
@@ -51,7 +51,7 @@ execute function public.vertical_canonical_specialties_normalize_v1();
 -- ============================================================
 -- 1) Ensure BOTH event host FKs exist
 -- ============================================================
-do \$\$
+do $$
 begin
   if not exists (select 1 from pg_constraint where conname='events_host_vendor_fkey') then
     alter table public.events
@@ -68,12 +68,12 @@ begin
       references public.providers(id)
       on delete set null;
   end if;
-end \$\$;
+end $$;
 
 -- ============================================================
 -- 2) Host correctness CHECK (NOT VALID first to avoid legacy rows blocking deploy)
 -- ============================================================
-do \$\$
+do $$
 begin
   if not exists (select 1 from pg_constraint where conname='events_exactly_one_host_chk') then
     alter table public.events
@@ -84,7 +84,7 @@ begin
       )
       not valid;
   end if;
-end \$\$;
+end $$;
 
 -- ============================================================
 -- 3) Core correctness trigger: host required + role correctness
@@ -94,7 +94,7 @@ returns trigger
 language plpgsql
 security definer
 set search_path = public, auth
-as \$\$
+as $$
 declare
   vendor_owner uuid;
   institution_owner uuid;
@@ -150,7 +150,7 @@ begin
 
   return new;
 end;
-\$\$;
+$$;
 
 drop trigger if exists trg_enforce_event_host_roles_v1 on public.events;
 
@@ -187,7 +187,7 @@ create table if not exists public.event_collaborators (
     unique (event_id, provider_id, collab_type)
 );
 
-do \$\$
+do $$
 begin
   if exists (select 1 from pg_proc where proname='set_updated_at') then
     drop trigger if exists trg_event_collaborators_updated_at on public.event_collaborators;
@@ -196,7 +196,7 @@ begin
     for each row
     execute function public.set_updated_at();
   end if;
-end \$\$;
+end $$;
 
 -- ============================================================
 -- 5) RLS helpers (audit-first)
@@ -209,7 +209,7 @@ language sql
 stable
 security definer
 set search_path = public, pg_temp
-as \$\$
+as $$
   select exists (
     select 1
     from public.user_tiers ut
@@ -217,7 +217,7 @@ as \$\$
       and ut.role = 'admin'
       and ut.account_status = 'active'
   );
-\$\$;
+$$;
 
 create or replace function public.is_event_host_owner_v1(p_event_id uuid, p_user_id uuid)
 returns boolean
@@ -225,7 +225,7 @@ language sql
 stable
 security definer
 set search_path = public, pg_temp
-as \$\$
+as $$
   select exists (
     select 1
     from public.events e
@@ -234,7 +234,7 @@ as \$\$
     where e.id = p_event_id
       and (pv.owner_user_id = p_user_id or pi.owner_user_id = p_user_id)
   );
-\$\$;
+$$;
 
 create or replace function public.is_provider_owner_v1(p_provider_id uuid, p_user_id uuid)
 returns boolean
@@ -242,14 +242,14 @@ language sql
 stable
 security definer
 set search_path = public, pg_temp
-as \$\$
+as $$
   select exists (
     select 1
     from public.providers p
     where p.id = p_provider_id
       and p.owner_user_id = p_user_id
   );
-\$\$;
+$$;
 
 -- EXECUTE hardening (do not leave SECURITY DEFINER funcs callable by PUBLIC)
 revoke all on function public.is_admin_v1(uuid) from public;
@@ -342,7 +342,7 @@ where e.id = c.event_id
   and c.owned_provider_ct = 1;
 
 -- Validate once constraints are satisfiable
-do \$\$
+do $$
 begin
   if exists (
     select 1
@@ -353,6 +353,6 @@ begin
     alter table public.events
       validate constraint events_exactly_one_host_chk;
   end if;
-end \$\$;
+end $$;
 
 commit;
