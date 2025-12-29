@@ -1,9 +1,10 @@
 begin;
 
 -- ============================================================
--- ROOTED: Phase 2 Seed (FK-SAFE + PK-SAFE, DB-truth safe)
+-- ROOTED: Phase 2 Seed (FK-SAFE + PK-SAFE + DISPLAY_NAME SAFE)
 -- - billing_entitlements PK(entitlement_key) => one row per entitlement_key
 -- - billing_entitlements.product_key FK -> billing_products(product_key) => seed products first
+-- - billing_products.display_name NOT NULL => always populate if column exists
 -- ============================================================
 
 -- 0) Preconditions
@@ -148,14 +149,33 @@ where not exists (
     and vlp.lane_code = lane.lane_code
 );
 
--- 5) Seed billing_products (IDEMPOTENT, column-safe via dynamic SQL)
+-- 5) Seed billing_products (DISPLAY_NAME SAFE, idempotent, dynamic)
 do $$
 declare
+  has_display_name boolean;
+  has_display_description boolean;
   has_label boolean;
   has_description boolean;
   has_is_active boolean;
+  has_active boolean;
   has_metadata boolean;
+
+  -- Guardrail: fail if there are other NOT NULL columns without defaults (besides product_key/display_name/etc)
+  must_cols text[];
+  unknown_required text[];
+
+  active_col text;
 begin
+  select exists (
+    select 1 from information_schema.columns
+    where table_schema='public' and table_name='billing_products' and column_name='display_name'
+  ) into has_display_name;
+
+  select exists (
+    select 1 from information_schema.columns
+    where table_schema='public' and table_name='billing_products' and column_name in ('display_description','display_desc')
+  ) into has_display_description;
+
   select exists (
     select 1 from information_schema.columns
     where table_schema='public' and table_name='billing_products' and column_name='label'
@@ -168,138 +188,86 @@ begin
 
   select exists (
     select 1 from information_schema.columns
-    where table_schema='public' and table_name='billing_products' and column_name in ('is_active','active')
+    where table_schema='public' and table_name='billing_products' and column_name='is_active'
   ) into has_is_active;
+
+  select exists (
+    select 1 from information_schema.columns
+    where table_schema='public' and table_name='billing_products' and column_name='active'
+  ) into has_active;
 
   select exists (
     select 1 from information_schema.columns
     where table_schema='public' and table_name='billing_products' and column_name='metadata'
   ) into has_metadata;
 
-  -- Insert only product_key if that's all that exists
-  if not has_label and not has_description and not has_is_active and not has_metadata then
-    execute $q$
-      insert into public.billing_products (product_key)
-      select x.product_key
-      from (values
-        ('rooted_base'),
-        ('rooted_premium'),
-        ('rooted_premium_plus'),
-        ('rooted_commerce'),
-        ('rooted_payments'),
-        ('rooted_streaming'),
-        ('rooted_games'),
-        ('pack_b2b_bulk'),
-        ('pack_b2b_bid'),
-        ('pack_b2g'),
-        ('pack_ad_free')
-      ) x(product_key)
-      where not exists (select 1 from public.billing_products bp where bp.product_key = x.product_key)
-    $q$;
-    return;
+  active_col := case when has_is_active then 'is_active' when has_active then 'active' else null end;
+
+  -- Identify NOT NULL cols that have no default; if any are not in our known set, hard fail (DB-truth).
+  select array_agg(column_name order by ordinal_position)
+  into must_cols
+  from information_schema.columns
+  where table_schema='public'
+    and table_name='billing_products'
+    and is_nullable='NO'
+    and column_default is null
+    and column_name not in (
+      'product_key',
+      'display_name','display_description','display_desc',
+      'label','description',
+      'metadata',
+      'is_active','active'
+    );
+
+  if must_cols is not null then
+    raise exception 'billing_products has additional NOT NULL columns without defaults that this seed does not know how to satisfy: %', must_cols;
   end if;
 
-  -- Otherwise: insert with whatever columns exist
-  if has_is_active then
-    if has_label and has_description and has_metadata then
-      execute $q$
-        insert into public.billing_products (product_key, label, description, is_active, metadata)
-        select x.product_key, x.label, x.description, true, x.metadata::jsonb
-        from (values
-          ('rooted_base','ROOTED Base','Base product marker for foundational capabilities.','{"seed":"phase2"}'),
-          ('rooted_premium','ROOTED Premium','Premium subscription marker.','{"seed":"phase2"}'),
-          ('rooted_premium_plus','ROOTED Premium Plus','Premium Plus subscription marker.','{"seed":"phase2"}'),
-          ('rooted_commerce','ROOTED Commerce','Commerce capability marker.','{"seed":"phase2"}'),
-          ('rooted_payments','ROOTED Payments','Payments capability marker.','{"seed":"phase2"}'),
-          ('rooted_streaming','ROOTED Streaming','Streaming capability marker.','{"seed":"phase2"}'),
-          ('rooted_games','ROOTED Games','Games library capability marker.','{"seed":"phase2"}'),
-          ('pack_b2b_bulk','Pack: B2B Bulk','Add-on pack for bulk procurement.','{"seed":"phase2","pack":true}'),
-          ('pack_b2b_bid','Pack: B2B Bid','Add-on pack for bidding/RFQs.','{"seed":"phase2","pack":true}'),
-          ('pack_b2g','Pack: B2G','Add-on pack for government procurement.','{"seed":"phase2","pack":true}'),
-          ('pack_ad_free','Pack: Ad-Free','Add-on pack for ad-free media.','{"seed":"phase2","pack":true}')
-        ) x(product_key,label,description,metadata)
-        where not exists (select 1 from public.billing_products bp where bp.product_key = x.product_key)
-      $q$;
-    elsif has_label and has_description then
-      execute $q$
-        insert into public.billing_products (product_key, label, description, is_active)
-        select x.product_key, x.label, x.description, true
-        from (values
-          ('rooted_base','ROOTED Base','Base product marker for foundational capabilities.'),
-          ('rooted_premium','ROOTED Premium','Premium subscription marker.'),
-          ('rooted_premium_plus','ROOTED Premium Plus','Premium Plus subscription marker.'),
-          ('rooted_commerce','ROOTED Commerce','Commerce capability marker.'),
-          ('rooted_payments','ROOTED Payments','Payments capability marker.'),
-          ('rooted_streaming','ROOTED Streaming','Streaming capability marker.'),
-          ('rooted_games','ROOTED Games','Games library capability marker.'),
-          ('pack_b2b_bulk','Pack: B2B Bulk','Add-on pack for bulk procurement.'),
-          ('pack_b2b_bid','Pack: B2B Bid','Add-on pack for bidding/RFQs.'),
-          ('pack_b2g','Pack: B2G','Add-on pack for government procurement.'),
-          ('pack_ad_free','Pack: Ad-Free','Add-on pack for ad-free media.')
-        ) x(product_key,label,description)
-        where not exists (select 1 from public.billing_products bp where bp.product_key = x.product_key)
-      $q$;
-    elsif has_label then
-      execute $q$
-        insert into public.billing_products (product_key, label, is_active)
-        select x.product_key, x.label, true
-        from (values
-          ('rooted_base','ROOTED Base'),
-          ('rooted_premium','ROOTED Premium'),
-          ('rooted_premium_plus','ROOTED Premium Plus'),
-          ('rooted_commerce','ROOTED Commerce'),
-          ('rooted_payments','ROOTED Payments'),
-          ('rooted_streaming','ROOTED Streaming'),
-          ('rooted_games','ROOTED Games'),
-          ('pack_b2b_bulk','Pack: B2B Bulk'),
-          ('pack_b2b_bid','Pack: B2B Bid'),
-          ('pack_b2g','Pack: B2G'),
-          ('pack_ad_free','Pack: Ad-Free')
-        ) x(product_key,label)
-        where not exists (select 1 from public.billing_products bp where bp.product_key = x.product_key)
-      $q$;
-    else
-      execute $q$
-        insert into public.billing_products (product_key, is_active)
-        select x.product_key, true
-        from (values
-          ('rooted_base'),
-          ('rooted_premium'),
-          ('rooted_premium_plus'),
-          ('rooted_commerce'),
-          ('rooted_payments'),
-          ('rooted_streaming'),
-          ('rooted_games'),
-          ('pack_b2b_bulk'),
-          ('pack_b2b_bid'),
-          ('pack_b2g'),
-          ('pack_ad_free')
-        ) x(product_key)
-        where not exists (select 1 from public.billing_products bp where bp.product_key = x.product_key)
-      $q$;
-    end if;
+  -- Most DBs: product_key + display_name required. We will ALWAYS populate display_name if column exists.
+  if has_display_name then
+    -- Build insert with columns that exist
+    execute format($q$
+      insert into public.billing_products (%s)
+      select %s
+      from (values
+        ('rooted_base',        'ROOTED Base',         'Base product marker for foundational capabilities.', '{"seed":"phase2"}'),
+        ('rooted_premium',     'ROOTED Premium',      'Premium subscription marker.',                      '{"seed":"phase2"}'),
+        ('rooted_premium_plus','ROOTED Premium Plus', 'Premium Plus subscription marker.',                 '{"seed":"phase2"}'),
+        ('rooted_commerce',    'ROOTED Commerce',     'Commerce capability marker.',                       '{"seed":"phase2"}'),
+        ('rooted_payments',    'ROOTED Payments',     'Payments capability marker.',                       '{"seed":"phase2"}'),
+        ('rooted_streaming',   'ROOTED Streaming',    'Streaming capability marker.',                      '{"seed":"phase2"}'),
+        ('rooted_games',       'ROOTED Games',        'Games library capability marker.',                  '{"seed":"phase2"}'),
+        ('pack_b2b_bulk',      'Pack: B2B Bulk',      'Add-on pack for bulk procurement.',                 '{"seed":"phase2","pack":true}'),
+        ('pack_b2b_bid',       'Pack: B2B Bid',       'Add-on pack for bidding/RFQs.',                     '{"seed":"phase2","pack":true}'),
+        ('pack_b2g',           'Pack: B2G',           'Add-on pack for government procurement.',           '{"seed":"phase2","pack":true}'),
+        ('pack_ad_free',       'Pack: Ad-Free',       'Add-on pack for ad-free media.',                    '{"seed":"phase2","pack":true}')
+      ) x(product_key, display_name, descr, meta)
+      where not exists (select 1 from public.billing_products bp where bp.product_key = x.product_key)
+    $q$,
+      -- column list
+      concat_ws(',',
+        'product_key',
+        'display_name',
+        case when has_display_description then 'display_description' else null end,
+        case when has_label then 'label' else null end,
+        case when has_description then 'description' else null end,
+        case when active_col is not null then active_col else null end,
+        case when has_metadata then 'metadata' else null end
+      ),
+      -- select list aligned with columns above
+      concat_ws(',',
+        'x.product_key',
+        'x.display_name',
+        case when has_display_description then 'x.descr' else null end,
+        case when has_label then 'x.display_name' else null end,
+        case when has_description then 'x.descr' else null end,
+        case when active_col is not null then 'true' else null end,
+        case when has_metadata then 'x.meta::jsonb' else null end
+      )
+    );
   else
-    -- No is_active column; fall back to product_key (+ optional label/description/metadata)
-    if has_label and has_description and has_metadata then
-      execute $q$
-        insert into public.billing_products (product_key, label, description, metadata)
-        select x.product_key, x.label, x.description, x.metadata::jsonb
-        from (values
-          ('rooted_base','ROOTED Base','Base product marker for foundational capabilities.','{"seed":"phase2"}'),
-          ('rooted_premium','ROOTED Premium','Premium subscription marker.','{"seed":"phase2"}'),
-          ('rooted_premium_plus','ROOTED Premium Plus','Premium Plus subscription marker.','{"seed":"phase2"}'),
-          ('rooted_commerce','ROOTED Commerce','Commerce capability marker.','{"seed":"phase2"}'),
-          ('rooted_payments','ROOTED Payments','Payments capability marker.','{"seed":"phase2"}'),
-          ('rooted_streaming','ROOTED Streaming','Streaming capability marker.','{"seed":"phase2"}'),
-          ('rooted_games','ROOTED Games','Games library capability marker.','{"seed":"phase2"}'),
-          ('pack_b2b_bulk','Pack: B2B Bulk','Add-on pack for bulk procurement.','{"seed":"phase2","pack":true}'),
-          ('pack_b2b_bid','Pack: B2B Bid','Add-on pack for bidding/RFQs.','{"seed":"phase2","pack":true}'),
-          ('pack_b2g','Pack: B2G','Add-on pack for government procurement.','{"seed":"phase2","pack":true}'),
-          ('pack_ad_free','Pack: Ad-Free','Add-on pack for ad-free media.','{"seed":"phase2","pack":true}')
-        ) x(product_key,label,description,metadata)
-        where not exists (select 1 from public.billing_products bp where bp.product_key = x.product_key)
-      $q$;
-    elsif has_label and has_description then
+    -- No display_name column: fall back to whatever exists (label/description/etc), else product_key only.
+    if has_label and has_description then
       execute $q$
         insert into public.billing_products (product_key, label, description)
         select x.product_key, x.label, x.description
@@ -319,9 +287,9 @@ begin
         where not exists (select 1 from public.billing_products bp where bp.product_key = x.product_key)
       $q$;
     elsif has_label then
-      execute $q$
-        insert into public.billing_products (product_key, label)
-        select x.product_key, x.label
+      execute format($q$
+        insert into public.billing_products (product_key, label%s%s)
+        select x.product_key, x.label%s%s
         from (values
           ('rooted_base','ROOTED Base'),
           ('rooted_premium','ROOTED Premium'),
@@ -336,7 +304,12 @@ begin
           ('pack_ad_free','Pack: Ad-Free')
         ) x(product_key,label)
         where not exists (select 1 from public.billing_products bp where bp.product_key = x.product_key)
-      $q$;
+      $q$,
+        case when active_col is not null then ','||active_col else '' end,
+        case when has_metadata then ',metadata' else '' end,
+        case when active_col is not null then ',true' else '' end,
+        case when has_metadata then ',''{"seed":"phase2"}''::jsonb' else '' end
+      );
     else
       execute $q$
         insert into public.billing_products (product_key)
