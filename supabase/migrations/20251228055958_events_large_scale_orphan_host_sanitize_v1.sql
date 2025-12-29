@@ -1,84 +1,202 @@
--- ============================================================
--- 20251228055958_events_large_scale_orphan_host_sanitize_v1.sql
--- ROOTED • Canonical Pre-Migration (Audit-first)
---
--- Purpose:
---   Satisfy CHECK events_large_scale_requires_host_institution
---   BEFORE we NULL orphan host_institution_id values.
---
--- Remote CHECK:
---   NOT( event_type='volunteer'
---        AND is_large_scale_volunteer=true
---        AND requires_institutional_partner=true
---        AND host_institution_id IS NULL )
---
--- Strategy:
---   For rows where host_institution_id is ORPHAN (missing in providers) AND the CHECK-condition flags are true,
---   set requires_institutional_partner=false (audit first). Then later migration can NULL orphan host ids safely.
---
--- Idempotent. Safe to re-run.
--- ============================================================
-
 begin;
 
-create table if not exists public.migration_audit_events_large_scale_orphan_host_v1 (
-  id bigserial primary key,
-  event_id uuid not null,
-  bad_host_institution_id uuid null,
-  prior_is_large_scale_volunteer boolean null,
-  prior_requires_institutional_partner boolean null,
-  noted_at timestamptz not null default now(),
-  note text not null default 'Orphan host_institution_id + flags sanitized to satisfy events_large_scale_requires_host_institution'
-);
+-- =========================================================
+-- PROVIDER GATES (v1)
+-- Canonical helpers for dashboards + procurement + analytics
+-- =========================================================
 
-do \$\$
+create or replace function public.is_admin_v1()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public, pg_temp
+as $$
+  select exists (
+    select 1 from public.user_tiers ut
+    where ut.user_id = auth.uid()
+      and ut.role = 'admin'
+  );
+$$;
+
+revoke all on function public.is_admin_v1() from anon;
+grant execute on function public.is_admin_v1() to authenticated;
+grant execute on function public.is_admin_v1() to service_role;
+
+create or replace function public.provider_tier_v1(p_provider_id uuid)
+returns text
+language plpgsql
+stable
+security definer
+set search_path = public, pg_temp
+as $$
 declare
-  has_large boolean;
-  has_req   boolean;
+  v text;
+  id_col text;
 begin
-  select exists (
+  -- Identify provider PK column (id vs provider_id)
+  if exists (
     select 1 from information_schema.columns
-    where table_schema='public' and table_name='events' and column_name='is_large_scale_volunteer'
-  ) into has_large;
-
-  select exists (
+    where table_schema='public' and table_name='providers' and column_name='id'
+  ) then
+    id_col := 'id';
+  elsif exists (
     select 1 from information_schema.columns
-    where table_schema='public' and table_name='events' and column_name='requires_institutional_partner'
-  ) into has_req;
-
-  if not has_large or not has_req then
-    return;
+    where table_schema='public' and table_name='providers' and column_name='provider_id'
+  ) then
+    id_col := 'provider_id';
+  else
+    raise notice 'provider_tier_v1: providers has no id/provider_id column; returning free';
+    return 'free';
   end if;
 
-  insert into public.migration_audit_events_large_scale_orphan_host_v1
-    (event_id, bad_host_institution_id, prior_is_large_scale_volunteer, prior_requires_institutional_partner)
+  -- Preferred: providers.subscription_tier (if present)
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema='public' and table_name='providers' and column_name='subscription_tier'
+  ) then
+    execute format('select p.subscription_tier from public.providers p where p.%I = $1', id_col)
+      into v
+      using p_provider_id;
+
+    return coalesce(v, 'free');
+  end if;
+
+  -- Fallback: derive from user_tiers (owner_user_id -> user_tiers.tier) if available
+  if exists (
+    select 1 from information_schema.tables
+    where table_schema='public' and table_name='user_tiers'
+  ) and exists (
+    select 1 from information_schema.columns
+    where table_schema='public' and table_name='providers' and column_name='owner_user_id'
+  ) and exists (
+    select 1 from information_schema.columns
+    where table_schema='public' and table_name='user_tiers' and column_name='user_id'
+  ) and exists (
+    select 1 from information_schema.columns
+    where table_schema='public' and table_name='user_tiers' and column_name='tier'
+  ) then
+    execute format(
+      'select ut.tier
+         from public.providers p
+         join public.user_tiers ut on ut.user_id = p.owner_user_id
+        where p.%I = $1',
+      id_col
+    )
+    into v
+    using p_provider_id;
+
+    return coalesce(v, 'free');
+  end if;
+
+  -- Last resort
+  return 'free';
+end;
+$$;
+
+revoke all on function public.provider_tier_v1(uuid) from anon;
+grant execute on function public.provider_tier_v1(uuid) to authenticated;
+grant execute on function public.provider_tier_v1(uuid) to service_role;
+
+create or replace function public.can_manage_provider_v1(p_provider_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public, pg_temp
+as $$
   select
-    e.id,
-    e.host_institution_id,
-    e.is_large_scale_volunteer,
-    e.requires_institutional_partner
-  from public.events e
-  where e.event_type = 'volunteer'
-    and coalesce(e.is_large_scale_volunteer,false) = true
-    and coalesce(e.requires_institutional_partner,false) = true
-    and e.host_institution_id is not null
-    and not exists (select 1 from public.providers p where p.id = e.host_institution_id)
-    and not exists (
+    auth.role() = 'service_role'
+    or public.is_admin_v1()
+    or exists (
       select 1
-      from public.migration_audit_events_large_scale_orphan_host_v1 a
-      where a.event_id = e.id
-        and a.bad_host_institution_id = e.host_institution_id
+      from public.providers p
+      where p.id = p_provider_id
+        and p.owner_user_id = auth.uid()
     );
+$$;
 
-  update public.events e
-  set requires_institutional_partner = false
-  where e.event_type = 'volunteer'
-    and coalesce(e.is_large_scale_volunteer,false) = true
-    and coalesce(e.requires_institutional_partner,false) = true
-    and e.host_institution_id is not null
-    and not exists (select 1 from public.providers p where p.id = e.host_institution_id);
+revoke all on function public.can_manage_provider_v1(uuid) from anon;
+grant execute on function public.can_manage_provider_v1(uuid) to authenticated;
+grant execute on function public.can_manage_provider_v1(uuid) to service_role;
 
-end
-\$\$;
+create or replace function public.can_access_provider_analytics_v1(p_provider_id uuid)
+returns boolean
+language plpgsql
+stable
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  tier text;
+  sub_status text;
+begin
+  if auth.role() = 'service_role' then
+    return true;
+  end if;
+
+  if not public.can_manage_provider_v1(p_provider_id) then
+    return false;
+  end if;
+
+  select p.subscription_tier, p.subscription_status
+    into tier, sub_status
+  from public.providers p
+  where p.id = p_provider_id;
+
+  if tier is null then
+    return false;
+  end if;
+
+  -- Optional: require active subscription for premium tiers
+  if tier in ('premium','premium_plus') and sub_status <> 'active' then
+    return false;
+  end if;
+
+  return tier in ('premium','premium_plus');
+end $$;
+
+revoke all on function public.can_access_provider_analytics_v1(uuid) from anon;
+grant execute on function public.can_access_provider_analytics_v1(uuid) to authenticated;
+grant execute on function public.can_access_provider_analytics_v1(uuid) to service_role;
+
+create or replace function public.can_access_provider_procurement_v1(p_provider_id uuid)
+returns boolean
+language plpgsql
+stable
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  tier text;
+  sub_status text;
+begin
+  if auth.role() = 'service_role' then
+    return true;
+  end if;
+
+  if not public.can_manage_provider_v1(p_provider_id) then
+    return false;
+  end if;
+
+  select p.subscription_tier, p.subscription_status
+    into tier, sub_status
+  from public.providers p
+  where p.id = p_provider_id;
+
+  if tier is null then
+    return false;
+  end if;
+
+  if tier = 'premium_plus' and sub_status = 'active' then
+    return true;
+  end if;
+
+  return false;
+end $$;
+
+revoke all on function public.can_access_provider_procurement_v1(uuid) from anon;
+grant execute on function public.can_access_provider_procurement_v1(uuid) to authenticated;
+grant execute on function public.can_access_provider_procurement_v1(uuid) to service_role;
 
 commit;
