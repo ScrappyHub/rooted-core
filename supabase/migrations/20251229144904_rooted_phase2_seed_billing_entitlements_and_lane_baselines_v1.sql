@@ -1,8 +1,12 @@
 begin;
 
--- ------------------------------------------------------------
+-- ============================================================
+-- ROOTED: Phase 2 Seed (FIXED, DB-truth safe)
+--   billing_entitlements_role_check:  role is NULL or vendor or institution
+--   billing_entitlements_tier_check:  tier is NULL or free/premium/premium_plus
+-- ============================================================
+
 -- 0) Preconditions
--- ------------------------------------------------------------
 do $$
 begin
   if to_regclass('public.billing_entitlements') is null then
@@ -10,6 +14,9 @@ begin
   end if;
   if to_regclass('public.canonical_verticals') is null then
     raise exception 'Missing required table: public.canonical_verticals';
+  end if;
+  if to_regclass('public.vertical_policy') is null then
+    raise exception 'Missing required table: public.vertical_policy';
   end if;
   if to_regclass('public.vertical_lane_policy') is null then
     raise exception 'Missing required table: public.vertical_lane_policy';
@@ -19,9 +26,7 @@ begin
   end if;
 end $$;
 
--- ------------------------------------------------------------
 -- 1) Ensure lane vocabulary (Phase 2)
--- ------------------------------------------------------------
 insert into public.lane_codes (lane_code, label, description)
 select x.lane_code, x.label, x.description
 from (values
@@ -44,11 +49,39 @@ from (values
 ) x(lane_code,label,description)
 where not exists (select 1 from public.lane_codes lc where lc.lane_code=x.lane_code);
 
--- ------------------------------------------------------------
--- 2) Normalize lane entitlement requirements (stop hardcoding premium)
---    - commerce_listings should require 'commerce' (not premium)
---    - payments should require 'payments' (not premium)
--- ------------------------------------------------------------
+-- 2) Ensure entitlement_codes registry exists + includes lane keys
+create table if not exists public.entitlement_codes (
+  entitlement_code text primary key,
+  label text not null,
+  description text not null,
+  created_at timestamptz not null default now()
+);
+
+insert into public.entitlement_codes (entitlement_code, label, description)
+select x.code, x.label, x.description
+from (values
+  ('free',          'Free',           'Free tier marker entitlement (optional).'),
+  ('premium',       'Premium',        'Premium subscription entitlement.'),
+  ('premium_plus',  'Premium Plus',   'Premium Plus subscription entitlement.'),
+
+  ('registration',  'Registration',   'Registration capability entitlement.'),
+  ('ticketing',     'Ticketing',      'Ticketing capability entitlement.'),
+  ('commerce',      'Commerce',       'Commerce capability entitlement (listings).'),
+  ('payments',      'Payments',       'Payments capability entitlement.'),
+
+  ('streaming_music','Streaming Music','Music streaming lane entitlement.'),
+  ('streaming_video','Streaming Video','Video streaming lane entitlement.'),
+  ('games_library', 'Games Library',  'Games library entitlement.'),
+
+  ('b2b_bulk',      'B2B Bulk',       'Bulk procurement capability entitlement.'),
+  ('b2b_bid',       'B2B Bid',        'RFQ/bidding capability entitlement.'),
+  ('b2g_procurement','B2G Procurement','Government procurement capability entitlement.'),
+
+  ('ad_free_media', 'Ad-Free Media',  'Remove ads in media experiences.')
+) x(code,label,description)
+where not exists (select 1 from public.entitlement_codes ec where ec.entitlement_code=x.code);
+
+-- 3) Normalize lane entitlement requirements (remove premium hardcoding)
 update public.vertical_lane_policy
 set requires_entitlement_code = 'commerce'
 where lane_code = 'commerce_listings'
@@ -59,19 +92,7 @@ set requires_entitlement_code = 'payments'
 where lane_code = 'payments'
   and (requires_entitlement_code is null or requires_entitlement_code in ('premium','premium_plus'));
 
--- Optional: streaming lanes can require streaming_* entitlements if you want them gated.
--- Keeping them NULL for "free experiment" unless explicitly required by your policy.
-
--- ------------------------------------------------------------
--- 3) Ensure baseline lane rows exist for EVERY canonical vertical
---    Canonical defaults:
---      - discovery: ON (moderated)
---      - events: OFF unless vertical_policy.allows_events
---      - registration: OFF unless vertical_policy requires_age_rules_for_registration (or max_engine_state>=registration)
---      - ticketing: OFF by default
---      - commerce_listings/payments: OFF unless vertical_policy.allows_payments
---      - b2b/b2g/games/streaming: OFF by default (explicit enable later)
--- ------------------------------------------------------------
+-- 4) Ensure baseline lane rows exist for EVERY canonical vertical (no missing rows)
 insert into public.vertical_lane_policy (
   vertical_code, lane_code, enabled, requires_entitlement_code, requires_moderation, requires_age_gate, notes
 )
@@ -81,7 +102,7 @@ select
   case
     when lane.lane_code = 'discovery' then true
     when lane.lane_code = 'events' then coalesce(vp.allows_events,false)
-    when lane.lane_code = 'commerce_listings' then coalesce(vp.allows_payments,false)  -- commerce verticals
+    when lane.lane_code = 'commerce_listings' then coalesce(vp.allows_payments,false)
     when lane.lane_code = 'payments' then coalesce(vp.allows_payments,false)
     else false
   end as enabled,
@@ -99,11 +120,8 @@ select
     else null
   end as requires_entitlement_code,
   true as requires_moderation,
-  case
-    when lane.lane_code in ('registration','ticketing') then true
-    else false
-  end as requires_age_gate,
-  'Phase2 baseline lane row (seeded)' as notes
+  (lane.lane_code in ('registration','ticketing')) as requires_age_gate,
+  'Phase2 baseline lane row (seeded, DB-truth)' as notes
 from public.canonical_verticals cv
 join public.vertical_policy vp on vp.vertical_code = cv.vertical_code
 cross join (values
@@ -127,68 +145,43 @@ where not exists (
     and vlp.lane_code = lane.lane_code
 );
 
--- ------------------------------------------------------------
--- 4) Seed billing_entitlements (policy rows) for base tiers + packs
---    This DOES NOT assign users; it defines what each role/tier gets.
---    You can expand later without schema change.
--- ------------------------------------------------------------
-
--- BASE: free tier baseline (kept minimal)
-insert into public.billing_entitlements (entitlement_key, product_key, role, tier, feature_flags, capabilities, metadata, is_active)
+-- 5) Seed billing_entitlements policy rows (CHECK-safe)
+-- NOTE: role NULL => global applicability; tier must be free/premium/premium_plus
+insert into public.billing_entitlements
+  (entitlement_key, product_key, role, tier, feature_flags, capabilities, metadata, is_active)
 select x.entitlement_key, x.product_key, x.role, x.tier, x.feature_flags::jsonb, x.capabilities::jsonb, x.metadata::jsonb, true
 from (values
-  ('registration', 'rooted_base', 'individual', 'free', '{}' , '{}' , '{"seed":"phase2"}'),
-  ('ticketing',    'rooted_base', 'individual', 'free', '{}' , '{}' , '{"seed":"phase2"}')
+  -- FREE baseline
+  ('registration', 'rooted_base', null, 'free', '{}' , '{}' , '{"seed":"phase2"}'),
+  ('ticketing',    'rooted_base', null, 'free', '{}' , '{}' , '{"seed":"phase2"}'),
+
+  -- PREMIUM baseline
+  ('premium',        'rooted_premium', null, 'premium', '{}' , '{}' , '{"seed":"phase2"}'),
+  ('commerce',       'rooted_premium', null, 'premium', '{}' , '{}' , '{"seed":"phase2"}'),
+  ('payments',       'rooted_premium', null, 'premium', '{}' , '{}' , '{"seed":"phase2"}'),
+  ('streaming_music','rooted_premium', null, 'premium', '{}' , '{}' , '{"seed":"phase2"}'),
+  ('streaming_video','rooted_premium', null, 'premium', '{}' , '{}' , '{"seed":"phase2"}'),
+  ('games_library',  'rooted_premium', null, 'premium', '{}' , '{}' , '{"seed":"phase2"}'),
+
+  -- PREMIUM_PLUS baseline
+  ('premium_plus',   'rooted_premium_plus', null, 'premium_plus', '{}' , '{}' , '{"seed":"phase2"}'),
+  ('commerce',       'rooted_premium_plus', null, 'premium_plus', '{}' , '{}' , '{"seed":"phase2"}'),
+  ('payments',       'rooted_premium_plus', null, 'premium_plus', '{}' , '{}' , '{"seed":"phase2"}'),
+  ('streaming_music','rooted_premium_plus', null, 'premium_plus', '{}' , '{}' , '{"seed":"phase2"}'),
+  ('streaming_video','rooted_premium_plus', null, 'premium_plus', '{}' , '{}' , '{"seed":"phase2"}'),
+  ('games_library',  'rooted_premium_plus', null, 'premium_plus', '{}' , '{}' , '{"seed":"phase2"}'),
+  ('b2b_bulk',       'rooted_premium_plus', null, 'premium_plus', '{}' , '{}' , '{"seed":"phase2"}'),
+
+  -- Pack examples (still check-safe)
+  ('b2b_bid',         'pack_b2b_bid', null,          'premium_plus', '{}' , '{}' , '{"seed":"phase2","pack":true}'),
+  ('b2g_procurement', 'pack_b2g',     'institution', 'premium_plus', '{}' , '{}' , '{"seed":"phase2","pack":true}')
 ) x(entitlement_key,product_key,role,tier,feature_flags,capabilities,metadata)
 where not exists (
   select 1 from public.billing_entitlements be
-  where be.entitlement_key=x.entitlement_key and be.role=x.role and be.tier=x.tier
-);
-
--- PREMIUM: enables commerce + payments + media + games baseline
-insert into public.billing_entitlements (entitlement_key, product_key, role, tier, feature_flags, capabilities, metadata, is_active)
-select x.entitlement_key, x.product_key, x.role, x.tier, x.feature_flags::jsonb, x.capabilities::jsonb, x.metadata::jsonb, true
-from (values
-  ('premium',       'rooted_premium', 'individual', 'premium', '{}' , '{}' , '{"seed":"phase2"}'),
-  ('commerce',      'rooted_premium', 'individual', 'premium', '{}' , '{}' , '{"seed":"phase2"}'),
-  ('payments',      'rooted_premium', 'individual', 'premium', '{}' , '{}' , '{"seed":"phase2"}'),
-  ('streaming_music','rooted_premium','individual', 'premium', '{}' , '{}' , '{"seed":"phase2"}'),
-  ('streaming_video','rooted_premium','individual', 'premium', '{}' , '{}' , '{"seed":"phase2"}'),
-  ('games_library', 'rooted_premium', 'individual', 'premium', '{}' , '{}' , '{"seed":"phase2"}')
-) x(entitlement_key,product_key,role,tier,feature_flags,capabilities,metadata)
-where not exists (
-  select 1 from public.billing_entitlements be
-  where be.entitlement_key=x.entitlement_key and be.role=x.role and be.tier=x.tier
-);
-
--- PREMIUM_PLUS: everything in premium + b2b_bulk by default
-insert into public.billing_entitlements (entitlement_key, product_key, role, tier, feature_flags, capabilities, metadata, is_active)
-select x.entitlement_key, x.product_key, x.role, x.tier, x.feature_flags::jsonb, x.capabilities::jsonb, x.metadata::jsonb, true
-from (values
-  ('premium_plus',  'rooted_premium_plus', 'individual', 'premium_plus', '{}' , '{}' , '{"seed":"phase2"}'),
-  ('commerce',      'rooted_premium_plus', 'individual', 'premium_plus', '{}' , '{}' , '{"seed":"phase2"}'),
-  ('payments',      'rooted_premium_plus', 'individual', 'premium_plus', '{}' , '{}' , '{"seed":"phase2"}'),
-  ('streaming_music','rooted_premium_plus','individual', 'premium_plus', '{}' , '{}' , '{"seed":"phase2"}'),
-  ('streaming_video','rooted_premium_plus','individual', 'premium_plus', '{}' , '{}' , '{"seed":"phase2"}'),
-  ('games_library', 'rooted_premium_plus', 'individual', 'premium_plus', '{}' , '{}' , '{"seed":"phase2"}'),
-  ('b2b_bulk',      'rooted_premium_plus', 'individual', 'premium_plus', '{}' , '{}' , '{"seed":"phase2"}')
-) x(entitlement_key,product_key,role,tier,feature_flags,capabilities,metadata)
-where not exists (
-  select 1 from public.billing_entitlements be
-  where be.entitlement_key=x.entitlement_key and be.role=x.role and be.tier=x.tier
-);
-
--- PACK EXAMPLES (OFFICIAL pattern): add-on product grants entitlements independent of base tier
--- These are not required now; seed a couple canonical packs so you can test gating.
-insert into public.billing_entitlements (entitlement_key, product_key, role, tier, feature_flags, capabilities, metadata, is_active)
-select x.entitlement_key, x.product_key, x.role, x.tier, x.feature_flags::jsonb, x.capabilities::jsonb, x.metadata::jsonb, true
-from (values
-  ('b2b_bid',        'pack_b2b_bid', 'individual', 'any', '{}' , '{}' , '{"seed":"phase2","pack":true}'),
-  ('b2g_procurement','pack_b2g',     'institution', 'any', '{}' , '{}' , '{"seed":"phase2","pack":true}')
-) x(entitlement_key,product_key,role,tier,feature_flags,capabilities,metadata)
-where not exists (
-  select 1 from public.billing_entitlements be
-  where be.entitlement_key=x.entitlement_key and be.role=x.role and be.tier=x.tier
+  where be.entitlement_key = x.entitlement_key
+    and be.product_key     = x.product_key
+    and ((be.role is null and x.role is null) or be.role = x.role)
+    and ((be.tier is null and x.tier is null) or be.tier = x.tier)
 );
 
 commit;
