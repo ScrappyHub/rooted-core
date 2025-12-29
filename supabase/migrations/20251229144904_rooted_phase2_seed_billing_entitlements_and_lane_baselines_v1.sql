@@ -1,9 +1,10 @@
 begin;
 
 -- ============================================================
--- ROOTED: Phase 2 Seed (FIXED, DB-truth safe)
---   billing_entitlements_role_check:  role is NULL or vendor or institution
---   billing_entitlements_tier_check:  tier is NULL or free/premium/premium_plus
+-- ROOTED: Phase 2 Seed (PK-SAFE, DB-truth safe)
+-- billing_entitlements primary key is (entitlement_key)
+-- => Exactly ONE row per entitlement_key. No per-tier duplicates.
+-- role/tier kept NULL (global) to satisfy check constraints and PK.
 -- ============================================================
 
 -- 0) Preconditions
@@ -60,24 +61,24 @@ create table if not exists public.entitlement_codes (
 insert into public.entitlement_codes (entitlement_code, label, description)
 select x.code, x.label, x.description
 from (values
-  ('free',          'Free',           'Free tier marker entitlement (optional).'),
-  ('premium',       'Premium',        'Premium subscription entitlement.'),
-  ('premium_plus',  'Premium Plus',   'Premium Plus subscription entitlement.'),
+  ('free',           'Free',            'Free tier marker entitlement (optional).'),
+  ('premium',        'Premium',         'Premium subscription entitlement.'),
+  ('premium_plus',   'Premium Plus',    'Premium Plus subscription entitlement.'),
 
-  ('registration',  'Registration',   'Registration capability entitlement.'),
-  ('ticketing',     'Ticketing',      'Ticketing capability entitlement.'),
-  ('commerce',      'Commerce',       'Commerce capability entitlement (listings).'),
-  ('payments',      'Payments',       'Payments capability entitlement.'),
+  ('registration',   'Registration',    'Registration capability entitlement.'),
+  ('ticketing',      'Ticketing',       'Ticketing capability entitlement.'),
+  ('commerce',       'Commerce',        'Commerce capability entitlement (listings).'),
+  ('payments',       'Payments',        'Payments capability entitlement.'),
 
-  ('streaming_music','Streaming Music','Music streaming lane entitlement.'),
-  ('streaming_video','Streaming Video','Video streaming lane entitlement.'),
-  ('games_library', 'Games Library',  'Games library entitlement.'),
+  ('streaming_music','Streaming Music', 'Music streaming lane entitlement.'),
+  ('streaming_video','Streaming Video', 'Video streaming lane entitlement.'),
+  ('games_library',  'Games Library',   'Games library entitlement.'),
 
-  ('b2b_bulk',      'B2B Bulk',       'Bulk procurement capability entitlement.'),
-  ('b2b_bid',       'B2B Bid',        'RFQ/bidding capability entitlement.'),
-  ('b2g_procurement','B2G Procurement','Government procurement capability entitlement.'),
+  ('b2b_bulk',       'B2B Bulk',        'Bulk procurement capability entitlement.'),
+  ('b2b_bid',        'B2B Bid',         'RFQ/bidding capability entitlement.'),
+  ('b2g_procurement','B2G Procurement', 'Government procurement capability entitlement.'),
 
-  ('ad_free_media', 'Ad-Free Media',  'Remove ads in media experiences.')
+  ('ad_free_media',  'Ad-Free Media',   'Remove ads in media experiences.')
 ) x(code,label,description)
 where not exists (select 1 from public.entitlement_codes ec where ec.entitlement_code=x.code);
 
@@ -121,7 +122,7 @@ select
   end as requires_entitlement_code,
   true as requires_moderation,
   (lane.lane_code in ('registration','ticketing')) as requires_age_gate,
-  'Phase2 baseline lane row (seeded, DB-truth)' as notes
+  'Phase2 baseline lane row (seeded, PK-safe)' as notes
 from public.canonical_verticals cv
 join public.vertical_policy vp on vp.vertical_code = cv.vertical_code
 cross join (values
@@ -145,43 +146,36 @@ where not exists (
     and vlp.lane_code = lane.lane_code
 );
 
--- 5) Seed billing_entitlements policy rows (CHECK-safe)
--- NOTE: role NULL => global applicability; tier must be free/premium/premium_plus
+-- 5) Seed billing_entitlements (ONE ROW PER KEY, PK-safe)
+-- role/tier NULL => passes your role/tier check constraints and avoids duplicates.
+-- capabilities encodes default tier availability (informational, and for future resolver upgrades).
 insert into public.billing_entitlements
   (entitlement_key, product_key, role, tier, feature_flags, capabilities, metadata, is_active)
 select x.entitlement_key, x.product_key, x.role, x.tier, x.feature_flags::jsonb, x.capabilities::jsonb, x.metadata::jsonb, true
 from (values
-  -- FREE baseline
-  ('registration', 'rooted_base', null, 'free', '{}' , '{}' , '{"seed":"phase2"}'),
-  ('ticketing',    'rooted_base', null, 'free', '{}' , '{}' , '{"seed":"phase2"}'),
+  ('registration',   'rooted_base',         null, null, '{}' , '{"default_tiers":["free","premium","premium_plus"]}', '{"seed":"phase2","pk_model":"one_row_per_key"}'),
+  ('ticketing',      'rooted_base',         null, null, '{}' , '{"default_tiers":["free","premium","premium_plus"]}', '{"seed":"phase2","pk_model":"one_row_per_key"}'),
 
-  -- PREMIUM baseline
-  ('premium',        'rooted_premium', null, 'premium', '{}' , '{}' , '{"seed":"phase2"}'),
-  ('commerce',       'rooted_premium', null, 'premium', '{}' , '{}' , '{"seed":"phase2"}'),
-  ('payments',       'rooted_premium', null, 'premium', '{}' , '{}' , '{"seed":"phase2"}'),
-  ('streaming_music','rooted_premium', null, 'premium', '{}' , '{}' , '{"seed":"phase2"}'),
-  ('streaming_video','rooted_premium', null, 'premium', '{}' , '{}' , '{"seed":"phase2"}'),
-  ('games_library',  'rooted_premium', null, 'premium', '{}' , '{}' , '{"seed":"phase2"}'),
+  ('premium',        'rooted_premium',      null, null, '{}' , '{"default_tiers":["premium"]}',                     '{"seed":"phase2","pk_model":"one_row_per_key"}'),
+  ('premium_plus',   'rooted_premium_plus', null, null, '{}' , '{"default_tiers":["premium_plus"]}',                '{"seed":"phase2","pk_model":"one_row_per_key"}'),
 
-  -- PREMIUM_PLUS baseline
-  ('premium_plus',   'rooted_premium_plus', null, 'premium_plus', '{}' , '{}' , '{"seed":"phase2"}'),
-  ('commerce',       'rooted_premium_plus', null, 'premium_plus', '{}' , '{}' , '{"seed":"phase2"}'),
-  ('payments',       'rooted_premium_plus', null, 'premium_plus', '{}' , '{}' , '{"seed":"phase2"}'),
-  ('streaming_music','rooted_premium_plus', null, 'premium_plus', '{}' , '{}' , '{"seed":"phase2"}'),
-  ('streaming_video','rooted_premium_plus', null, 'premium_plus', '{}' , '{}' , '{"seed":"phase2"}'),
-  ('games_library',  'rooted_premium_plus', null, 'premium_plus', '{}' , '{}' , '{"seed":"phase2"}'),
-  ('b2b_bulk',       'rooted_premium_plus', null, 'premium_plus', '{}' , '{}' , '{"seed":"phase2"}'),
+  ('commerce',       'rooted_commerce',     null, null, '{}' , '{"default_tiers":["premium","premium_plus"]}',       '{"seed":"phase2","pk_model":"one_row_per_key"}'),
+  ('payments',       'rooted_payments',     null, null, '{}' , '{"default_tiers":["premium","premium_plus"]}',       '{"seed":"phase2","pk_model":"one_row_per_key"}'),
 
-  -- Pack examples (still check-safe)
-  ('b2b_bid',         'pack_b2b_bid', null,          'premium_plus', '{}' , '{}' , '{"seed":"phase2","pack":true}'),
-  ('b2g_procurement', 'pack_b2g',     'institution', 'premium_plus', '{}' , '{}' , '{"seed":"phase2","pack":true}')
+  ('streaming_music','rooted_streaming',    null, null, '{}' , '{"default_tiers":["premium","premium_plus"]}',       '{"seed":"phase2","pk_model":"one_row_per_key"}'),
+  ('streaming_video','rooted_streaming',    null, null, '{}' , '{"default_tiers":["premium","premium_plus"]}',       '{"seed":"phase2","pk_model":"one_row_per_key"}'),
+
+  ('games_library',  'rooted_games',        null, null, '{}' , '{"default_tiers":["premium","premium_plus"]}',       '{"seed":"phase2","pk_model":"one_row_per_key"}'),
+
+  ('b2b_bulk',       'pack_b2b_bulk',       null, null, '{}' , '{"default_tiers":["premium_plus"]}',                '{"seed":"phase2","pack":true,"pk_model":"one_row_per_key"}'),
+  ('b2b_bid',        'pack_b2b_bid',        null, null, '{}' , '{"default_tiers":["premium_plus"]}',                '{"seed":"phase2","pack":true,"pk_model":"one_row_per_key"}'),
+  ('b2g_procurement','pack_b2g',            null, null, '{}' , '{"default_roles":["institution"]}',                 '{"seed":"phase2","pack":true,"pk_model":"one_row_per_key"}'),
+
+  ('ad_free_media',  'pack_ad_free',        null, null, '{}' , '{"default_tiers":["premium_plus"]}',                '{"seed":"phase2","pack":true,"pk_model":"one_row_per_key"}')
 ) x(entitlement_key,product_key,role,tier,feature_flags,capabilities,metadata)
 where not exists (
   select 1 from public.billing_entitlements be
   where be.entitlement_key = x.entitlement_key
-    and be.product_key     = x.product_key
-    and ((be.role is null and x.role is null) or be.role = x.role)
-    and ((be.tier is null and x.tier is null) or be.tier = x.tier)
 );
 
 commit;
