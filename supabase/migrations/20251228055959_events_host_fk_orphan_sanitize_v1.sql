@@ -1,6 +1,6 @@
 -- ============================================================
 -- 20251228055959_events_host_fk_orphan_sanitize_v1.sql
--- ROOTED • Canonical Pre-Migration
+-- ROOTED â€¢ Canonical Pre-Migration
 --
 -- Purpose:
 --   Unblock FK creation on events.host_vendor_id / host_institution_id by
@@ -58,6 +58,25 @@ set host_vendor_id = null
 where e.host_vendor_id is not null
   and not exists (select 1 from public.providers p where p.id = e.host_vendor_id);
 
+-- ============================================================
+-- PRE-GUARD (added): satisfy CHECK events_large_scale_requires_host_institution
+-- BEFORE we NULL orphan institution hosts.
+-- If a volunteer event is large-scale AND partner-required, it MUST have host_institution_id.
+-- For rows where host is NULL or ORPHAN, we flip requires_institutional_partner=false (minimal, auditable via your existing stress rows / later review).
+-- ============================================================
+update public.events e
+set requires_institutional_partner = false
+where e.event_type = 'volunteer'
+  and coalesce(e.is_large_scale_volunteer,false) = true
+  and coalesce(e.requires_institutional_partner,false) = true
+  and (
+        e.host_institution_id is null
+     or not exists (select 1 from public.providers p where p.id = e.host_institution_id)
+  );
+
+-- ============================================================
+-- Original step: NULL orphan host_institution_id values
+-- ============================================================
 update public.events e
 set host_institution_id = null
 where e.host_institution_id is not null
