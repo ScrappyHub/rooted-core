@@ -1,11 +1,7 @@
 begin;
 
 -- ============================================================
--- ROOTED: Phase 2 Seed (FK-SAFE + PK-SAFE + DISPLAY_NAME SAFE + PRODUCT_TYPE SAFE)
--- - billing_entitlements PK(entitlement_key) => one row per entitlement_key
--- - billing_entitlements.product_key FK -> billing_products(product_key) => seed products first
--- - billing_products.display_name NOT NULL (present) => populate
--- - billing_products.product_type NOT NULL (present) => populate (enum/text safe)
+-- ROOTED: Phase 2 Seed (FK-SAFE + PK-SAFE + PRODUCT_TYPE CHECK-SAFE)
 -- ============================================================
 
 -- 0) Preconditions
@@ -75,7 +71,7 @@ from (values
   ('payments',       'Payments',        'Payments capability entitlement.'),
 
   ('streaming_music','Streaming Music', 'Music streaming lane entitlement.'),
-  ('streaming_video','Streaming Video', 'Video streaming lane entitlement.'),
+  ('streaming_video','Streaming Video', 'Video streaming/library lane entitlement.'),
   ('games_library',  'Games Library',   'Games library entitlement.'),
 
   ('b2b_bulk',       'B2B Bulk',        'Bulk procurement capability entitlement.'),
@@ -126,7 +122,7 @@ select
   end as requires_entitlement_code,
   true as requires_moderation,
   (lane.lane_code in ('registration','ticketing')) as requires_age_gate,
-  'Phase2 baseline lane row (seeded, fk-safe)' as notes
+  'Phase2 baseline lane row (seeded)' as notes
 from public.canonical_verticals cv
 join public.vertical_policy vp on vp.vertical_code = cv.vertical_code
 cross join (values
@@ -150,7 +146,7 @@ where not exists (
     and vlp.lane_code = lane.lane_code
 );
 
--- 5) Seed billing_products (display_name + product_type, dynamic + enum-safe)
+-- 5) Seed billing_products (display_name + product_type CHECK-safe via constraint introspection)
 do $$
 declare
   has_display_name boolean;
@@ -165,8 +161,9 @@ declare
   active_col text;
   must_cols text[];
 
-  product_type_reg regtype;
-  enum_labels text[];
+  -- product_type constraint parsing
+  ct text;
+  allowed text[];
 
   pt_base text;
   pt_sub  text;
@@ -215,7 +212,7 @@ begin
 
   active_col := case when has_is_active then 'is_active' when has_active then 'active' else null end;
 
-  -- Guardrail: fail if there are OTHER NOT NULL/no-default columns we don't know.
+  -- Guardrail: fail if there are OTHER NOT NULL/no-default cols we don't know how to satisfy
   select array_agg(column_name order by ordinal_position)
   into must_cols
   from information_schema.columns
@@ -236,49 +233,55 @@ begin
     raise exception 'billing_products has additional NOT NULL columns without defaults that this seed does not know how to satisfy: %', must_cols;
   end if;
 
-  -- If product_type exists and is enum, collect enum labels
+  -- If product_type exists, read allowed labels from billing_products_product_type_check (CHECK constraint)
   if has_product_type then
-    select a.atttypid::regtype
-    into product_type_reg
-    from pg_attribute a
-    join pg_class c on c.oid = a.attrelid
-    join pg_namespace n on n.oid = c.relnamespace
-    where n.nspname='public' and c.relname='billing_products' and a.attname='product_type'
-      and a.attnum>0 and not a.attisdropped;
+    select pg_get_constraintdef(con.oid)
+    into ct
+    from pg_constraint con
+    join pg_class rel on rel.oid = con.conrelid
+    join pg_namespace nsp on nsp.oid = rel.relnamespace
+    where nsp.nspname='public'
+      and rel.relname='billing_products'
+      and con.conname='billing_products_product_type_check';
 
-    select array_agg(e.enumlabel order by e.enumsortorder)
-    into enum_labels
-    from pg_type t
-    join pg_enum e on e.enumtypid = t.oid
-    where product_type_reg is not null
-      and t.oid = product_type_reg::oid;
+    -- Extract all quoted literals from constraint def (e.g., ARRAY['x','y'] or IN ('x','y'))
+    if ct is not null then
+      select coalesce(array_agg(m[1]), '{}')
+      into allowed
+      from regexp_matches(ct, '''([^'']+)''', 'g') as m;
+    else
+      allowed := '{}';
+    end if;
+
+    if array_length(allowed,1) is null then
+      raise exception 'billing_products.product_type exists but allowed values could not be derived from billing_products_product_type_check';
+    end if;
+
+    -- Choose values from allowed set (fallback to first allowed)
+    pt_base := coalesce((select v from unnest(allowed) v where v in ('base','core','foundation','rooted_base','product','base_product') limit 1), allowed[1]);
+    pt_sub  := coalesce((select v from unnest(allowed) v where v in ('subscription','tier','plan','sub','premium','premium_plus') limit 1), allowed[1]);
+    pt_cap  := coalesce((select v from unnest(allowed) v where v in ('capability','feature','module','service','addon_capability') limit 1), allowed[1]);
+    pt_pack := coalesce((select v from unnest(allowed) v where v in ('pack','addon','add_on','add-on','bundle') limit 1), allowed[1]);
   end if;
 
-  -- Choose product_type values:
-  -- If enum_labels present => pick best match if exists, else fallback to first enum label.
-  -- If no enum => use normal strings.
-  pt_base := coalesce((select v from unnest(enum_labels) v where v in ('base','core','foundation') limit 1), enum_labels[1], 'base');
-  pt_sub  := coalesce((select v from unnest(enum_labels) v where v in ('subscription','tier','plan') limit 1),       enum_labels[1], 'subscription');
-  pt_cap  := coalesce((select v from unnest(enum_labels) v where v in ('capability','feature','module') limit 1),   enum_labels[1], 'capability');
-  pt_pack := coalesce((select v from unnest(enum_labels) v where v in ('pack','addon','add_on') limit 1),           enum_labels[1], 'pack');
-
+  -- Insert products (idempotent)
   if has_display_name then
     execute format($q$
       insert into public.billing_products (%s)
       select %s
       from (values
-        ('rooted_base',        'ROOTED Base',         'Base product marker for foundational capabilities.', '{"seed":"phase2"}', %L),
-        ('rooted_premium',     'ROOTED Premium',      'Premium subscription marker.',                      '{"seed":"phase2"}', %L),
-        ('rooted_premium_plus','ROOTED Premium Plus', 'Premium Plus subscription marker.',                 '{"seed":"phase2"}', %L),
-        ('rooted_commerce',    'ROOTED Commerce',     'Commerce capability marker.',                       '{"seed":"phase2"}', %L),
-        ('rooted_payments',    'ROOTED Payments',     'Payments capability marker.',                       '{"seed":"phase2"}', %L),
-        ('rooted_streaming',   'ROOTED Streaming',    'Streaming capability marker.',                      '{"seed":"phase2"}', %L),
-        ('rooted_games',       'ROOTED Games',        'Games library capability marker.',                  '{"seed":"phase2"}', %L),
-        ('pack_b2b_bulk',      'Pack: B2B Bulk',      'Add-on pack for bulk procurement.',                 '{"seed":"phase2","pack":true}', %L),
-        ('pack_b2b_bid',       'Pack: B2B Bid',       'Add-on pack for bidding/RFQs.',                     '{"seed":"phase2","pack":true}', %L),
-        ('pack_b2g',           'Pack: B2G',           'Add-on pack for government procurement.',           '{"seed":"phase2","pack":true}', %L),
-        ('pack_ad_free',       'Pack: Ad-Free',       'Add-on pack for ad-free media.',                    '{"seed":"phase2","pack":true}', %L)
-      ) x(product_key, display_name, descr, meta, product_type)
+        ('rooted_base',        'ROOTED Base',         'Base product marker for foundational capabilities.', '{"seed":"phase2"}'%s),
+        ('rooted_premium',     'ROOTED Premium',      'Premium subscription marker.',                      '{"seed":"phase2"}'%s),
+        ('rooted_premium_plus','ROOTED Premium Plus', 'Premium Plus subscription marker.',                 '{"seed":"phase2"}'%s),
+        ('rooted_commerce',    'ROOTED Commerce',     'Commerce capability marker.',                       '{"seed":"phase2"}'%s),
+        ('rooted_payments',    'ROOTED Payments',     'Payments capability marker.',                       '{"seed":"phase2"}'%s),
+        ('rooted_streaming',   'ROOTED Streaming',    'Streaming capability marker.',                      '{"seed":"phase2"}'%s),
+        ('rooted_games',       'ROOTED Games',        'Games library capability marker.',                  '{"seed":"phase2"}'%s),
+        ('pack_b2b_bulk',      'Pack: B2B Bulk',      'Add-on pack for bulk procurement.',                 '{"seed":"phase2","pack":true}'%s),
+        ('pack_b2b_bid',       'Pack: B2B Bid',       'Add-on pack for bidding/RFQs.',                     '{"seed":"phase2","pack":true}'%s),
+        ('pack_b2g',           'Pack: B2G',           'Add-on pack for government procurement.',           '{"seed":"phase2","pack":true}'%s),
+        ('pack_ad_free',       'Pack: Ad-Free',       'Add-on pack for ad-free media.',                    '{"seed":"phase2","pack":true}'%s)
+      ) x(product_key, display_name, descr, meta%s)
       where not exists (select 1 from public.billing_products bp where bp.product_key = x.product_key)
     $q$,
       concat_ws(',',
@@ -301,47 +304,41 @@ begin
         case when active_col is not null then 'true' else null end,
         case when has_metadata then 'x.meta::jsonb' else null end
       ),
-      pt_base, pt_sub, pt_sub, pt_cap, pt_cap, pt_cap, pt_cap, pt_pack, pt_pack, pt_pack, pt_pack
+      case when has_product_type then format(', %L', pt_base) else '' end,
+      case when has_product_type then format(', %L', pt_sub)  else '' end,
+      case when has_product_type then format(', %L', pt_sub)  else '' end,
+      case when has_product_type then format(', %L', pt_cap)  else '' end,
+      case when has_product_type then format(', %L', pt_cap)  else '' end,
+      case when has_product_type then format(', %L', pt_cap)  else '' end,
+      case when has_product_type then format(', %L', pt_cap)  else '' end,
+      case when has_product_type then format(', %L', pt_pack) else '' end,
+      case when has_product_type then format(', %L', pt_pack) else '' end,
+      case when has_product_type then format(', %L', pt_pack) else '' end,
+      case when has_product_type then format(', %L', pt_pack) else '' end,
+      case when has_product_type then ', product_type' else '' end
     );
   else
-    -- fallback if display_name doesn't exist
-    execute format($q$
-      insert into public.billing_products (%s)
-      select %s
+    -- If no display_name column exists, rely on label/description if present, else product_key only.
+    execute $q$
+      insert into public.billing_products (product_key)
+      select x.product_key
       from (values
-        ('rooted_base',        'ROOTED Base',         'Base product marker for foundational capabilities.', '{"seed":"phase2"}', %L),
-        ('rooted_premium',     'ROOTED Premium',      'Premium subscription marker.',                      '{"seed":"phase2"}', %L),
-        ('rooted_premium_plus','ROOTED Premium Plus', 'Premium Plus subscription marker.',                 '{"seed":"phase2"}', %L),
-        ('rooted_commerce',    'ROOTED Commerce',     'Commerce capability marker.',                       '{"seed":"phase2"}', %L),
-        ('rooted_payments',    'ROOTED Payments',     'Payments capability marker.',                       '{"seed":"phase2"}', %L),
-        ('rooted_streaming',   'ROOTED Streaming',    'Streaming capability marker.',                      '{"seed":"phase2"}', %L),
-        ('rooted_games',       'ROOTED Games',        'Games library capability marker.',                  '{"seed":"phase2"}', %L),
-        ('pack_b2b_bulk',      'Pack: B2B Bulk',      'Add-on pack for bulk procurement.',                 '{"seed":"phase2","pack":true}', %L),
-        ('pack_b2b_bid',       'Pack: B2B Bid',       'Add-on pack for bidding/RFQs.',                     '{"seed":"phase2","pack":true}', %L),
-        ('pack_b2g',           'Pack: B2G',           'Add-on pack for government procurement.',           '{"seed":"phase2","pack":true}', %L),
-        ('pack_ad_free',       'Pack: Ad-Free',       'Add-on pack for ad-free media.',                    '{"seed":"phase2","pack":true}', %L)
-      ) x(product_key, label, descr, meta, product_type)
+        ('rooted_base'),
+        ('rooted_premium'),
+        ('rooted_premium_plus'),
+        ('rooted_commerce'),
+        ('rooted_payments'),
+        ('rooted_streaming'),
+        ('rooted_games'),
+        ('pack_b2b_bulk'),
+        ('pack_b2b_bid'),
+        ('pack_b2g'),
+        ('pack_ad_free')
+      ) x(product_key)
       where not exists (select 1 from public.billing_products bp where bp.product_key = x.product_key)
-    $q$,
-      concat_ws(',',
-        'product_key',
-        case when has_label then 'label' else null end,
-        case when has_description then 'description' else null end,
-        case when has_product_type then 'product_type' else null end,
-        case when active_col is not null then active_col else null end,
-        case when has_metadata then 'metadata' else null end
-      ),
-      concat_ws(',',
-        'x.product_key',
-        case when has_label then 'x.label' else null end,
-        case when has_description then 'x.descr' else null end,
-        case when has_product_type then 'x.product_type' else null end,
-        case when active_col is not null then 'true' else null end,
-        case when has_metadata then 'x.meta::jsonb' else null end
-      ),
-      pt_base, pt_sub, pt_sub, pt_cap, pt_cap, pt_cap, pt_cap, pt_pack, pt_pack, pt_pack, pt_pack
-    );
+    $q$;
   end if;
+
 end $$;
 
 -- 6) Seed billing_entitlements (ONE ROW PER KEY, PK-safe + FK-safe)
