@@ -163,32 +163,15 @@ declare
   has_product_type boolean;
 
   active_col text;
-
   must_cols text[];
-  product_type_enum regtype;
+
+  product_type_reg regtype;
   enum_labels text[];
 
-  -- chosen labels for product_type
   pt_base text;
   pt_sub  text;
   pt_cap  text;
   pt_pack text;
-
-  function pick_label(preferred text[], fallback text) returns text as $f$
-  declare v text;
-  begin
-    if enum_labels is null then
-      return fallback;
-    end if;
-    foreach v in array preferred loop
-      if v = any(enum_labels) then
-        return v;
-      end if;
-    end loop;
-    return enum_labels[1];
-  end;
-  $f$ language plpgsql;
-
 begin
   select exists (
     select 1 from information_schema.columns
@@ -253,31 +236,32 @@ begin
     raise exception 'billing_products has additional NOT NULL columns without defaults that this seed does not know how to satisfy: %', must_cols;
   end if;
 
-  -- If product_type is an enum, capture labels
+  -- If product_type exists and is enum, collect enum labels
   if has_product_type then
     select a.atttypid::regtype
-    into product_type_enum
+    into product_type_reg
     from pg_attribute a
     join pg_class c on c.oid = a.attrelid
     join pg_namespace n on n.oid = c.relnamespace
-    where n.nspname='public' and c.relname='billing_products' and a.attname='product_type' and a.attnum>0 and not a.attisdropped;
+    where n.nspname='public' and c.relname='billing_products' and a.attname='product_type'
+      and a.attnum>0 and not a.attisdropped;
 
-    if product_type_enum is not null then
-      select array_agg(e.enumlabel order by e.enumsortorder)
-      into enum_labels
-      from pg_type t
-      join pg_enum e on e.enumtypid = t.oid
-      where t.oid = product_type_enum::oid;
-    end if;
+    select array_agg(e.enumlabel order by e.enumsortorder)
+    into enum_labels
+    from pg_type t
+    join pg_enum e on e.enumtypid = t.oid
+    where product_type_reg is not null
+      and t.oid = product_type_reg::oid;
   end if;
 
-  -- Choose product_type values (enum-safe: pick best match if enum labels exist)
-  pt_base := pick_label(array['base','core','foundation'], 'base');
-  pt_sub  := pick_label(array['subscription','tier','plan'], 'subscription');
-  pt_cap  := pick_label(array['capability','feature','module'], 'capability');
-  pt_pack := pick_label(array['pack','addon','add_on'], 'pack');
+  -- Choose product_type values:
+  -- If enum_labels present => pick best match if exists, else fallback to first enum label.
+  -- If no enum => use normal strings.
+  pt_base := coalesce((select v from unnest(enum_labels) v where v in ('base','core','foundation') limit 1), enum_labels[1], 'base');
+  pt_sub  := coalesce((select v from unnest(enum_labels) v where v in ('subscription','tier','plan') limit 1),       enum_labels[1], 'subscription');
+  pt_cap  := coalesce((select v from unnest(enum_labels) v where v in ('capability','feature','module') limit 1),   enum_labels[1], 'capability');
+  pt_pack := coalesce((select v from unnest(enum_labels) v where v in ('pack','addon','add_on') limit 1),           enum_labels[1], 'pack');
 
-  -- We require display_name on your DB (observed), but keep logic generic
   if has_display_name then
     execute format($q$
       insert into public.billing_products (%s)
@@ -297,7 +281,6 @@ begin
       ) x(product_key, display_name, descr, meta, product_type)
       where not exists (select 1 from public.billing_products bp where bp.product_key = x.product_key)
     $q$,
-      -- column list
       concat_ws(',',
         'product_key',
         'display_name',
@@ -308,7 +291,6 @@ begin
         case when active_col is not null then active_col else null end,
         case when has_metadata then 'metadata' else null end
       ),
-      -- select list aligned with columns above
       concat_ws(',',
         'x.product_key',
         'x.display_name',
@@ -322,8 +304,7 @@ begin
       pt_base, pt_sub, pt_sub, pt_cap, pt_cap, pt_cap, pt_cap, pt_pack, pt_pack, pt_pack, pt_pack
     );
   else
-    -- If display_name does not exist (unlikely in your DB), still satisfy product_type if required.
-    -- Use label as the primary human field if available.
+    -- fallback if display_name doesn't exist
     execute format($q$
       insert into public.billing_products (%s)
       select %s
