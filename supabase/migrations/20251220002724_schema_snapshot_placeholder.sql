@@ -10,8 +10,8 @@
 --   - No-op. Keeps migration timeline consistent without reintroducing large files.
 -- ============================================================
 
-do \$\$
-begin
+DO 20251220002724_schema_snapshot_placeholder.sql
+BEGIN
   -- no-op
-end
-\$\$;
+END
+20251220002724_schema_snapshot_placeholder.sql;
