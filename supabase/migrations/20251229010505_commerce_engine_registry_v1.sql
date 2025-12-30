@@ -1,7 +1,7 @@
 begin;
 
 -- ROOTED PATCH: ensure enum value exists before inserting rows that reference it.
--- Idempotent for shadow replays.
+-- NOTE: enum ADD VALUE requires commit before use (Postgres safety rule).
 do $$
 begin
   if not exists (
@@ -16,6 +16,9 @@ begin
     alter type public.engine_type add value 'core_commerce';
   end if;
 end $$;
+-- ROOTED PATCH: txn split for enum safety (Postgres 55P04)
+commit;
+begin;
 insert into public.engine_registry (
   engine_type,
   is_active,
