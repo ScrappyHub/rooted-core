@@ -2,7 +2,7 @@ begin;
 
 -- ROOTED PATCH: ensure enum value exists before inserting rows that reference it.
 -- Idempotent for shadow replays.
-do alter type public.engine_type add value 'core_commerce'
+do $$
 begin
   if not exists (
     select 1
@@ -15,7 +15,7 @@ begin
   ) then
     alter type public.engine_type add value 'core_commerce';
   end if;
-end alter type public.engine_type add value 'core_commerce';
+end $$;
 insert into public.engine_registry (
   engine_type,
   is_active,
