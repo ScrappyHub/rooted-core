@@ -21,7 +21,7 @@ create table if not exists public.specialty_governance_group_members (
   primary key (specialty_code, group_key)
 );
 
--- Basic safety (no blank codes) — Postgres has no "ADD CONSTRAINT IF NOT EXISTS"
+-- Basic safety (no blank codes) â€” Postgres has no "ADD CONSTRAINT IF NOT EXISTS"
 do $$
 begin
   if not exists (
@@ -45,7 +45,7 @@ on conflict (group_key) do update
   set description = excluded.description;
 
 -- ------------------------------------------------------------
--- 3) Seed specialty → group (only if specialty exists in your canon view)
+-- 3) Seed specialty â†’ group (only if specialty exists in your canon view)
 -- ------------------------------------------------------------
 
 insert into public.specialty_governance_group_members (specialty_code, group_key)

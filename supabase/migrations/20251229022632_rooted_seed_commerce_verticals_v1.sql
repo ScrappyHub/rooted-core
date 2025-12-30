@@ -54,7 +54,7 @@ where not exists (
   where vp.vertical_code = v.vertical_code
 );
 
--- Placeholder market lane marker (listings). NO “licensed/insured is end state” nonsense.
+-- Placeholder market lane marker (listings). NO â€œlicensed/insured is end stateâ€ nonsense.
 insert into public.vertical_market_requirements (
   vertical_code, market_code, required_badge_codes, require_verified_provider, enabled, notes
 )

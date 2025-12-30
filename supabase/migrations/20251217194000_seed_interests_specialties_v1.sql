@@ -1,7 +1,7 @@
 -- 20251217194000_seed_interests_specialties_v1.sql
 -- CANONICAL PATCH (pipeline rewrite - schema agnostic):
--- Fix: DO blocks cannot declare procedures → inline schema-aware upsert in a loop.
--- Fix: array concat operator (||) is not "append element" → use array_append to avoid malformed array literal.
+-- Fix: DO blocks cannot declare procedures â†’ inline schema-aware upsert in a loop.
+-- Fix: array concat operator (||) is not "append element" â†’ use array_append to avoid malformed array literal.
 
 begin;
 

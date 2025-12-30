@@ -130,6 +130,6 @@ END;
 $fn$;
 
 COMMENT ON FUNCTION public.service_sync_subscription_from_stripe_price(uuid,text,text,text,text)
-IS 'Service/admin-only. Canonical webhook entrypoint: sets subscription fields from stripe price → applies entitlements → prevents tier/subscription_tier drift.';
+IS 'Service/admin-only. Canonical webhook entrypoint: sets subscription fields from stripe price â†’ applies entitlements â†’ prevents tier/subscription_tier drift.';
 
 COMMIT;

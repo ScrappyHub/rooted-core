@@ -33,7 +33,7 @@ grant execute on function public.geo_haversine_meters(double precision,double pr
 
 create or replace function public.geo_radius_clamp_meters(
   requested_meters integer,
-  max_meters integer default 80467   -- 50 miles â‰ˆ 80,467m
+  max_meters integer default 80467   -- 50 miles ÃƒÂ¢Ã¢â‚¬Â°Ã‹â€  80,467m
 )
 returns integer
 language sql

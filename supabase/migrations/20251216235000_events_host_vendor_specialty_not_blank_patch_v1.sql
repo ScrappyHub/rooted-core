@@ -22,8 +22,8 @@ begin
   execute 'drop policy if exists events_host_vendor_update_v7 on public.events';
   execute 'drop policy if exists events_host_vendor_delete_v7 on public.events';
 
-  -- If this patch’s intent is only "specialty not blank", do it as a constraint on providers
-  -- (events table typically doesn’t store specialty; provider does).
+  -- If this patchâ€™s intent is only "specialty not blank", do it as a constraint on providers
+  -- (events table typically doesnâ€™t store specialty; provider does).
   if not exists (
     select 1
     from pg_constraint
@@ -38,7 +38,7 @@ begin
   end if;
 
   -- If you intended to recreate the v7 policies with an added "p.specialty not blank" condition,
-  -- you MUST paste the exact policy SQL you want here and we’ll re-add them guarded via EXECUTE.
+  -- you MUST paste the exact policy SQL you want here and weâ€™ll re-add them guarded via EXECUTE.
   -- For now we only prevent the migration from crashing while base tables are missing.
 
 end

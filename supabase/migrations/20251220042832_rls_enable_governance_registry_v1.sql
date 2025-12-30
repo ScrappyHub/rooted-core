@@ -92,7 +92,7 @@ alter table if exists public.vertical_policy force row level security;
 
 -- =========================================================
 -- 2) BASELINE POLICIES: service_role + admin manage
--- (Conservative: doesnâ€™t open anything to regular users)
+-- (Conservative: doesnÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢t open anything to regular users)
 -- =========================================================
 -- Helper pattern: for each table, create:
 --  - <table>_service_role_manage_v1  (service_role ALL)

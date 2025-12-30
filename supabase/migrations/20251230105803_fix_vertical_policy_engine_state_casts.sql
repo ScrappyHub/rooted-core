@@ -1,7 +1,7 @@
-﻿-- ============================================================
+-- ============================================================
 -- ROOTED FIX: vertical_policy engine_state enum casting
 -- Reason: earlier seed migrations used SELECT * FROM (VALUES)
---         causing text → enum failure during shadow replay
+--         causing text â†’ enum failure during shadow replay
 -- ============================================================
 
 begin;

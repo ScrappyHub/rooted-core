@@ -18,7 +18,7 @@ declare
   r text;
   t text;
 begin
-  -- âœ… service_role bypass (server-side JWT)
+  -- ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ service_role bypass (server-side JWT)
   if auth.role() = 'service_role' then
     return true;
   end if;

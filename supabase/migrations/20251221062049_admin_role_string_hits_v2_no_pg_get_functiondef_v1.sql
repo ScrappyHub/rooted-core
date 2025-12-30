@@ -39,7 +39,7 @@ select * from function_hits;
 
 revoke all on public.admin_role_string_hits_v2 from public;
 
--- NOTE: keep same behavior as your v1 for now; if you want admin-only weâ€™ll change grants next.
+-- NOTE: keep same behavior as your v1 for now; if you want admin-only weÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ll change grants next.
 DO $$
 BEGIN
   IF to_regclass('public.admin_role_string_hits_v2') IS NOT NULL THEN

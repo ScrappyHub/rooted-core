@@ -1,7 +1,7 @@
 begin;
 
 -- =========================================================
--- COMMUNITY ROLE ALIGNMENT SWEEP (v2) â€” CANONICAL
+-- COMMUNITY ROLE ALIGNMENT SWEEP (v2) ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â CANONICAL
 -- Goal:
 --   - Eliminate any reliance on role='individual' (NOT allowed by CHECK constraints)
 --   - Use role='community' + feature_flags->>'is_vetted_community' gate
@@ -66,7 +66,7 @@ select * from policy_hits
 union all
 select * from function_hits;
 
--- Lock down diagnostics view to admins only (RLS doesnâ€™t apply to views; use grants)
+-- Lock down diagnostics view to admins only (RLS doesnÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢t apply to views; use grants)
 revoke all on public.admin_role_string_hits_v1 from public;
 DO $$
 BEGIN

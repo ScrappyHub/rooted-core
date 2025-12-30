@@ -104,7 +104,7 @@ BEGIN
   END IF;
 
   -- Core action:
-  -- Canonical: sync subscription → applies entitlements → fixes drift
+  -- Canonical: sync subscription â†’ applies entitlements â†’ fixes drift
   PERFORM public.service_sync_subscription_from_stripe_price(
     p_user_id,
     p_stripe_price_id,

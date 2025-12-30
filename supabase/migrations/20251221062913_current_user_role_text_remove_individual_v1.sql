@@ -1,7 +1,7 @@
 begin;
 
 -- =========================================================
--- CURRENT USER ROLE ALIGNMENT (v1) â€” CANONICAL
+-- CURRENT USER ROLE ALIGNMENT (v1) ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â CANONICAL
 -- Fixes: public.current_user_role_text()
 -- - Removes forbidden role "individual"
 -- - Aligns with user_tiers_role_check:

@@ -100,7 +100,7 @@ create table if not exists public.vertical_lane_policy (
   primary key (vertical_code, lane_code)
 );
 
--- Touch trigger (kept isolated; won’t break if already exists)
+-- Touch trigger (kept isolated; wonâ€™t break if already exists)
 create or replace function public._touch_updated_at_lane()
 returns trigger language plpgsql as $$
 begin
@@ -162,7 +162,7 @@ as $$
 declare
   v_has boolean := false;
 begin
-  -- If you have a table named public.user_entitlements(user_id, entitlement_code), we’ll use it.
+  -- If you have a table named public.user_entitlements(user_id, entitlement_code), weâ€™ll use it.
   if to_regclass('public.user_entitlements') is not null then
     execute
       'select exists (select 1 from public.user_entitlements ue where ue.user_id = $1 and ue.entitlement_code = $2)'

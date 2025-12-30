@@ -1,5 +1,5 @@
 -- 20251217210100_vertical_access_gate_v1.sql
--- Central “engine-first” access gate: checks vertical_policy.allowed_roles + is_internal_only
+-- Central â€œengine-firstâ€ access gate: checks vertical_policy.allowed_roles + is_internal_only
 -- Safe: does not assume exact user_tiers schema; fails closed if it can't prove role.
 
 begin;

@@ -1,6 +1,6 @@
 -- ============================================================
 -- 20251228060000_events_host_and_collaborators_v1.sql
--- ROOTED • Canonical Migration
+-- ROOTED â€¢ Canonical Migration
 -- Purpose:
 --   1) Enforce exactly-one host per event (DB truth, not UI)
 --   2) Enforce host role correctness (vendor vs institution)

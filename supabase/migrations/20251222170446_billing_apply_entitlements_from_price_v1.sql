@@ -1,7 +1,7 @@
 BEGIN;
 
 -- ============================================================
--- Billing → Entitlements application (service/admin only)
+-- Billing â†’ Entitlements application (service/admin only)
 -- Inputs:
 --   - stripe_price_id  OR  price_key
 -- Behavior:
@@ -169,7 +169,7 @@ END;
 $fn$;
 
 COMMENT ON FUNCTION public.service_apply_entitlements_from_stripe_price(uuid, text)
-IS 'Service/admin-only. Maps stripe_price_id → billing_prices.product_key → applies entitlements.';
+IS 'Service/admin-only. Maps stripe_price_id â†’ billing_prices.product_key â†’ applies entitlements.';
 
 -- Apply by price_key
 CREATE OR REPLACE FUNCTION public.service_apply_entitlements_from_price_key(
@@ -206,6 +206,6 @@ END;
 $fn$;
 
 COMMENT ON FUNCTION public.service_apply_entitlements_from_price_key(uuid, text)
-IS 'Service/admin-only. Maps price_key → billing_prices.product_key → applies entitlements.';
+IS 'Service/admin-only. Maps price_key â†’ billing_prices.product_key â†’ applies entitlements.';
 
 COMMIT;

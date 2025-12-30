@@ -17,7 +17,7 @@ begin
     end if;
   end if;
 
-  raise exception 'canonical_verticals is read-only – modify via migration, not from the app.';
+  raise exception 'canonical_verticals is read-only â€“ modify via migration, not from the app.';
 end;
 $$;
 
