@@ -7,7 +7,8 @@ BEGIN;
 -- Safe: does not error if policy missing
 -- ============================================================
 
-DO $do$
+-- ROOTED: AUTO-FIX-DO-DOLLAR-QUOTE (canonical)
+do $
 BEGIN
   -- community_spot_submissions: drop legacy truncated gate if present
   BEGIN

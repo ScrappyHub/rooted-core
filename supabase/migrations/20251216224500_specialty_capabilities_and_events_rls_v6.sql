@@ -15,7 +15,9 @@ create table if not exists public.canonical_specialties (
 );
 
 -- Seed from vertical_specialties_v1 ONLY if it exists
-do $do$
+
+-- ROOTED: AUTO-FIX-DO-DOLLAR-QUOTE (canonical)
+do $
 begin
   if to_regclass('public.vertical_specialties_v1') is null then
     raise notice 'Skipping canonical_specialties seed from vertical_specialties_v1: view does not exist.';
@@ -32,7 +34,9 @@ end
 $do$;
 
 -- Seed from vertical_canonical_specialties ONLY if it exists
-do $do$
+
+-- ROOTED: AUTO-FIX-DO-DOLLAR-QUOTE (canonical)
+do $
 begin
   if to_regclass('public.vertical_canonical_specialties') is null then
     raise notice 'Skipping canonical_specialties seed from vertical_canonical_specialties: relation does not exist.';
@@ -108,7 +112,8 @@ on conflict do nothing;
 -- Guard the whole block to prevent boot failure in repos without those tables.
 -- ---------------------------------------------------------------------
 
-do $do$
+-- ROOTED: AUTO-FIX-DO-DOLLAR-QUOTE (canonical)
+do $
 begin
   if to_regclass('public.providers') is null then
     raise notice 'Skipping specialty capability helper functions/policies: public.providers does not exist.';

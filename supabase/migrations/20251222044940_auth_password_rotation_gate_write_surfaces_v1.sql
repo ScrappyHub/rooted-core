@@ -10,7 +10,8 @@ BEGIN;
 -- Helper macro: repeat block via DO to avoid duplicate_object failures
 -- NOTE: Postgres has no CREATE POLICY IF NOT EXISTS.
 
-DO $do$
+-- ROOTED: AUTO-FIX-DO-DOLLAR-QUOTE (canonical)
+do $
 BEGIN
   -- events
   BEGIN

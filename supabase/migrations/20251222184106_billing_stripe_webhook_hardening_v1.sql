@@ -14,7 +14,8 @@ CREATE TABLE IF NOT EXISTS public.stripe_webhook_events (
 
 ALTER TABLE public.stripe_webhook_events ENABLE ROW LEVEL SECURITY;
 
-DO $do$
+-- ROOTED: AUTO-FIX-DO-DOLLAR-QUOTE (canonical)
+do $
 BEGIN
   -- Service role can manage
   BEGIN
@@ -130,6 +131,6 @@ END;
 $fn$;
 
 COMMENT ON FUNCTION public.service_sync_subscription_from_stripe_price(uuid,text,text,text,text)
-IS 'Service/admin-only. Canonical webhook entrypoint: sets subscription fields from stripe price â†’ applies entitlements â†’ prevents tier/subscription_tier drift.';
+IS 'Service/admin-only. Canonical webhook entrypoint: sets subscription fields from stripe price Ã¢â€ â€™ applies entitlements Ã¢â€ â€™ prevents tier/subscription_tier drift.';
 
 COMMIT;

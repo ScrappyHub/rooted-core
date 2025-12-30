@@ -3,6 +3,8 @@ begin;
 -- =========================================
 -- SAFETY ASSERTS (auditable fail-fast)
 -- =========================================
+
+-- ROOTED: AUTO-FIX-DO-DOLLAR-QUOTE (canonical)
 do $
 begin
   -- ROOTED: AUTO-RLS-BEFORE-ASSERTS
@@ -49,6 +51,8 @@ drop policy if exists "Enable insert for authenticated users only" on public.pro
 -- =========================================
 
 -- 1) Public/Anon discovery read: ONLY discoverable + active owner account
+
+-- ROOTED: AUTO-FIX-DO-DOLLAR-QUOTE (canonical)
 do $
 begin
   -- ROOTED: AUTO-RLS-BEFORE-ASSERTS

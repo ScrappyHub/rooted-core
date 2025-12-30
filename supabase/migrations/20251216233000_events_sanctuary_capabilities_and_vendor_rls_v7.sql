@@ -82,7 +82,9 @@ $$;
 
 -- Sanctuary grants (explicitly deny non-volunteer; publish stays denied by default)
 -- NOTE: only safe to run if canonical_specialties exists due to FK on specialty_capability_grants.
-do $seed$
+
+-- ROOTED: AUTO-FIX-DO-DOLLAR-QUOTE (canonical)
+do $
 begin
   if to_regclass('public.canonical_specialties') is null then
     raise notice 'Skipping sanctuary capability grants: public.canonical_specialties does not exist.';
@@ -109,7 +111,9 @@ $seed$;
 -- B) Replace vendor-hosted event RLS with capability-aware v7
 --    (Your events table uses host_vendor_id, not provider_id)
 -- ------------------------------------------------------------
-do $do$
+
+-- ROOTED: AUTO-FIX-DO-DOLLAR-QUOTE (canonical)
+do $
 begin
   if to_regclass('public.events') is null then
     raise notice 'Skipping v7 events RLS: public.events does not exist.';

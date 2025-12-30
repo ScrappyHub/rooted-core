@@ -3,7 +3,8 @@ BEGIN;
 -- Normalize truncated policy names to a canonical short name: pwdrot_gate_v1
 -- Safe: uses dynamic SQL to drop whichever policy exists on each table.
 
-DO $do$
+-- ROOTED: AUTO-FIX-DO-DOLLAR-QUOTE (canonical)
+do $
 DECLARE
   t text;
   existing text;

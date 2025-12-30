@@ -66,7 +66,9 @@ CREATE TABLE IF NOT EXISTS public.billing_product_scopes (
 );
 
 -- ---------- updated_at triggers (only if you already use _touch_updated_at) ----------
-DO $do$
+
+-- ROOTED: AUTO-FIX-DO-DOLLAR-QUOTE (canonical)
+do $
 BEGIN
   -- if _touch_updated_at exists, attach triggers; otherwise do nothing
   IF EXISTS (
@@ -102,7 +104,9 @@ ALTER TABLE public.billing_entitlements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.billing_product_scopes ENABLE ROW LEVEL SECURITY;
 
 -- readable catalog (authenticated), write only service/admin
-DO $do$
+
+-- ROOTED: AUTO-FIX-DO-DOLLAR-QUOTE (canonical)
+do $
 BEGIN
   -- PRODUCTS
   BEGIN

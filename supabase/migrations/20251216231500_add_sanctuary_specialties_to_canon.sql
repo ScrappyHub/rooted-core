@@ -20,7 +20,9 @@ on conflict do nothing;
 -- ---------------------------------------------------------------------
 -- 2) Map to AGRICULTURE in vertical_canonical_specialties (if it exists)
 -- ---------------------------------------------------------------------
-do $do$
+
+-- ROOTED: AUTO-FIX-DO-DOLLAR-QUOTE (canonical)
+do $
 begin
   if to_regclass('public.vertical_canonical_specialties') is null then
     raise notice 'Skipping sanctuary mapping: public.vertical_canonical_specialties does not exist.';

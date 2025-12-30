@@ -1,6 +1,7 @@
 BEGIN;
 
-DO $do$
+-- ROOTED: AUTO-FIX-DO-DOLLAR-QUOTE (canonical)
+do $
 BEGIN
   -- account_deletion_requests
   BEGIN

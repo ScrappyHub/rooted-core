@@ -1,6 +1,7 @@
 BEGIN;
 
-DO $do$
+-- ROOTED: AUTO-FIX-DO-DOLLAR-QUOTE (canonical)
+do $
 DECLARE
   rec record;
 BEGIN

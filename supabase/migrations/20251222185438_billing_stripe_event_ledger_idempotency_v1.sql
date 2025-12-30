@@ -22,7 +22,8 @@ IS 'Stripe webhook event ledger (idempotency). Exactly 1 row per Stripe event.id
 -- RLS
 ALTER TABLE public.billing_stripe_events ENABLE ROW LEVEL SECURITY;
 
-DO $do$
+-- ROOTED: AUTO-FIX-DO-DOLLAR-QUOTE (canonical)
+do $
 BEGIN
   -- Service/admin can read/write
   BEGIN
@@ -104,7 +105,7 @@ BEGIN
   END IF;
 
   -- Core action:
-  -- Canonical: sync subscription â†’ applies entitlements â†’ fixes drift
+  -- Canonical: sync subscription Ã¢â€ â€™ applies entitlements Ã¢â€ â€™ fixes drift
   PERFORM public.service_sync_subscription_from_stripe_price(
     p_user_id,
     p_stripe_price_id,
