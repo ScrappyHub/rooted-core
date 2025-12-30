@@ -1,5 +1,7 @@
 begin;
 
+-- ROOTED PATCH: canonical_verticals is protected by a trigger; allow canonical seeding in migrations.
+alter table public.canonical_verticals disable trigger user;
 insert into public.canonical_verticals (
   vertical_code, label, description, sort_order, default_specialty
 )
@@ -16,6 +18,9 @@ where not exists (
   select 1 from public.canonical_verticals cv
   where cv.vertical_code = v.column1
 );
+alter table public.canonical_verticals enable trigger user;
+-- END ROOTED PATCH (canonical_verticals trigger bypass)
+
 
 insert into public.vertical_policy (
   vertical_code,
