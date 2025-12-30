@@ -55,7 +55,7 @@ create or replace function public.engine_state_rank(p_state public.engine_state)
 returns integer
 language plpgsql
 stable
-as \$\$
+as $$
 begin
   return case p_state
     when 'discovery'        then 10
@@ -67,6 +67,6 @@ begin
     else 999
   end;
 end
-\$\$;
+$$;
 
 commit;
