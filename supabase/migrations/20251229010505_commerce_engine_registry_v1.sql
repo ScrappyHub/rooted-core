@@ -19,6 +19,22 @@ end $$;
 -- ROOTED PATCH: txn split for enum safety (Postgres 55P04)
 commit;
 begin;
+-- ROOTED PATCH: ensure enum value exists before inserting rows that reference it.
+-- NOTE: enum ADD VALUE requires commit before use (Postgres safety rule).
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_type t
+    join pg_namespace n on n.oid = t.typnamespace
+    join pg_enum e on e.enumtypid = t.oid
+    where t.typname = 'engine_type'
+      and n.nspname = 'public'
+      and e.enumlabel = 'core_commerce'
+  ) then
+    alter type public.engine_type add value 'core_commerce';
+  end if;
+end $$;
 insert into public.engine_registry (
   engine_type,
   is_active,
