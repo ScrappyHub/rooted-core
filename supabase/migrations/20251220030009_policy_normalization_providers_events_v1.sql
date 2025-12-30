@@ -3,8 +3,13 @@ begin;
 -- =========================================
 -- SAFETY ASSERTS (auditable fail-fast)
 -- =========================================
-do $$
+do $
 begin
+  -- ROOTED: AUTO-RLS-BEFORE-ASSERTS
+  -- Determinism + zero-leak posture: enable RLS before safety asserts check it.
+  -- Safe/idempotent: enabling RLS repeatedly is OK.
+  execute 'alter table public.providers enable row level security';
+  execute 'alter table public.events enable row level security';
   if to_regclass('public.providers') is null then
     raise exception 'policy_normalization: public.providers missing';
   end if;
@@ -44,8 +49,13 @@ drop policy if exists "Enable insert for authenticated users only" on public.pro
 -- =========================================
 
 -- 1) Public/Anon discovery read: ONLY discoverable + active owner account
-DO $$
-BEGIN
+do $
+begin
+  -- ROOTED: AUTO-RLS-BEFORE-ASSERTS
+  -- Determinism + zero-leak posture: enable RLS before safety asserts check it.
+  -- Safe/idempotent: enabling RLS repeatedly is OK.
+  execute 'alter table public.providers enable row level security';
+  execute 'alter table public.events enable row level security';
   IF EXISTS (
     SELECT 1
     FROM information_schema.columns
