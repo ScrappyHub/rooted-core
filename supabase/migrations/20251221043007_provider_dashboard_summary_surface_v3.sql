@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-NESTED-EXECUTE-DOLLAR-TAG-STEP-1L (canonical)
 -- ROOTED: AUTO-FIX-DO-TAG-MISMATCH-STEP-1K (canonical)
 begin;
 
@@ -30,13 +31,13 @@ BEGIN
     id_col := 'provider_id';
   ELSE
     RAISE NOTICE 'provider_dashboard_summary_v1: providers missing id/provider_id; creating minimal placeholder view';
-    EXECUTE $v$
+    execute $q$
       create or replace view public.provider_dashboard_summary_v1 as
       select
         null::uuid as provider_id,
         null::text as name
       where false;
-    $v$;
+    $q$;
     RETURN;
   END IF;
 

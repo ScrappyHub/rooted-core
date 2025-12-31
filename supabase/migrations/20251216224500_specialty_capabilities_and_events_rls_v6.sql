@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-NESTED-EXECUTE-DOLLAR-TAG-STEP-1L (canonical)
 -- ROOTED: AUTO-FIX-DO-TAG-MISMATCH-STEP-1K (canonical)
 -- ROOTED: AUTO-FIX-DO-OPENERS-STEP-1J2C (canonical)
 -- 20251216224500_specialty_capabilities_and_events_rls_v6.sql
@@ -24,13 +25,13 @@ begin
   if to_regclass('public.vertical_specialties_v1') is null then
     raise notice 'Skipping canonical_specialties seed from vertical_specialties_v1: view does not exist.';
   else
-    execute $sql$
+    execute $q$
       insert into public.canonical_specialties (specialty_code)
       select distinct specialty_code
       from public.vertical_specialties_v1
       where specialty_code is not null and btrim(specialty_code) <> ''
       on conflict do nothing
-    $sql$;
+    $q$;
   end if;
 end
 $do$;
@@ -43,13 +44,13 @@ begin
   if to_regclass('public.vertical_canonical_specialties') is null then
     raise notice 'Skipping canonical_specialties seed from vertical_canonical_specialties: relation does not exist.';
   else
-    execute $sql$
+    execute $q$
       insert into public.canonical_specialties (specialty_code)
       select distinct specialty_code
       from public.vertical_canonical_specialties
       where specialty_code is not null and btrim(specialty_code) <> ''
       on conflict do nothing
-    $sql$;
+    $q$;
   end if;
 end
 $do$;
@@ -128,7 +129,7 @@ begin
   end if;
 
   -- Helper functions (vendor-hosted uses host_vendor_id)
-  execute $sql$
+  execute $q$
     create or replace function public._provider_owned(p_vendor_id uuid)
     returns boolean
     language sql
@@ -207,10 +208,10 @@ begin
         where s.specialty_code = p_specialty
       );
     $$;
-  $sql$;
+  $q$;
 
   -- Replace vendor-host policies with capability-aware v6
-  execute $sql$
+  execute $q$
     alter table public.events enable row level security;
 
     drop policy if exists events_host_vendor_insert_v5 on public.events;
@@ -261,7 +262,7 @@ begin
         or public._specialty_has_capability(public._provider_specialty_code(host_vendor_id), 'can_host_large_scale_volunteer')
       )
     );
-  $sql$;
+  $q$;
 
 end
 $do$;

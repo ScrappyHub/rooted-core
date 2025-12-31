@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-NESTED-EXECUTE-DOLLAR-TAG-STEP-1L (canonical)
 -- ROOTED: AUTO-FIX-DO-TAG-MISMATCH-STEP-1K (canonical)
 -- ROOTED: AUTO-FIX-DO-OPENERS-STEP-1J2C (canonical)
 -- 20251216235000_events_host_vendor_specialty_not_blank_patch_v1.sql
@@ -25,23 +26,23 @@ begin
   execute 'drop policy if exists events_host_vendor_update_v7 on public.events';
   execute 'drop policy if exists events_host_vendor_delete_v7 on public.events';
 
-  -- If this patchÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢s intent is only "specialty not blank", do it as a constraint on providers
-  -- (events table typically doesnÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢t store specialty; provider does).
+  -- If this patchÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢s intent is only "specialty not blank", do it as a constraint on providers
+  -- (events table typically doesnÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢t store specialty; provider does).
   if not exists (
     select 1
     from pg_constraint
     where conname = 'providers_specialty_not_blank_chk'
       and conrelid = 'public.providers'::regclass
   ) then
-    execute $sql$
+    execute $q$
       alter table public.providers
         add constraint providers_specialty_not_blank_chk
         check (specialty is null or btrim(specialty) <> '')
-    $sql$;
+    $q$;
   end if;
 
   -- If you intended to recreate the v7 policies with an added "p.specialty not blank" condition,
-  -- you MUST paste the exact policy SQL you want here and weÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ll re-add them guarded via EXECUTE.
+  -- you MUST paste the exact policy SQL you want here and weÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ll re-add them guarded via EXECUTE.
   -- For now we only prevent the migration from crashing while base tables are missing.
 
 end

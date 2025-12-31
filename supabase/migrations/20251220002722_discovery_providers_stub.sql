@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-NESTED-EXECUTE-DOLLAR-TAG-STEP-1L (canonical)
 -- ROOTED: AUTO-FIX-DO-TAG-MISMATCH-STEP-1K (canonical)
 -- 20251220002722_discovery_providers_stub.sql
 -- SAFETY PATCH: Ensure public.discovery_providers exists (rowtype) BEFORE 20251220002724_remote_schema.sql
@@ -25,7 +26,7 @@ begin
 
   -- Create minimal stub view with the EXACT expected columns + order.
   if v_providers is not null then
-    execute $v$
+    execute $q$
       create view public.discovery_providers as
       select
         null::uuid              as id,
@@ -41,9 +42,9 @@ begin
         now()::timestamptz      as created_at
       from public.providers p
       where false;
-    $v$;
+    $q$;
   else
-    execute $v$
+    execute $q$
       create view public.discovery_providers as
       select
         null::uuid              as id,
@@ -58,7 +59,7 @@ begin
         null::timestamptz       as last_shown_at,
         now()::timestamptz      as created_at
       where false;
-    $v$;
+    $q$;
   end if;
 
 end $$;

@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-NESTED-EXECUTE-DOLLAR-TAG-STEP-1L (canonical)
 -- ROOTED: AUTO-FIX-DO-TAG-MISMATCH-STEP-1K (canonical)
 -- ROOTED: AUTO-FIX-DO-OPENERS-STEP-1J2C (canonical)
 -- 20251216231500_add_sanctuary_specialties_to_canon.sql
@@ -32,13 +33,13 @@ begin
   end if;
 
   -- If your relation has different column names, adjust here later.
-  execute $sql$
+  execute $q$
     insert into public.vertical_canonical_specialties (vertical_code, specialty_code, is_default)
     values
       ('AGRICULTURE', 'AGRI_ANIMAL_SANCTUARY', false),
       ('AGRICULTURE', 'AGRI_WILDLIFE_RESCUE_REHAB', false)
     on conflict do nothing
-  $sql$;
+  $q$;
 end
 $do$;
 

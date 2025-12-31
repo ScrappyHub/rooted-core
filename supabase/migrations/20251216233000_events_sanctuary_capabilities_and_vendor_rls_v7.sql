@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-NESTED-EXECUTE-DOLLAR-TAG-STEP-1L (canonical)
 -- ROOTED: AUTO-FIX-DO-TAG-MISMATCH-STEP-1K (canonical)
 -- ROOTED: AUTO-FIX-DO-OPENERS-STEP-1J2C (canonical)
 -- 20251216233000_events_sanctuary_capabilities_and_vendor_rls_v7.sql
@@ -140,7 +141,7 @@ begin
   execute 'drop policy if exists events_host_vendor_delete_v7 on public.events';
 
   -- Create policies via EXECUTE so the block is fully guarded
-  execute $pol$
+  execute $q$
     create policy events_host_vendor_insert_v7
     on public.events
     for insert
@@ -172,9 +173,9 @@ begin
         or (coalesce(status,'') = 'published' and coalesce(moderation_status,'') = 'approved')
       )
     );
-  $pol$;
+  $q$;
 
-  execute $pol$
+  execute $q$
     create policy events_host_vendor_update_v7
     on public.events
     for update
@@ -213,9 +214,9 @@ begin
         or (coalesce(status,'') = 'published' and coalesce(moderation_status,'') = 'approved')
       )
     );
-  $pol$;
+  $q$;
 
-  execute $pol$
+  execute $q$
     create policy events_host_vendor_delete_v7
     on public.events
     for delete
@@ -230,7 +231,7 @@ begin
           and p.owner_user_id = auth.uid()
       )
     );
-  $pol$;
+  $q$;
 
 end
 $do$;

@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-NESTED-EXECUTE-DOLLAR-TAG-STEP-1L (canonical)
 -- ROOTED: AUTO-FIX-DO-OPENERS-STEP-1J2C (canonical)
 begin;
 
@@ -68,7 +69,7 @@ begin
       AND table_name   = 'providers'
       AND column_name  = 'is_discoverable'
   ) THEN
-    EXECUTE $pol$
+    execute $q$
       create policy providers_public_read_discoverable_v2
       on public.providers
       for select
@@ -82,7 +83,7 @@ begin
             and ut.account_status = 'active'
         )
       );
-    $pol$;
+    $q$;
   ELSE
     RAISE NOTICE 'remote_schema: skipped providers_public_read_discoverable_v2 (missing providers.is_discoverable)';
   END IF;

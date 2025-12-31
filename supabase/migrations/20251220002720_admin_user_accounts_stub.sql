@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-NESTED-EXECUTE-DOLLAR-TAG-STEP-1L (canonical)
 -- ROOTED: AUTO-FIX-DO-TAG-MISMATCH-STEP-1K (canonical)
 -- 20251220002720_admin_user_accounts_stub.sql
 -- SAFETY PATCH (REMOTE-SAFE):
@@ -64,7 +65,7 @@ begin
     execute 'drop view public.admin_user_accounts';
   end if;
 
-  execute $v$
+  execute $q$
     create view public.admin_user_accounts as
     select
       u.id                    as user_id,
@@ -76,7 +77,7 @@ begin
       null::text              as deletion_status,
       null::timestamptz       as deletion_requested_at
     from auth.users u;
-  $v$;
+  $q$;
 
   -- Recreate a minimal stub so anything expecting it doesn't break.
   execute $fn$

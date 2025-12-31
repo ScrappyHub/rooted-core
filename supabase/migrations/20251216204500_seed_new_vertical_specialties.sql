@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-NESTED-EXECUTE-DOLLAR-TAG-STEP-1L (canonical)
 -- ROOTED: AUTO-FIX-DO-TAG-MISMATCH-STEP-1K (canonical)
 -- 20251216204500_seed_new_vertical_specialties.sql
 -- ROOTED CORE: Seed new vertical specialties (schema-adaptive, safe, idempotent)
@@ -42,22 +43,22 @@ begin
   -- Insert/Upsert mapping rows
   -- NOTE: adjust the VALUES list below to match what you actually want seeded.
   if has_is_default then
-    execute $sql$
+    execute $q$
       insert into public.vertical_canonical_specialties (vertical_code, specialty_code, is_default)
       values
         ('META_INFRASTRUCTURE', 'ROOTED_PLATFORM_CANONICAL', true),
         ('REGIONAL_INTELLIGENCE', 'ROOTED_PLATFORM_CANONICAL', true)
       on conflict (vertical_code, specialty_code) do update
       set is_default = excluded.is_default
-    $sql$;
+    $q$;
   else
-    execute $sql$
+    execute $q$
       insert into public.vertical_canonical_specialties (vertical_code, specialty_code)
       values
         ('META_INFRASTRUCTURE', 'ROOTED_PLATFORM_CANONICAL'),
         ('REGIONAL_INTELLIGENCE', 'ROOTED_PLATFORM_CANONICAL')
       on conflict (vertical_code, specialty_code) do nothing
-    $sql$;
+    $q$;
   end if;
 end $$;
 

@@ -1,10 +1,11 @@
+-- ROOTED: AUTO-FIX-NESTED-EXECUTE-DOLLAR-TAG-STEP-1L (canonical)
 -- ROOTED: AUTO-FIX-DO-TAG-MISMATCH-STEP-1K (canonical)
 -- 20251217055200_add_interests_vertical.sql
 -- CANONICAL PATCH (pipeline rewrite - trigger + schema agnostic):
 -- Fixes:
---  - canonical_verticals read-only trigger name varies Ã¢â€ â€™ disable ALL user triggers temporarily
+--  - canonical_verticals read-only trigger name varies ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ disable ALL user triggers temporarily
 --  - canonical_verticals schema varies (id/name/default_specialty columns)
---  - canonical_verticals.sort_order may be NOT NULL Ã¢â€ â€™ compute and supply stable value
+--  - canonical_verticals.sort_order may be NOT NULL ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ compute and supply stable value
 
 begin;
 
@@ -25,20 +26,20 @@ begin
   into has_vertical_group;
 
   if has_vertical_group then
-    execute $ins$
+    execute $q$
       insert into public.specialty_types (code, label, vertical_group)
       values ('INTERESTS_GENERAL', 'Interests (General)', 'INTERESTS')
       on conflict (code) do update
         set label = excluded.label,
             vertical_group = excluded.vertical_group
-    $ins$;
+    $q$;
   else
-    execute $ins$
+    execute $q$
       insert into public.specialty_types (code, label)
       values ('INTERESTS_GENERAL', 'Interests (General)')
       on conflict (code) do update
         set label = excluded.label
-    $ins$;
+    $q$;
   end if;
 end $$;
 
