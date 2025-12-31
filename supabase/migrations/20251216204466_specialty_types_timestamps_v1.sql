@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251216204466_specialty_types_timestamps_v1.sql
 -- Fix: seed_rooted_platform_canonical_placeholder uses updated_at = now()
 -- Ensure specialty_types has created_at + updated_at (idempotent).
@@ -26,6 +27,7 @@ begin
     alter table public.specialty_types
       add column updated_at timestamptz not null default now();
   end if;
-end $$;
+end;
+$$;
 
 commit;

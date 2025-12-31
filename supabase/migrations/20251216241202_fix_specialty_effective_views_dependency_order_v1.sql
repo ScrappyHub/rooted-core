@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251216241202_fix_specialty_effective_views_dependency_order_v1.sql
 -- Fix: specialty_effective_capabilities_v1 depends on specialty_effective_groups_v1
 -- so we must drop/recreate in dependency order (no schema drift, reuse canonical definitions).
@@ -10,7 +11,8 @@ begin
   if to_regclass('public.specialty_effective_capabilities_v1') is not null then
     execute 'drop view public.specialty_effective_capabilities_v1';
   end if;
-end $$;
+end;
+$$;
 
 -- 2) Drop groups view now that dependents are gone
 do $$
@@ -18,7 +20,8 @@ begin
   if to_regclass('public.specialty_effective_groups_v1') is not null then
     execute 'drop view public.specialty_effective_groups_v1';
   end if;
-end $$;
+end;
+$$;
 
 -- 3) Recreate groups view with stable column contract
 create view public.specialty_effective_groups_v1 as

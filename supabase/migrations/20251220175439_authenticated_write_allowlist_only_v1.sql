@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 begin;
 
 -- =========================================================
@@ -21,7 +22,8 @@ begin
   loop
     execute format('revoke insert, update, delete on %s from authenticated', r.obj);
   end loop;
-end $$;
+end;
+$$;
 
 -- Re-grant authenticated writes ONLY on the allowlist
 grant insert, update, delete on public.account_deletion_requests   to authenticated;

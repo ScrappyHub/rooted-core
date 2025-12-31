@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 begin;
 
 -- =========================================================
@@ -17,6 +18,7 @@ begin
     execute format('alter table %s enable row level security', r.fqtn);
     execute format('alter table %s force row level security', r.fqtn);
   end loop;
-end $$;
+end;
+$$;
 
 commit;

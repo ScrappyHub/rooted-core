@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 begin;
 
 -- =========================================================
@@ -30,6 +31,7 @@ begin
       pol, r.schemaname, r.tablename
     );
   end loop;
-end $$;
+end;
+$$;
 
 commit;

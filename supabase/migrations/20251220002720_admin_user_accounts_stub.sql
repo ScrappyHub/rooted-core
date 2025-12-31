@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- ROOTED: AUTO-FIX-NESTED-EXECUTE-DOLLAR-TAG-STEP-1L (canonical)
 -- ROOTED: AUTO-FIX-DO-TAG-MISMATCH-STEP-1K (canonical)
 -- 20251220002720_admin_user_accounts_stub.sql
@@ -77,7 +78,7 @@ begin
       null::text              as deletion_status,
       null::timestamptz       as deletion_requested_at
     from auth.users u;
-  $q$;
+  $v$;
 
   -- Recreate a minimal stub so anything expecting it doesn't break.
   execute $fn$

@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 begin;
 
 -- =========================================================
@@ -47,6 +48,7 @@ begin
     raise exception
       'Hardening violation: authenticated has SELECT outside allowlist (count=%).', bad;
   end if;
-end $$;
+end;
+$$;
 
 commit;

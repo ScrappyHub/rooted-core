@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251216203000_add_new_vertical_codes.sql
 -- ROOTED CORE: Add/seed new vertical codes safely (skip if canonical_verticals not created yet)
 
@@ -34,6 +35,7 @@ begin
   ) then
     execute 'alter table public.canonical_verticals enable trigger canonical_verticals_read_only';
   end if;
-end $$;
+end;
+$$;
 
 commit;

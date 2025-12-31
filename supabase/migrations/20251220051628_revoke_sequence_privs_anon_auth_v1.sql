@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 begin;
 
 do $$
@@ -13,6 +14,7 @@ begin
     execute format('revoke all on sequence %s from anon', s.fqsn);
     execute format('revoke all on sequence %s from authenticated', s.fqsn);
   end loop;
-end $$;
+end;
+$$;
 
 commit;

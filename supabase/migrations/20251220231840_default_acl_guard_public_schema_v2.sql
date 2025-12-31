@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 begin;
 
 -- =========================================================
@@ -61,6 +62,7 @@ begin
     end loop;
   end if;
 
-end $$;
+end;
+$$;
 
 commit;

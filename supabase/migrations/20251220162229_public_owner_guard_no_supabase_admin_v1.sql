@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 begin;
 
 -- PUBLIC OWNER GUARD (v1)
@@ -20,6 +21,7 @@ begin
       'Hardening violation: % objects in public are owned by supabase_admin. All public objects must be owned by postgres.',
       cnt;
   end if;
-end $$;
+end;
+$$;
 
 commit;

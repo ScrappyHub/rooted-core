@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 begin;
 
 -- =========================================================
@@ -70,6 +71,7 @@ begin
     execute format('grant select on %s to authenticated', v.fqvn);
   end loop;
 
-end $$;
+end;
+$$;
 
 commit;

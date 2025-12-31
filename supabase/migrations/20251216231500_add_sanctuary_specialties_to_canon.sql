@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- ROOTED: AUTO-FIX-NESTED-EXECUTE-DOLLAR-TAG-STEP-1L (canonical)
 -- ROOTED: AUTO-FIX-DO-TAG-MISMATCH-STEP-1K (canonical)
 -- ROOTED: AUTO-FIX-DO-OPENERS-STEP-1J2C (canonical)
@@ -39,7 +40,7 @@ begin
       ('AGRICULTURE', 'AGRI_ANIMAL_SANCTUARY', false),
       ('AGRICULTURE', 'AGRI_WILDLIFE_RESCUE_REHAB', false)
     on conflict do nothing
-  $q$;
+  $sql$;
 end
 $do$;
 

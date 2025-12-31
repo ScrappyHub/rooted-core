@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 begin;
 
 -- =========================================================
@@ -84,6 +85,7 @@ begin
       'Hardening violation (write allowlist): missing=% no_rls=% no_force=% no_policies=%',
       missing, no_rls, no_force, no_policies;
   end if;
-end $$;
+end;
+$$;
 
 commit;

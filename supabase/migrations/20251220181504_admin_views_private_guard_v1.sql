@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 begin;
 
 -- =========================================================
@@ -23,7 +24,8 @@ begin
     execute format('revoke all on %s from anon', r.obj);
     execute format('revoke all on %s from authenticated', r.obj);
   end loop;
-end $$;
+end;
+$$;
 
 drop view if exists public.admin_admin_view_grants_leak_v1;
 

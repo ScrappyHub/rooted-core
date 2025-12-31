@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 begin;
 
 -- =========================================================
@@ -32,7 +33,8 @@ begin
   loop
     execute format('revoke usage, select, update on %s from authenticated', r.obj);
   end loop;
-end $$;
+end;
+$$;
 
 -- =========================================================
 -- ALLOWLIST: grant back only what authenticated needs

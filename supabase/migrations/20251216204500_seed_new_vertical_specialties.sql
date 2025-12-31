@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- ROOTED: AUTO-FIX-NESTED-EXECUTE-DOLLAR-TAG-STEP-1L (canonical)
 -- ROOTED: AUTO-FIX-DO-TAG-MISMATCH-STEP-1K (canonical)
 -- 20251216204500_seed_new_vertical_specialties.sql
@@ -50,7 +51,7 @@ begin
         ('REGIONAL_INTELLIGENCE', 'ROOTED_PLATFORM_CANONICAL', true)
       on conflict (vertical_code, specialty_code) do update
       set is_default = excluded.is_default
-    $q$;
+    $sql$;
   else
     execute $q$
       insert into public.vertical_canonical_specialties (vertical_code, specialty_code)

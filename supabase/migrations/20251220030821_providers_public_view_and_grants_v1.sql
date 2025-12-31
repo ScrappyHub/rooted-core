@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- ROOTED: AUTO-FIX-NESTED-EXECUTE-DOLLAR-TAG-STEP-1L (canonical)
 -- ROOTED: AUTO-FIX-DO-TAG-MISMATCH-STEP-1K (canonical)
 begin;
@@ -18,7 +19,8 @@ begin
   if not (select relrowsecurity from pg_class where oid = 'public.providers'::regclass) then
     raise exception 'providers_public_view_and_grants_v1: RLS is OFF on public.providers';
   end if;
-end $$;
+end;
+$v$;
 
 -- =========================================================
 -- 1) SAFE PUBLIC VIEW (no billing columns)
@@ -40,7 +42,7 @@ BEGIN
         p.owner_user_id,
         p.name
       from public.providers p;
-    $q$;
+    $$;
   ELSE
     execute $q$
       create or replace view public.providers_public_v1 as

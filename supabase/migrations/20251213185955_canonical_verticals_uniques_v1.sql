@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251213185955_canonical_verticals_uniques_v1.sql
 -- Fix: ON CONFLICT (vertical_code) requires a UNIQUE/PK constraint.
 -- Also ensures vertical_canonical_specialties supports ON CONFLICT (vertical_code) used in reseed.
@@ -37,7 +38,8 @@ begin
     alter table public.canonical_verticals
       add constraint canonical_verticals_vertical_code_key unique (vertical_code);
   end if;
-end $$;
+end;
+$$;
 
 -- 2) vertical_canonical_specialties: ensure vertical_code is unique
 -- (because reseed uses ON CONFLICT (vertical_code))
@@ -69,6 +71,7 @@ begin
     alter table public.vertical_canonical_specialties
       add constraint vertical_canonical_specialties_vertical_code_key unique (vertical_code);
   end if;
-end $$;
+end;
+$$;
 
 commit;

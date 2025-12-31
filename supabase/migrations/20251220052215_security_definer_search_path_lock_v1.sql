@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 begin;
 
 -- =========================================================
@@ -16,6 +17,7 @@ begin
   loop
     execute format('alter function %s set search_path = public, pg_temp', f.fqn);
   end loop;
-end $$;
+end;
+$$;
 
 commit;

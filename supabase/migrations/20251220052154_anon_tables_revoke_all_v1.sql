@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 begin;
 
 -- =========================================================
@@ -17,6 +18,7 @@ begin
   loop
     execute format('revoke all on table %s from anon', t.fqtn);
   end loop;
-end $$;
+end;
+$$;
 
 commit;

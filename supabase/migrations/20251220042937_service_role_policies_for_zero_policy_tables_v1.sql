@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 begin;
 
 do $$
@@ -5,7 +6,8 @@ begin
   if to_regclass('public.password_history') is null then
     raise exception 'service_role_policies_for_zero_policy_tables_v1: expected password_history missing';
   end if;
-end $$;
+end;
+$$;
 
 -- password_history
 drop policy if exists password_history_service_role_manage_v1 on public.password_history;

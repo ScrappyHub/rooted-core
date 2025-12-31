@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 begin;
 
 -- =========================================================
@@ -33,6 +34,7 @@ begin
     raise exception
       'Hardening violation: anon has SELECT outside 12-view allowlist (count=%).', bad;
   end if;
-end $$;
+end;
+$$;
 
 commit;

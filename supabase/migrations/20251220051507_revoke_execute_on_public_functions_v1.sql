@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 begin;
 
 -- Revoke execute on ALL functions in public from anon/authenticated,
@@ -15,6 +16,7 @@ begin
     execute format('revoke all on function %s from anon', f.fqn);
     execute format('revoke all on function %s from authenticated', f.fqn);
   end loop;
-end $$;
+end;
+$$;
 
 commit;

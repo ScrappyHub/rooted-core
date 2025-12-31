@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- ROOTED: AUTO-FIX-NESTED-EXECUTE-DOLLAR-TAG-STEP-1L (canonical)
 -- ROOTED: AUTO-FIX-DO-TAG-MISMATCH-STEP-1K (canonical)
 -- 20251220002722_discovery_providers_stub.sql
@@ -42,7 +43,7 @@ begin
         now()::timestamptz      as created_at
       from public.providers p
       where false;
-    $q$;
+    $v$;
   else
     execute $q$
       create view public.discovery_providers as

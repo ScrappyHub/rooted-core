@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251216241150_fix_specialty_effective_groups_v1.sql
 -- Fix: specialty_effective_groups_v1 referenced vs.specialty_label, but vertical_specialties_v1 no longer exposes it.
 -- Canonical: labels live in public.specialty_types.
@@ -11,7 +12,8 @@ begin
   if to_regclass('public.specialty_effective_groups_v1') is not null then
     execute 'drop view public.specialty_effective_groups_v1 cascade';
   end if;
-end $$;
+end;
+$$;
 
 -- Recreate view with label sourced from specialty_types
 create view public.specialty_effective_groups_v1 as

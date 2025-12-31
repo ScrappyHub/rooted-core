@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 begin;
 
 -- =========================================================
@@ -19,6 +20,7 @@ begin
     execute format('revoke all on function %s from anon', r.obj);
     execute format('revoke all on function %s from authenticated', r.obj);
   end loop;
-end $$;
+end;
+$$;
 
 commit;

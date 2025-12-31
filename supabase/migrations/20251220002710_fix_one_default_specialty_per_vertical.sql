@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251220002710_fix_one_default_specialty_per_vertical.sql
 -- CANONICAL PATCH: enforce exactly ONE is_default=true per vertical_code
 -- Why this version:
@@ -175,6 +176,7 @@ begin
     and u.specialty_code = r.specialty_code
     and r.rn > 1;
 
-end $$;
+end;
+$$;
 
 commit;

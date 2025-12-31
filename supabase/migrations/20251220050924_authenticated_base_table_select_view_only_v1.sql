@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 begin;
 
 -- =========================================================
@@ -18,6 +19,7 @@ begin
   loop
     execute format('revoke select on table %s from authenticated', t.fqtn);
   end loop;
-end $$;
+end;
+$$;
 
 commit;

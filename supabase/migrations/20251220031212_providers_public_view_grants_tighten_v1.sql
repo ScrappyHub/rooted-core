@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 begin;
 
 do $$
@@ -5,7 +6,8 @@ begin
   if to_regclass('public.providers_public_v1') is null then
     raise exception 'providers_public_view_grants_tighten_v1: public.providers_public_v1 missing';
   end if;
-end $$;
+end;
+$$;
 
 -- Revoke everything first (clean slate)
 revoke all on table public.providers_public_v1 from anon;

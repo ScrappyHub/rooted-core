@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- ROOTED: AUTO-FIX-NESTED-EXECUTE-DOLLAR-TAG-STEP-1L (canonical)
 -- ROOTED: AUTO-FIX-DO-TAG-MISMATCH-STEP-1K (canonical)
 -- ROOTED: AUTO-FIX-DO-OPENERS-STEP-1J2C (canonical)
@@ -31,7 +32,7 @@ begin
       from public.vertical_specialties_v1
       where specialty_code is not null and btrim(specialty_code) <> ''
       on conflict do nothing
-    $q$;
+    $sql$;
   end if;
 end
 $do$;
@@ -50,7 +51,7 @@ begin
       from public.vertical_canonical_specialties
       where specialty_code is not null and btrim(specialty_code) <> ''
       on conflict do nothing
-    $q$;
+    $sql$;
   end if;
 end
 $do$;

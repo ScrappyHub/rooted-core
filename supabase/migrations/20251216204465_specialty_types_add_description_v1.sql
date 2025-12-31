@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251216204465_specialty_types_add_description_v1.sql
 -- Fix: seed_rooted_platform_canonical_placeholder expects specialty_types.description
 -- This migration ensures the column exists BEFORE the seed runs.
@@ -21,6 +22,7 @@ begin
     alter table public.specialty_types
       add column description text;
   end if;
-end $$;
+end;
+$$;
 
 commit;

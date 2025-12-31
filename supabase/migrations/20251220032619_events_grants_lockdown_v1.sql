@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 begin;
 
 -- =========================================================
@@ -12,7 +13,8 @@ begin
   if not (select relrowsecurity from pg_class where oid = 'public.events'::regclass) then
     raise exception 'events_grants_lockdown_v1: RLS is OFF on public.events';
   end if;
-end $$;
+end;
+$$;
 
 -- =========================================================
 -- GRANTS LOCKDOWN (least privilege)

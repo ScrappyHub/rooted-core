@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251217203000_vertical_policy_allowed_roles_patch_v1.sql
 -- Add min_engine_state + allowed_roles to vertical_policy (engine-aware bounds + role hard-stop)
 -- Safe/idempotent.
@@ -53,6 +54,7 @@ begin
       add constraint vertical_policy_min_le_max
       check (min_engine_state <= max_engine_state);
   end if;
-end $$;
+end;
+$$;
 
 commit;

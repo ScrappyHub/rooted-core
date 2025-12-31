@@ -1,11 +1,12 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- ROOTED: AUTO-FIX-NESTED-EXECUTE-DOLLAR-TAG-STEP-1L (canonical)
 -- ROOTED: AUTO-FIX-DO-TAG-MISMATCH-STEP-1K (canonical)
 -- 20251217055200_add_interests_vertical.sql
 -- CANONICAL PATCH (pipeline rewrite - trigger + schema agnostic):
 -- Fixes:
---  - canonical_verticals read-only trigger name varies ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ disable ALL user triggers temporarily
+--  - canonical_verticals read-only trigger name varies ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ disable ALL user triggers temporarily
 --  - canonical_verticals schema varies (id/name/default_specialty columns)
---  - canonical_verticals.sort_order may be NOT NULL ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ compute and supply stable value
+--  - canonical_verticals.sort_order may be NOT NULL ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ compute and supply stable value
 
 begin;
 
@@ -32,7 +33,7 @@ begin
       on conflict (code) do update
         set label = excluded.label,
             vertical_group = excluded.vertical_group
-    $q$;
+    $ins$;
   else
     execute $q$
       insert into public.specialty_types (code, label)
@@ -61,7 +62,8 @@ begin
   loop
     execute format('alter table public.canonical_verticals disable trigger %I', tr.tgname);
   end loop;
-end $$;
+end;
+$$;
 
 -- ------------------------------------------------------------
 -- 3) Upsert INTERESTS into canonical_verticals (schema-aware + sort_order-safe)
@@ -208,7 +210,8 @@ begin
 
     execute sql_ins;
   end if;
-end $$;
+end;
+$$;
 
 -- ------------------------------------------------------------
 -- 4) Re-enable ALL user triggers on canonical_verticals
@@ -228,7 +231,8 @@ begin
   loop
     execute format('alter table public.canonical_verticals enable trigger %I', tr.tgname);
   end loop;
-end $$;
+end;
+$$;
 
 -- ------------------------------------------------------------
 -- 5) Wire INTERESTS specialty into vertical_canonical_specialties

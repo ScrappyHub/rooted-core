@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251214044122_canonical_verticals_lock_final.sql
 -- ROOTED CORE: Final lock for canonical_verticals (safe if table not yet created)
 
@@ -30,6 +31,7 @@ begin
       for each row execute function public.prevent_canonical_verticals_changes()
     ';
   end if;
-end $$;
+end;
+$$;
 
 commit;

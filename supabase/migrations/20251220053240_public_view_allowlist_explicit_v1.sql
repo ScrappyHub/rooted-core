@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 begin;
 
 -- =========================================================
@@ -160,6 +161,7 @@ ELSE
   RAISE NOTICE 'remote_schema: skip grant missing view public.community_landmarks_kidsafe_v1 to authenticated';
 END IF;
 
-end $$;
+end;
+$$;
 
 commit;

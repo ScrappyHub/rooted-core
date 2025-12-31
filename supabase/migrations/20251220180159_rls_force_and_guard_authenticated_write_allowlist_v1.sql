@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 begin;
 
 -- =========================================================
@@ -87,6 +88,7 @@ begin
       raise exception 'Hardening violation: public.% has zero RLS policies', r.table_name;
     end if;
   end loop;
-end $$;
+end;
+$$;
 
 commit;

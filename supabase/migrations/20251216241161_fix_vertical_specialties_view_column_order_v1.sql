@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251216241161_fix_vertical_specialties_view_column_order_v1.sql
 -- Fix: 41160 creates vertical_specialties_v1 with (vertical_code, specialty_code, specialty_label, is_default).
 -- 41161 must NOT "create or replace" with reordered columns (Postgres forbids column renames on replace).
@@ -16,7 +17,8 @@ begin
   if to_regclass('public.vertical_specialties_v1') is not null then
     execute 'drop view public.vertical_specialties_v1';
   end if;
-end $$;
+end;
+$$;
 
 -- Recreate vertical_specialties_v1 with the FINAL canonical order:
 -- (vertical_code, specialty_code, is_default, specialty_label)

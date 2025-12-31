@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- ROOTED: AUTO-FIX-NESTED-EXECUTE-DOLLAR-TAG-STEP-1L (canonical)
 -- ROOTED: AUTO-FIX-DO-OPENERS-STEP-1J2C (canonical)
 begin;
@@ -30,7 +31,8 @@ begin
   if not (select relrowsecurity from pg_class where oid = 'public.events'::regclass) then
     raise exception 'policy_normalization: RLS is OFF on public.events';
   end if;
-end $$;
+end;
+$pol$;
 
 -- =========================================
 -- PROVIDERS: REMOVE OPEN/CONFLICTING POLICIES
@@ -83,7 +85,7 @@ begin
             and ut.account_status = 'active'
         )
       );
-    $q$;
+    $pol$;
   ELSE
     RAISE NOTICE 'remote_schema: skipped providers_public_read_discoverable_v2 (missing providers.is_discoverable)';
   END IF;

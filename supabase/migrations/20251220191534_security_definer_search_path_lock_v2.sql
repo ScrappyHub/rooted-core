@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 begin;
 
 -- =========================================================
@@ -23,6 +24,7 @@ begin
       r.oid::regprocedure
     );
   end loop;
-end $$;
+end;
+$$;
 
 commit;

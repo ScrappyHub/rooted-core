@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251216241201_fix_specialty_effective_groups_drop_recreate_v1.sql
 -- CANONICAL PATCH (rewritten via pipeline):
 -- Fix Postgres dependency error:
@@ -12,7 +13,8 @@ begin
   if to_regclass('public.specialty_effective_capabilities_v1') is not null then
     execute 'drop view public.specialty_effective_capabilities_v1';
   end if;
-end $$;
+end;
+$$;
 
 -- Now safe to drop groups view
 do $$
@@ -20,7 +22,8 @@ begin
   if to_regclass('public.specialty_effective_groups_v1') is not null then
     execute 'drop view public.specialty_effective_groups_v1';
   end if;
-end $$;
+end;
+$$;
 
 -- Recreate specialty_effective_groups_v1 with STABLE column contract:
 -- (specialty_code, specialty_label, vertical_code, group_key)

@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251213170100_seed_canonical_verticals.sql
 -- ROOTED CORE: Seed canonical_verticals (migration-only; safe if table not yet created)
 
@@ -35,6 +36,7 @@ begin
     description = excluded.description,
     sort_order = excluded.sort_order,
     default_specialty = excluded.default_specialty;
-end $$;
+end;
+$$;
 
 commit;

@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 begin;
 
 -- =========================================================
@@ -67,6 +68,7 @@ begin
   if missing > 0 or no_rls > 0 or no_policies > 0 then
     raise exception 'RLS GUARD FAILED: missing=% no_rls=% no_policies=%', missing, no_rls, no_policies;
   end if;
-end $$;
+end;
+$$;
 
 commit;

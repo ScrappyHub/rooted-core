@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251217054500_engine_enforcement_core_v1.sql
 -- ROOTED Engine-first enforcement core (tables + flags + deterministic engine evaluation)
 -- Safe for Supabase migrations (no UI assumptions)
@@ -30,7 +31,8 @@ begin
       'regional_intel'
     );
   end if;
-end $$;
+end;
+$$;
 
 -- ------------------------------------------------------------
 -- 1) Engine registry (includes future engines, non-assignable)
@@ -344,6 +346,7 @@ begin
       add constraint prevent_illegal_engine_seed
       check (engine_state in ('community','discovery','discovery_events'));
   end if;
-end $$;
+end;
+$$;
 
 commit;

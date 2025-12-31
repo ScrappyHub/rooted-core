@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251212000000_create_core_base_tables_minimal.sql
 -- Minimal base schema so later policy/taxonomy migrations can apply cleanly.
 -- This repo previously had policy migrations that referenced providers/events
@@ -52,7 +53,8 @@ begin
         on delete set null;
     end if;
   end if;
-end $$;
+end;
+$$;
 
 -- ---------------------------------------------------------------------------
 -- C) Taxonomy objects that later migrations reference

@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251213170000_canonical_verticals_bypass.sql
 -- ROOTED CORE: Allow migration-only bypass for canonical_verticals lock trigger
 -- Canonical: still read-only from app/UI. Only migrations can seed.
@@ -17,7 +18,7 @@ begin
     end if;
   end if;
 
-  raise exception 'canonical_verticals is read-only â€“ modify via migration, not from the app.';
+  raise exception 'canonical_verticals is read-only Ã¢â‚¬â€œ modify via migration, not from the app.';
 end;
 $$;
 
@@ -41,7 +42,7 @@ begin
     before insert or update or delete on public.canonical_verticals
     for each row execute function public.prevent_canonical_verticals_changes();
   end if;
-end $$;
+end;
+$$;
 
 commit;
-

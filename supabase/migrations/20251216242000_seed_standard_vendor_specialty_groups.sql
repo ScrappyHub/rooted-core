@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251216242000_seed_standard_vendor_specialty_groups.sql
 -- Creates specialty governance groups + membership table (if missing)
 -- Seeds STANDARD_VENDOR memberships (idempotent)
@@ -21,7 +22,7 @@ create table if not exists public.specialty_governance_group_members (
   primary key (specialty_code, group_key)
 );
 
--- Basic safety (no blank codes) â€” Postgres has no "ADD CONSTRAINT IF NOT EXISTS"
+-- Basic safety (no blank codes) Ã¢â‚¬â€ Postgres has no "ADD CONSTRAINT IF NOT EXISTS"
 do $$
 begin
   if not exists (
@@ -33,7 +34,8 @@ begin
       add constraint specialty_governance_group_members_specialty_not_blank_chk
       check (nullif(btrim(specialty_code), '') is not null);
   end if;
-end $$;
+end;
+$$;
 
 -- ------------------------------------------------------------
 -- 2) Ensure group exists
@@ -45,7 +47,7 @@ on conflict (group_key) do update
   set description = excluded.description;
 
 -- ------------------------------------------------------------
--- 3) Seed specialty â†’ group (only if specialty exists in your canon view)
+-- 3) Seed specialty Ã¢â€ â€™ group (only if specialty exists in your canon view)
 -- ------------------------------------------------------------
 
 insert into public.specialty_governance_group_members (specialty_code, group_key)

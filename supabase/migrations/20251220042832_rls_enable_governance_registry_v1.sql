@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 begin;
 
 -- =========================================================
@@ -8,7 +9,8 @@ begin
   if to_regclass('public.user_tiers') is null then
     raise exception 'rls_enable_governance_registry_v1: public.user_tiers missing';
   end if;
-end $$;
+end;
+$$;
 
 -- =========================================================
 -- 1) ENABLE RLS + FORCE on previously RLS-OFF tables
@@ -92,7 +94,7 @@ alter table if exists public.vertical_policy force row level security;
 
 -- =========================================================
 -- 2) BASELINE POLICIES: service_role + admin manage
--- (Conservative: doesnÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢t open anything to regular users)
+-- (Conservative: doesnÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢t open anything to regular users)
 -- =========================================================
 -- Helper pattern: for each table, create:
 --  - <table>_service_role_manage_v1  (service_role ALL)

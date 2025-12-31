@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251213190000_reseed_canonical_verticals_and_specialties.sql
 -- ROOTED CORE: Canonical reseed to the locked 21 verticals + rebuild defaults
 -- Safe for local rebuilds where some tables may not exist yet.
@@ -87,6 +88,7 @@ begin
     on conflict (vertical_code) do update
     set specialty_code = excluded.specialty_code;
   end if;
-end $$;
+end;
+$$;
 
 commit;
