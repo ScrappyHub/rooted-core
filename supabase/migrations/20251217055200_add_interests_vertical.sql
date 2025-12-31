@@ -1,12 +1,13 @@
+-- ROOTED: AUTO-FIX-EXECUTE-CLOSER-MISMATCH-STEP-1N (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- ROOTED: AUTO-FIX-NESTED-EXECUTE-DOLLAR-TAG-STEP-1L (canonical)
 -- ROOTED: AUTO-FIX-DO-TAG-MISMATCH-STEP-1K (canonical)
 -- 20251217055200_add_interests_vertical.sql
 -- CANONICAL PATCH (pipeline rewrite - trigger + schema agnostic):
 -- Fixes:
---  - canonical_verticals read-only trigger name varies ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ disable ALL user triggers temporarily
+--  - canonical_verticals read-only trigger name varies ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ disable ALL user triggers temporarily
 --  - canonical_verticals schema varies (id/name/default_specialty columns)
---  - canonical_verticals.sort_order may be NOT NULL ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ compute and supply stable value
+--  - canonical_verticals.sort_order may be NOT NULL ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ compute and supply stable value
 
 begin;
 
@@ -33,7 +34,7 @@ begin
       on conflict (code) do update
         set label = excluded.label,
             vertical_group = excluded.vertical_group
-    $ins$;
+    $q$;
   else
     execute $q$
       insert into public.specialty_types (code, label)

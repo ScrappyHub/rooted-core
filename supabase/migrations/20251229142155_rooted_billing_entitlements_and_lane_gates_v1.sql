@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-EXECUTE-CLOSER-MISMATCH-STEP-1N (canonical)
 begin;
 
 -- ------------------------------------------------------------
@@ -104,7 +105,7 @@ begin
   );
 
   return v_role;
-end $$;
+$q$;
 
 create or replace function public._user_tier_safe(p_user_id uuid)
 returns text
@@ -153,7 +154,7 @@ begin
   );
 
   return v_tier;
-end $$;
+$q$;
 
 -- ------------------------------------------------------------
 -- 3) Billing-backed entitlement check (THIS is the canonical truth)

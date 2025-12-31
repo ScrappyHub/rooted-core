@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-EXECUTE-CLOSER-MISMATCH-STEP-1N (canonical)
 -- ROOTED: AUTO-FIX-NESTED-EXECUTE-DOLLAR-TAG-STEP-1L (canonical)
 -- ROOTED: AUTO-FIX-DO-TAG-MISMATCH-STEP-1K (canonical)
 begin;
@@ -66,7 +67,7 @@ begin
     set search_path = public
     as $body$
       select * from public.admin_user_accounts;
-    $body$;
+    $fn$;
   $fn$;
 
   -- 4) Permissions (tighten later if needed; keep minimal sane defaults)

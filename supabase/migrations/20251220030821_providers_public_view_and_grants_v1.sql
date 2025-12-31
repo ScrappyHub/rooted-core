@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-EXECUTE-CLOSER-MISMATCH-STEP-1N (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- ROOTED: AUTO-FIX-NESTED-EXECUTE-DOLLAR-TAG-STEP-1L (canonical)
 -- ROOTED: AUTO-FIX-DO-TAG-MISMATCH-STEP-1K (canonical)
@@ -42,7 +43,7 @@ BEGIN
         p.owner_user_id,
         p.name
       from public.providers p;
-    $$;
+    $q$;
   ELSE
     execute $q$
       create or replace view public.providers_public_v1 as

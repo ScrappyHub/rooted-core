@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-EXECUTE-CLOSER-MISMATCH-STEP-1N (canonical)
 begin;
 
 -- =========================================================
@@ -104,7 +105,7 @@ begin
   end if;
 
   return false;
-end $$;
+$q$;
 
 revoke all on function public.can_create_live_feed_post_v1(uuid,uuid) from anon;
 grant execute on function public.can_create_live_feed_post_v1(uuid,uuid) to authenticated;

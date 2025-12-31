@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-EXECUTE-CLOSER-MISMATCH-STEP-1N (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- ROOTED: AUTO-FIX-NESTED-EXECUTE-DOLLAR-TAG-STEP-1L (canonical)
 -- ROOTED: AUTO-FIX-DO-OPENERS-STEP-1J2C (canonical)
@@ -85,7 +86,7 @@ begin
             and ut.account_status = 'active'
         )
       );
-    $pol$;
+    $q$;
   ELSE
     RAISE NOTICE 'remote_schema: skipped providers_public_read_discoverable_v2 (missing providers.is_discoverable)';
   END IF;

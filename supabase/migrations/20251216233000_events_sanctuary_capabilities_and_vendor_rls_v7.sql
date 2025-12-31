@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-EXECUTE-CLOSER-MISMATCH-STEP-1N (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- ROOTED: AUTO-FIX-NESTED-EXECUTE-DOLLAR-TAG-STEP-1L (canonical)
 -- ROOTED: AUTO-FIX-DO-TAG-MISMATCH-STEP-1K (canonical)
@@ -174,7 +175,7 @@ begin
         or (coalesce(status,'') = 'published' and coalesce(moderation_status,'') = 'approved')
       )
     );
-  $pol$;
+  $q$;
 
   execute $q$
     create policy events_host_vendor_update_v7
