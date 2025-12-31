@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-TAG-MISMATCH-STEP-1K (canonical)
 -- 20251220002722_discovery_providers_stub.sql
 -- SAFETY PATCH: Ensure public.discovery_providers exists (rowtype) BEFORE 20251220002724_remote_schema.sql
 -- CRITICAL: Column order/signature MUST match the real view so CREATE OR REPLACE VIEW won't fail.
@@ -5,7 +6,7 @@
 
 begin;
 
-do $$
+do $v$
 declare
   v_providers regclass;
 begin

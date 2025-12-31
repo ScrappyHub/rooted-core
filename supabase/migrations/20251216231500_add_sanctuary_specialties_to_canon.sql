@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-TAG-MISMATCH-STEP-1K (canonical)
 -- ROOTED: AUTO-FIX-DO-OPENERS-STEP-1J2C (canonical)
 -- 20251216231500_add_sanctuary_specialties_to_canon.sql
 -- Purpose: ensure sanctuary specialties exist in canonical_specialties and (if present) map them to AGRICULTURE.
@@ -23,7 +24,7 @@ on conflict do nothing;
 -- ---------------------------------------------------------------------
 
 -- ROOTED: AUTO-FIX-DO-DOLLAR-QUOTE (canonical)
-do $do$
+do $sql$
 begin
   if to_regclass('public.vertical_canonical_specialties') is null then
     raise notice 'Skipping sanctuary mapping: public.vertical_canonical_specialties does not exist.';

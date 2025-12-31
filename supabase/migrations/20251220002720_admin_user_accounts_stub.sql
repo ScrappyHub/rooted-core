@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-TAG-MISMATCH-STEP-1K (canonical)
 -- 20251220002720_admin_user_accounts_stub.sql
 -- SAFETY PATCH (REMOTE-SAFE):
 -- Ensure public.admin_user_accounts rowtype exists BEFORE 20251220002724_remote_schema.sql
@@ -6,7 +7,7 @@
 begin;
 
 -- 1) is_admin() stub (only meaningful once user_tiers exists; otherwise false)
-do $$
+do $body$
 begin
   if not exists (
     select 1
@@ -42,7 +43,7 @@ begin
 end $$;
 
 -- 2) admin_user_accounts stub view (creates the rowtype with FINAL column names/order)
-do $$
+do $v$
 declare
   r record;
 begin

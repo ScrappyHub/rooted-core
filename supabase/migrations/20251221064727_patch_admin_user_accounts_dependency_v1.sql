@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-TAG-MISMATCH-STEP-1K (canonical)
 begin;
 
 -- =========================================================
@@ -9,7 +10,7 @@ begin;
 --   - Then recreating function stub (or you can paste final body if you have it)
 -- =========================================================
 
-do $$
+do $v$
 declare
   v_view_exists boolean := (to_regclass('public.admin_user_accounts') is not null);
   r record;

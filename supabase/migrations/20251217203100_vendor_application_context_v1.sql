@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-TAG-MISMATCH-STEP-1K (canonical)
 -- 20251217203100_vendor_application_context_v1.sql
 -- CANONICAL PATCH:
 -- Fix: some environments do NOT have public.vendor_applications during clean reset.
@@ -8,7 +9,7 @@ begin;
 -- ------------------------------------------------------------
 -- vendor_applications (schema-aware / safe no-op)
 -- ------------------------------------------------------------
-do $$
+do $idx$
 declare
   has_table boolean;
   has_user_id boolean;

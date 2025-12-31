@@ -1,16 +1,17 @@
+-- ROOTED: AUTO-FIX-DO-TAG-MISMATCH-STEP-1K (canonical)
 -- 20251217055200_add_interests_vertical.sql
 -- CANONICAL PATCH (pipeline rewrite - trigger + schema agnostic):
 -- Fixes:
---  - canonical_verticals read-only trigger name varies â†’ disable ALL user triggers temporarily
+--  - canonical_verticals read-only trigger name varies Ã¢â€ â€™ disable ALL user triggers temporarily
 --  - canonical_verticals schema varies (id/name/default_specialty columns)
---  - canonical_verticals.sort_order may be NOT NULL â†’ compute and supply stable value
+--  - canonical_verticals.sort_order may be NOT NULL Ã¢â€ â€™ compute and supply stable value
 
 begin;
 
 -- ------------------------------------------------------------
 -- 1) Ensure the default specialty exists (FK target)
 -- ------------------------------------------------------------
-do $$
+do $ins$
 declare
   has_vertical_group boolean;
 begin

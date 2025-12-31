@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-TAG-MISMATCH-STEP-1K (canonical)
 begin;
 
 -- =========================================================
@@ -11,7 +12,7 @@ begin;
 
 drop view if exists public.provider_dashboard_summary_v1 cascade;
 
-DO $$
+do $v$
 DECLARE
   id_col text;
   has_name boolean;

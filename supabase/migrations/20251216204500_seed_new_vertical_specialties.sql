@@ -1,9 +1,10 @@
+-- ROOTED: AUTO-FIX-DO-TAG-MISMATCH-STEP-1K (canonical)
 -- 20251216204500_seed_new_vertical_specialties.sql
 -- ROOTED CORE: Seed new vertical specialties (schema-adaptive, safe, idempotent)
 
 begin;
 
-do $$
+do $sql$
 declare
   has_is_default boolean;
   has_table      boolean;

@@ -1,9 +1,10 @@
+-- ROOTED: AUTO-FIX-DO-TAG-MISMATCH-STEP-1K (canonical)
 begin;
 
 -- =========================================================
 -- SAFETY ASSERTS (fail-fast + auditable)
 -- =========================================================
-do $$
+do $v$
 begin
   if to_regclass('public.providers') is null then
     raise exception 'providers_public_view_and_grants_v1: public.providers missing';
