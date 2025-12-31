@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-OPENERS-STEP-1J2C (canonical)
 begin;
 
 -- =========================================
@@ -5,7 +6,7 @@ begin;
 -- =========================================
 
 -- ROOTED: AUTO-FIX-DO-DOLLAR-QUOTE (canonical)
-do $
+do $pol$
 begin
   -- ROOTED: AUTO-RLS-BEFORE-ASSERTS
   -- Determinism + zero-leak posture: enable RLS before safety asserts check it.
@@ -53,7 +54,7 @@ drop policy if exists "Enable insert for authenticated users only" on public.pro
 -- 1) Public/Anon discovery read: ONLY discoverable + active owner account
 
 -- ROOTED: AUTO-FIX-DO-DOLLAR-QUOTE (canonical)
-do $
+do $pol$
 begin
   -- ROOTED: AUTO-RLS-BEFORE-ASSERTS
   -- Determinism + zero-leak posture: enable RLS before safety asserts check it.

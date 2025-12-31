@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-OPENERS-STEP-1J2C (canonical)
 BEGIN;
 
 -- ============================================================
@@ -23,7 +24,7 @@ IS 'Stripe webhook event ledger (idempotency). Exactly 1 row per Stripe event.id
 ALTER TABLE public.billing_stripe_events ENABLE ROW LEVEL SECURITY;
 
 -- ROOTED: AUTO-FIX-DO-DOLLAR-QUOTE (canonical)
-do $
+do $do$
 BEGIN
   -- Service/admin can read/write
   BEGIN
@@ -105,7 +106,7 @@ BEGIN
   END IF;
 
   -- Core action:
-  -- Canonical: sync subscription Ã¢â€ â€™ applies entitlements Ã¢â€ â€™ fixes drift
+  -- Canonical: sync subscription ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ applies entitlements ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ fixes drift
   PERFORM public.service_sync_subscription_from_stripe_price(
     p_user_id,
     p_stripe_price_id,

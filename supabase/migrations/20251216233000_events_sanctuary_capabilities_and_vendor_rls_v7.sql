@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-OPENERS-STEP-1J2C (canonical)
 -- 20251216233000_events_sanctuary_capabilities_and_vendor_rls_v7.sql
 -- Adds a minimal capability framework + hard-locks sanctuary specialties to volunteer-only events
 -- by replacing the vendor-hosted event RLS policies with capability-aware v7.
@@ -84,7 +85,7 @@ $$;
 -- NOTE: only safe to run if canonical_specialties exists due to FK on specialty_capability_grants.
 
 -- ROOTED: AUTO-FIX-DO-DOLLAR-QUOTE (canonical)
-do $
+do $do$
 begin
   if to_regclass('public.canonical_specialties') is null then
     raise notice 'Skipping sanctuary capability grants: public.canonical_specialties does not exist.';
@@ -113,7 +114,7 @@ $seed$;
 -- ------------------------------------------------------------
 
 -- ROOTED: AUTO-FIX-DO-DOLLAR-QUOTE (canonical)
-do $
+do $do$
 begin
   if to_regclass('public.events') is null then
     raise notice 'Skipping v7 events RLS: public.events does not exist.';

@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-OPENERS-STEP-1J2C (canonical)
 BEGIN;
 
 -- ============================================================
@@ -8,7 +9,7 @@ BEGIN;
 -- ============================================================
 
 -- ROOTED: AUTO-FIX-DO-DOLLAR-QUOTE (canonical)
-do $
+do $do$
 BEGIN
   -- community_spot_submissions: drop legacy truncated gate if present
   BEGIN

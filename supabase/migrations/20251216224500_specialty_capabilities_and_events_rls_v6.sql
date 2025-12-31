@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-OPENERS-STEP-1J2C (canonical)
 -- 20251216224500_specialty_capabilities_and_events_rls_v6.sql
 -- Add canonical_specialties table, specialty capabilities, and Events RLS v6 (vendor-host)
 -- GUARDED: this repo may not include base tables/views yet (events/providers/vertical_specialties_v1).
@@ -17,7 +18,7 @@ create table if not exists public.canonical_specialties (
 -- Seed from vertical_specialties_v1 ONLY if it exists
 
 -- ROOTED: AUTO-FIX-DO-DOLLAR-QUOTE (canonical)
-do $
+do $do$
 begin
   if to_regclass('public.vertical_specialties_v1') is null then
     raise notice 'Skipping canonical_specialties seed from vertical_specialties_v1: view does not exist.';
@@ -36,7 +37,7 @@ $do$;
 -- Seed from vertical_canonical_specialties ONLY if it exists
 
 -- ROOTED: AUTO-FIX-DO-DOLLAR-QUOTE (canonical)
-do $
+do $do$
 begin
   if to_regclass('public.vertical_canonical_specialties') is null then
     raise notice 'Skipping canonical_specialties seed from vertical_canonical_specialties: relation does not exist.';
@@ -113,7 +114,7 @@ on conflict do nothing;
 -- ---------------------------------------------------------------------
 
 -- ROOTED: AUTO-FIX-DO-DOLLAR-QUOTE (canonical)
-do $
+do $do$
 begin
   if to_regclass('public.providers') is null then
     raise notice 'Skipping specialty capability helper functions/policies: public.providers does not exist.';

@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-OPENERS-STEP-1J2C (canonical)
 BEGIN;
 
 -- ============================================================
@@ -11,7 +12,7 @@ BEGIN;
 -- NOTE: Postgres has no CREATE POLICY IF NOT EXISTS.
 
 -- ROOTED: AUTO-FIX-DO-DOLLAR-QUOTE (canonical)
-do $
+do $do$
 BEGIN
   -- events
   BEGIN

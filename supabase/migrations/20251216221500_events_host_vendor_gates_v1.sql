@@ -1,10 +1,11 @@
+-- ROOTED: AUTO-FIX-DO-OPENERS-STEP-1J2C (canonical)
 -- ============================================================================
 -- EVENTS HOST / VENDOR GATES v1 (SAFE / GUARDED)
 -- This file may run before base tables exist in some repos.
 -- ============================================================================
 
 -- ROOTED: AUTO-FIX-DO-DOLLAR-QUOTE (canonical)
-do $
+do $do$
 BEGIN
   IF to_regclass('public.events') IS NULL THEN
     RAISE NOTICE 'Skipping events host/vendor gates: public.events does not exist.';

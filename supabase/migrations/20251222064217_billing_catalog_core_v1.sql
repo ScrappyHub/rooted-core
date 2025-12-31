@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-OPENERS-STEP-1J2C (canonical)
 BEGIN;
 
 -- ============================================================
@@ -68,7 +69,7 @@ CREATE TABLE IF NOT EXISTS public.billing_product_scopes (
 -- ---------- updated_at triggers (only if you already use _touch_updated_at) ----------
 
 -- ROOTED: AUTO-FIX-DO-DOLLAR-QUOTE (canonical)
-do $
+do $do$
 BEGIN
   -- if _touch_updated_at exists, attach triggers; otherwise do nothing
   IF EXISTS (
@@ -106,7 +107,7 @@ ALTER TABLE public.billing_product_scopes ENABLE ROW LEVEL SECURITY;
 -- readable catalog (authenticated), write only service/admin
 
 -- ROOTED: AUTO-FIX-DO-DOLLAR-QUOTE (canonical)
-do $
+do $do$
 BEGIN
   -- PRODUCTS
   BEGIN
