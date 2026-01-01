@@ -1,7 +1,8 @@
+-- ROOTED: REPAIR-DO-DELIMITERS-AND-SEMICOLONS-STEP-1P2 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 -- ============================================================
 -- 20251228060000_events_host_and_collaborators_v1.sql
--- ROOTED Ã¢â‚¬Â¢ Canonical Migration
+-- ROOTED ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ Canonical Migration
 -- Purpose:
 --   1) Enforce exactly-one host per event (DB truth, not UI)
 --   2) Enforce host role correctness (vendor vs institution)
@@ -29,7 +30,6 @@ begin
        or specialty_code <> upper(specialty_code);
   end if;
 end;
-$$;
 
 create or replace function public.vertical_canonical_specialties_normalize_v1()
 returns trigger
@@ -40,7 +40,6 @@ begin
   if new.specialty_code is not null then new.specialty_code := upper(new.specialty_code); end if;
   return new;
 end;
-$$;
 
 drop trigger if exists trg_vertical_canonical_specialties_normalize_v1 on public.vertical_canonical_specialties;
 
@@ -71,7 +70,6 @@ begin
       on delete set null;
   end if;
 end;
-$$;
 
 -- ============================================================
 -- 2) Host correctness CHECK (NOT VALID first to avoid legacy rows blocking deploy)
@@ -88,7 +86,6 @@ begin
       not valid;
   end if;
 end;
-$$;
 
 -- ============================================================
 -- 3) Core correctness trigger: host required + role correctness
@@ -154,7 +151,6 @@ begin
 
   return new;
 end;
-$$;
 
 drop trigger if exists trg_enforce_event_host_roles_v1 on public.events;
 
@@ -201,7 +197,6 @@ begin
     execute function public.set_updated_at();
   end if;
 end;
-$$;
 
 -- ============================================================
 -- 5) RLS helpers (audit-first)
@@ -222,7 +217,6 @@ as $$
       and ut.role = 'admin'
       and ut.account_status = 'active'
   );
-$$;
 
 create or replace function public.is_event_host_owner_v1(p_event_id uuid, p_user_id uuid)
 returns boolean
@@ -239,7 +233,6 @@ as $$
     where e.id = p_event_id
       and (pv.owner_user_id = p_user_id or pi.owner_user_id = p_user_id)
   );
-$$;
 
 create or replace function public.is_provider_owner_v1(p_provider_id uuid, p_user_id uuid)
 returns boolean
@@ -254,7 +247,6 @@ as $$
     where p.id = p_provider_id
       and p.owner_user_id = p_user_id
   );
-$$;
 
 -- EXECUTE hardening (do not leave SECURITY DEFINER funcs callable by PUBLIC)
 revoke all on function public.is_admin_v1(uuid) from public;

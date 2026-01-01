@@ -1,3 +1,4 @@
+-- ROOTED: REPAIR-DO-DELIMITERS-AND-SEMICOLONS-STEP-1P2 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 begin;
 
@@ -101,7 +102,7 @@ create table if not exists public.vertical_lane_policy (
   primary key (vertical_code, lane_code)
 );
 
--- Touch trigger (kept isolated; wonÃ¢â‚¬â„¢t break if already exists)
+-- Touch trigger (kept isolated; wonÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢t break if already exists)
 create or replace function public._touch_updated_at_lane()
 returns trigger language plpgsql as $$
 begin
@@ -117,7 +118,6 @@ begin
     for each row execute function public._touch_updated_at_lane();
   end if;
 end;
-$$;
 
 -- Seed lane codes (canonical lane vocabulary)
 insert into public.lane_codes (lane_code, label, description)
@@ -164,7 +164,7 @@ as $$
 declare
   v_has boolean := false;
 begin
-  -- If you have a table named public.user_entitlements(user_id, entitlement_code), weÃ¢â‚¬â„¢ll use it.
+  -- If you have a table named public.user_entitlements(user_id, entitlement_code), weÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ll use it.
   if to_regclass('public.user_entitlements') is not null then
     execute
       'select exists (select 1 from public.user_entitlements ue where ue.user_id = $1 and ue.entitlement_code = $2)'

@@ -1,3 +1,4 @@
+-- ROOTED: REPAIR-DO-DELIMITERS-AND-SEMICOLONS-STEP-1P2 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 begin;
 
@@ -17,7 +18,6 @@ begin
     alter type public.engine_type add value 'core_commerce';
   end if;
 end;
-$$;
 -- ROOTED PATCH: txn split for enum safety (Postgres 55P04)
 commit;
 begin;
@@ -37,7 +37,6 @@ begin
     alter type public.engine_type add value 'core_commerce';
   end if;
 end;
-$$;
 insert into public.engine_registry (
   engine_type,
   is_active,
@@ -67,7 +66,7 @@ begin
     when 'commerce'         then 40
     when 'b2b'              then 50
     when 'community'        then 60
-    else 999
+    else 999;
   end;
 end
 $$;

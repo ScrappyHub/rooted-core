@@ -1,3 +1,4 @@
+-- ROOTED: REPAIR-DO-DELIMITERS-AND-SEMICOLONS-STEP-1P2 (canonical)
 -- =========================================================
 -- STORAGE ACL HARDENING (LAND-FIRST v2)
 -- Purpose:
@@ -15,7 +16,6 @@ BEGIN
     RAISE EXCEPTION 'storage schema not found';
   END IF;
 END
-$$;
 
 -- 1) Fix DEFAULT PRIVILEGES for any role that has defaults in storage
 DO $$
@@ -46,7 +46,6 @@ BEGIN
     RAISE NOTICE 'storage default privileges hardened for role=%', r.owner_role;
   END LOOP;
 END
-$$;
 
 -- 2) Revoke denied privileges on existing TABLES/Views in storage (includes MAINTAIN)
 REVOKE INSERT, UPDATE, DELETE, TRUNCATE, TRIGGER, REFERENCES, MAINTAIN

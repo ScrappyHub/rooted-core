@@ -1,3 +1,4 @@
+-- ROOTED: REPAIR-DO-DELIMITERS-AND-SEMICOLONS-STEP-1P2 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 -- ============================================================
 -- ROOTED: Commerce engine enums (SAFE)
@@ -21,7 +22,6 @@ begin
     alter type public.engine_state add value 'commerce';
   end if;
 end;
-$$;
 
 -- 2) engine_type: add 'core_commerce' if missing
 do $$

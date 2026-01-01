@@ -1,3 +1,4 @@
+-- ROOTED: REPAIR-DO-DELIMITERS-AND-SEMICOLONS-STEP-1P2 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 begin;
 
@@ -58,7 +59,6 @@ begin
     for each row execute function public._touch_updated_at();
   end if;
 end;
-$$;
 
 -- -----------------------------
 -- RLS: no leakage, strict visibility
@@ -80,7 +80,6 @@ begin
     using (true);
   end if;
 end;
-$$;
 
 -- Owner can manage their gamer_profiles_public row
 do $$
@@ -108,7 +107,6 @@ begin
     );
   end if;
 end;
-$$;
 
 -- Only owner can access gamer_accounts
 do $$
@@ -124,7 +122,6 @@ begin
     with check (user_id = auth.uid());
   end if;
 end;
-$$;
 
 -- Only owner can access gamer_private_stats
 do $$
@@ -152,7 +149,6 @@ begin
     );
   end if;
 end;
-$$;
 
 -- -----------------------------
 -- NSFW gating helpers (verified + explicit opt-in)
@@ -167,7 +163,6 @@ language sql
 stable
 as $$
   select coalesce(lower(p_status) in ('on','granted','accepted','true','enabled','verified','approved'), false);
-$$;
 
 create or replace function public.nsfw_opt_in_enabled(p_user_id uuid)
 returns boolean
@@ -188,7 +183,6 @@ as $$
         and c.consent_type = 'nsfw_opt_in'
         and public._consent_is_on(c.status)
     );
-$$;
 
 create or replace function public.nsfw_visible_for_current_user()
 returns boolean

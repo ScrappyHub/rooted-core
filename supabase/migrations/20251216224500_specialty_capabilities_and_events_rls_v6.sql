@@ -1,3 +1,4 @@
+-- ROOTED: REPAIR-DO-DELIMITERS-AND-SEMICOLONS-STEP-1P2 (canonical)
 -- ROOTED: STRIP-EXECUTE-DOLLAR-QUOTES-STEP-1P (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 -- ROOTED: AUTO-FIX-EXECUTE-CLOSER-MISMATCH-STEP-1N (canonical)
@@ -33,8 +34,7 @@ begin
       select distinct specialty_code
       from public.vertical_specialties_v1
       where specialty_code is not null and btrim(specialty_code) <> ''
-      on conflict do nothing
-    $sql$;
+      on conflict do nothing;
   end if;
 end
 $do$;
@@ -146,7 +146,6 @@ begin
         where p.id = p_vendor_id
           and p.owner_user_id = auth.uid()
       );
-    $$;
 
     create or replace function public._provider_is_verified(p_vendor_id uuid)
     returns boolean
@@ -156,7 +155,6 @@ begin
     set search_path = public
     as $$
       select coalesce((select p.is_verified from public.providers p where p.id = p_vendor_id), false);
-    $$;
 
     create or replace function public._provider_effective_vertical(p_vendor_id uuid)
     returns text
@@ -168,7 +166,6 @@ begin
       select coalesce(p.primary_vertical, p.vertical)
       from public.providers p
       where p.id = p_vendor_id;
-    $$;
 
     create or replace function public._provider_specialty_code(p_vendor_id uuid)
     returns text
@@ -180,7 +177,6 @@ begin
       select p.specialty
       from public.providers p
       where p.id = p_vendor_id;
-    $$;
 
     create or replace function public._specialty_has_capability(p_specialty text, p_capability text)
     returns boolean
@@ -196,7 +192,6 @@ begin
           and g.capability_key = p_capability
           and g.is_allowed = true
       );
-    $$;
 
     create or replace function public._specialty_is_sanctuary(p_specialty text)
     returns boolean

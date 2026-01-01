@@ -1,3 +1,4 @@
+-- ROOTED: REPAIR-DO-DELIMITERS-AND-SEMICOLONS-STEP-1P2 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251213185955_canonical_verticals_uniques_v1.sql
 -- Fix: ON CONFLICT (vertical_code) requires a UNIQUE/PK constraint.
@@ -39,7 +40,6 @@ begin
       add constraint canonical_verticals_vertical_code_key unique (vertical_code);
   end if;
 end;
-$$;
 
 -- 2) vertical_canonical_specialties: ensure vertical_code is unique
 -- (because reseed uses ON CONFLICT (vertical_code))

@@ -1,3 +1,4 @@
+-- ROOTED: REPAIR-DO-DELIMITERS-AND-SEMICOLONS-STEP-1P2 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251216241202_fix_specialty_effective_views_dependency_order_v1.sql
 -- Fix: specialty_effective_capabilities_v1 depends on specialty_effective_groups_v1
@@ -12,7 +13,6 @@ begin
     execute 'drop view public.specialty_effective_capabilities_v1';
   end if;
 end;
-$$;
 
 -- 2) Drop groups view now that dependents are gone
 do $$

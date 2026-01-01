@@ -1,3 +1,4 @@
+-- ROOTED: REPAIR-DO-DELIMITERS-AND-SEMICOLONS-STEP-1P2 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251217054500_engine_enforcement_core_v1.sql
 -- ROOTED Engine-first enforcement core (tables + flags + deterministic engine evaluation)
@@ -32,7 +33,6 @@ begin
     );
   end if;
 end;
-$$;
 
 -- ------------------------------------------------------------
 -- 1) Engine registry (includes future engines, non-assignable)
@@ -145,9 +145,8 @@ as $$
     when 'discovery' then 2
     when 'discovery_events' then 3
     when 'registration' then 4
-    when 'b2b' then 5
+    when 'b2b' then 5;
   end;
-$$;
 
 create or replace function public.has_valid_flag(
   p_entity uuid,
@@ -168,7 +167,6 @@ as $$
       and f.flag_value = true
       and (f.expires_at is null or f.expires_at > now())
   );
-$$;
 
 -- ------------------------------------------------------------
 -- 8) The brain: deterministic evaluation (includes downgrades)
@@ -228,7 +226,7 @@ begin
        and not public.has_valid_flag(p_entity, p_vertical, 'waivers_configured') then
       -- stay at discovery_events
     elsif v_policy.requires_insurance_for_registration
-       and not public.has_valid_flag(p_entity, p_vertical, 'insurance_verified') then
+       and not public.has_valid_flag(p_entity, p_vertical, 'insurance_verified') then;
       -- stay at discovery_events
     else
       v_new := 'registration';
@@ -257,7 +255,6 @@ begin
                 last_evaluated_at = excluded.last_evaluated_at;
 
 end;
-$$;
 
 -- ------------------------------------------------------------
 -- 9) Triggers: no silent drift
@@ -288,7 +285,6 @@ begin
     return new;
   end if;
 end;
-$$;
 
 drop trigger if exists trg_entity_flags_change on public.entity_flags;
 create trigger trg_entity_flags_change
@@ -331,7 +327,6 @@ begin
 
   return new;
 end;
-$$;
 
 drop trigger if exists trg_group_guard on public.group_memberships;
 create trigger trg_group_guard

@@ -1,3 +1,4 @@
+-- ROOTED: REPAIR-DO-DELIMITERS-AND-SEMICOLONS-STEP-1P2 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 begin;
 
@@ -31,7 +32,6 @@ begin
     alter type public.engine_state add value 'commerce';
   end if;
 end;
-$$;
 
 -- Add engine_type 'core_commerce' if missing
 do $$
@@ -48,7 +48,6 @@ begin
     alter type public.engine_type add value 'core_commerce';
   end if;
 end;
-$$;
 
 commit;
 begin
@@ -59,7 +58,7 @@ begin
     when 'commerce'         then 40
     when 'b2b'              then 50
     when 'community'        then 60
-    else 999
+    else 999;
   end;
 end begin;
 
@@ -78,7 +77,6 @@ begin
     alter type public.engine_state add value 'commerce';
   end if;
 end;
-$$;
 
 -- Add engine_type 'core_commerce' if missing
 do $$

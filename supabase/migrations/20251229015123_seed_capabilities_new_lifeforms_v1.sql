@@ -1,3 +1,4 @@
+-- ROOTED: REPAIR-DO-DELIMITERS-AND-SEMICOLONS-STEP-1P2 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 begin;
 
@@ -29,7 +30,6 @@ begin
     raise exception 'Missing mapping table: public.vertical_canonical_specialties (or _bak)';
   end if;
 end;
-$$;
 
 -- Determine canonical specialty key column name
 -- Prefer: specialty_code, else: code
@@ -94,7 +94,6 @@ begin
   );
 
 end;
-$$;
 
 -- Mapping: vertical_canonical_specialties
 -- Prefer table vertical_canonical_specialties; fallback to _bak if that's your live table.
@@ -142,7 +141,6 @@ begin
   $f$, map_table, scol, map_table, scol);
 
 end;
-$$;
 
 commit;
 begin
@@ -164,7 +162,6 @@ returns boolean language sql stable as $$
       and table_name=p_table
       and column_name=p_col
   );
-$$;
 
 -- We expect these tables to exist in some form:
 -- canonical_specialties
@@ -180,7 +177,6 @@ begin
     raise exception 'Missing mapping table: public.vertical_canonical_specialties (or _bak)';
   end if;
 end;
-$$;
 
 -- Determine canonical specialty key column name
 -- Prefer: specialty_code, else: code
@@ -245,7 +241,6 @@ begin
   );
 
 end;
-$$;
 
 -- Mapping: vertical_canonical_specialties
 -- Prefer table vertical_canonical_specialties; fallback to _bak if that's your live table.
@@ -293,7 +288,6 @@ begin
   $f$, map_table, scol, map_table, scol);
 
 end;
-$$;
 
 commit;;
 
@@ -312,7 +306,6 @@ returns boolean language sql stable as $$
       and table_name=p_table
       and column_name=p_col
   );
-$$;
 
 -- We expect these tables to exist in some form:
 -- canonical_specialties
@@ -328,7 +321,6 @@ begin
     raise exception 'Missing mapping table: public.vertical_canonical_specialties (or _bak)';
   end if;
 end;
-$$;
 
 -- Determine canonical specialty key column name
 -- Prefer: specialty_code, else: code
@@ -393,7 +385,6 @@ begin
   );
 
 end;
-$$;
 
 -- Mapping: vertical_canonical_specialties
 -- Prefer table vertical_canonical_specialties; fallback to _bak if that's your live table.
@@ -441,13 +432,12 @@ begin
   $f$, map_table, scol, map_table, scol);
 
 end;
-$$;
 
 commit;
   select case
     when exists (select 1 from information_schema.columns where table_schema='public' and table_name=p_table and column_name=p_prefer) then p_prefer
     when exists (select 1 from information_schema.columns where table_schema='public' and table_name=p_table and column_name=p_fallback) then p_fallback
-    else null
+    else null;
   end;
 begin;
 
@@ -461,7 +451,6 @@ returns boolean language sql stable as $$
       and table_name=p_table
       and column_name=p_col
   );
-$$;
 
 -- We expect these tables to exist in some form:
 -- canonical_specialties
@@ -477,7 +466,6 @@ begin
     raise exception 'Missing mapping table: public.vertical_canonical_specialties (or _bak)';
   end if;
 end;
-$$;
 
 -- Determine canonical specialty key column name
 -- Prefer: specialty_code, else: code
@@ -542,7 +530,6 @@ begin
   );
 
 end;
-$$;
 
 -- Mapping: vertical_canonical_specialties
 -- Prefer table vertical_canonical_specialties; fallback to _bak if that's your live table.
@@ -590,7 +577,6 @@ begin
   $f$, map_table, scol, map_table, scol);
 
 end;
-$$;
 
 commit;;
 
@@ -606,7 +592,6 @@ returns boolean language sql stable as $$
       and table_name=p_table
       and column_name=p_col
   );
-$$;
 
 -- We expect these tables to exist in some form:
 -- canonical_specialties
@@ -622,7 +607,6 @@ begin
     raise exception 'Missing mapping table: public.vertical_canonical_specialties (or _bak)';
   end if;
 end;
-$$;
 
 -- Determine canonical specialty key column name
 -- Prefer: specialty_code, else: code
@@ -687,7 +671,6 @@ begin
   );
 
 end;
-$$;
 
 -- Mapping: vertical_canonical_specialties
 -- Prefer table vertical_canonical_specialties; fallback to _bak if that's your live table.
@@ -735,7 +718,6 @@ begin
   $f$, map_table, scol, map_table, scol);
 
 end;
-$$;
 
 commit;
 declare
@@ -835,7 +817,6 @@ returns boolean language sql stable as $$
       and table_name=p_table
       and column_name=p_col
   );
-$$;
 
 -- We expect these tables to exist in some form:
 -- canonical_specialties
@@ -851,7 +832,6 @@ begin
     raise exception 'Missing mapping table: public.vertical_canonical_specialties (or _bak)';
   end if;
 end;
-$$;
 
 -- Determine canonical specialty key column name
 -- Prefer: specialty_code, else: code
@@ -916,7 +896,6 @@ begin
   );
 
 end;
-$$;
 
 -- Mapping: vertical_canonical_specialties
 -- Prefer table vertical_canonical_specialties; fallback to _bak if that's your live table.

@@ -1,3 +1,4 @@
+-- ROOTED: REPAIR-DO-DELIMITERS-AND-SEMICOLONS-STEP-1P2 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251216241201_fix_specialty_effective_groups_drop_recreate_v1.sql
 -- CANONICAL PATCH (rewritten via pipeline):
@@ -14,7 +15,6 @@ begin
     execute 'drop view public.specialty_effective_capabilities_v1';
   end if;
 end;
-$$;
 
 -- Now safe to drop groups view
 do $$

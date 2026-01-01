@@ -1,3 +1,4 @@
+-- ROOTED: REPAIR-DO-DELIMITERS-AND-SEMICOLONS-STEP-1P2 (canonical)
 -- ROOTED: STRIP-EXECUTE-DOLLAR-QUOTES-STEP-1P (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 -- ROOTED: AUTO-FIX-EXECUTE-CLOSER-MISMATCH-STEP-1N (canonical)
@@ -12,7 +13,6 @@ begin
     raise exception 'Missing required table: public.billing_entitlements';
   end if;
 end;
-$$;
 
 -- ------------------------------------------------------------
 -- 1) Entitlement key vocabulary (what lanes will reference)
@@ -177,7 +177,6 @@ as $$
       and (be.role is null or be.role = ctx.role or be.role = 'any')
       and (be.tier is null or be.tier = ctx.tier or be.tier = 'any')
   );
-$$;
 
 -- ------------------------------------------------------------
 -- 4) Lane gating: vertical_lane_enabled()
@@ -214,7 +213,6 @@ as $$
   end
   from public.vertical_policy vp
   where vp.vertical_code = p_vertical_code;
-$$;
 
 create or replace function public.vertical_lane_enabled(
   p_vertical_code text,
@@ -241,7 +239,6 @@ as $$
        or public.user_has_entitlement(p_user_id, pol.req)
      )
   from pol;
-$$;
 
 -- ------------------------------------------------------------
 -- 5) OPTIONAL: Scoped entitlement gate helper

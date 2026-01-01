@@ -1,3 +1,4 @@
+-- ROOTED: REPAIR-DO-DELIMITERS-AND-SEMICOLONS-STEP-1P2 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251216241203_fix_specialty_effective_views_final_canonical_v1.sql
 -- Canonical fix: enforce stable contracts + correct dependency order.
@@ -12,7 +13,6 @@ begin
     execute 'drop view public.specialty_effective_capabilities_v1';
   end if;
 end;
-$$;
 
 -- Now drop groups
 do $$
