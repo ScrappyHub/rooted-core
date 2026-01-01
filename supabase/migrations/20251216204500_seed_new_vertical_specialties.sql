@@ -1,3 +1,4 @@
+-- ROOTED: DO-SQL-NORMALIZE+PURGE-TAILS-STEP-1AA-R (canonical)
 -- ROOTED: UNDO-DO-UPDATE-SEMICOLON-STEP-1Y (canonical)
 -- ROOTED: SEMICOLON-NORMALIZATION-DO-CONFLICT-STEP-1X (canonical)
 -- ROOTED: FIX-ELSE-PLACEMENT-HAS-IS-DEFAULT-STEP-1W-PS (canonical)
@@ -68,12 +69,5 @@ begin
   end if;
 end;
     $sql$;
-      insert into public.vertical_canonical_specialties (vertical_code, specialty_code)
-      values
-        ('META_INFRASTRUCTURE', 'ROOTED_PLATFORM_CANONICAL'),
-        ('REGIONAL_INTELLIGENCE', 'ROOTED_PLATFORM_CANONICAL')
-      on conflict (vertical_code, specialty_code) do nothing
-  end if;
-end $$;
 
 commit;
