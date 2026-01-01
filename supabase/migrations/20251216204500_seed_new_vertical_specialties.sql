@@ -1,3 +1,4 @@
+-- ROOTED: SEMICOLON-NORMALIZATION-DO-CONFLICT-STEP-1X (canonical)
 -- ROOTED: FIX-ELSE-PLACEMENT-HAS-IS-DEFAULT-STEP-1W-PS (canonical)
 -- ROOTED: FIX-HAS-IS-DEFAULT-IF-CLOSURE-STEP-1V (canonical)
 -- ROOTED: AUTO-REPAIR-SEED-DO-SQL-CLOSURE-STEP-1U (canonical)
@@ -55,7 +56,7 @@ begin
       values
         ('META_INFRASTRUCTURE', 'ROOTED_PLATFORM_CANONICAL', true),
         ('REGIONAL_INTELLIGENCE', 'ROOTED_PLATFORM_CANONICAL', true)
-      on conflict (vertical_code, specialty_code) do update
+      on conflict (vertical_code, specialty_code) do update;
       set is_default = excluded.is_default;
   else
       insert into public.vertical_canonical_specialties (vertical_code, specialty_code)
