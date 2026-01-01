@@ -1,3 +1,4 @@
+-- ROOTED: FIX-ELSE-PLACEMENT-HAS-IS-DEFAULT-STEP-1W-PS (canonical)
 -- ROOTED: FIX-HAS-IS-DEFAULT-IF-CLOSURE-STEP-1V (canonical)
 -- ROOTED: AUTO-REPAIR-SEED-DO-SQL-CLOSURE-STEP-1U (canonical)
 -- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
@@ -65,8 +66,6 @@ begin
   end if;
 end;
     $sql$;
-  else
-    execute $q$
       insert into public.vertical_canonical_specialties (vertical_code, specialty_code)
       values
         ('META_INFRASTRUCTURE', 'ROOTED_PLATFORM_CANONICAL'),
