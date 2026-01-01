@@ -1,3 +1,4 @@
+-- ROOTED: ENFORCE-DO-CLOSE-DELIMITER-STEP-1S (canonical)
 -- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- ROOTED: ENSURE-DO-CLOSE-DELIMITER-AFTER-END-STEP-1Q (canonical)
 -- ROOTED: REPAIR-DO-DELIMITERS-AND-SEMICOLONS-STEP-1P2 (canonical)
@@ -19,6 +20,7 @@ begin
     alter type public.engine_state add value 'commerce';
   end if;
 end;
+$$;
 
 -- 2) Add engine_type 'core_commerce' if missing
 do $$

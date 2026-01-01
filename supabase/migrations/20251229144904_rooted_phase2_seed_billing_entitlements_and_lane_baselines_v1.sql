@@ -1,3 +1,4 @@
+-- ROOTED: ENFORCE-DO-CLOSE-DELIMITER-STEP-1S (canonical)
 -- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- ROOTED: ENSURE-DO-CLOSE-DELIMITER-AFTER-END-STEP-1Q (canonical)
 -- ROOTED: REPAIR-DO-DELIMITERS-AND-SEMICOLONS-STEP-1P2 (canonical)
@@ -30,6 +31,7 @@ begin
     raise exception 'Missing required table: public.lane_codes';
   end if;
 end;
+$$;
 
 -- 1) Ensure lane vocabulary (Phase 2)
 insert into public.lane_codes (lane_code, label, description)

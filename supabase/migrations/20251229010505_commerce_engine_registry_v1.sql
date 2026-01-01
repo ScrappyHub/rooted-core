@@ -1,3 +1,4 @@
+-- ROOTED: ENFORCE-DO-CLOSE-DELIMITER-STEP-1S (canonical)
 -- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- ROOTED: ENSURE-DO-CLOSE-DELIMITER-AFTER-END-STEP-1Q (canonical)
 -- ROOTED: REPAIR-DO-DELIMITERS-AND-SEMICOLONS-STEP-1P2 (canonical)
@@ -20,6 +21,7 @@ begin
     alter type public.engine_type add value 'core_commerce';
   end if;
 end;
+$$;
 -- ROOTED PATCH: txn split for enum safety (Postgres 55P04)
 commit;
 begin;

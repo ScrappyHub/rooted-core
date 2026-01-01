@@ -1,3 +1,4 @@
+-- ROOTED: ENFORCE-DO-CLOSE-DELIMITER-STEP-1S (canonical)
 -- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- ROOTED: ENSURE-DO-CLOSE-DELIMITER-AFTER-END-STEP-1Q (canonical)
 -- ROOTED: REPAIR-DO-DELIMITERS-AND-SEMICOLONS-STEP-1P2 (canonical)
@@ -42,6 +43,7 @@ begin
       add constraint canonical_verticals_vertical_code_key unique (vertical_code);
   end if;
 end;
+$$;
 
 -- 2) vertical_canonical_specialties: ensure vertical_code is unique
 -- (because reseed uses ON CONFLICT (vertical_code))

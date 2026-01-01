@@ -1,10 +1,11 @@
+-- ROOTED: ENFORCE-DO-CLOSE-DELIMITER-STEP-1S (canonical)
 -- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- ROOTED: ENSURE-DO-CLOSE-DELIMITER-AFTER-END-STEP-1Q (canonical)
 -- ROOTED: REPAIR-DO-DELIMITERS-AND-SEMICOLONS-STEP-1P2 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 -- ============================================================
 -- 20251228060000_events_host_and_collaborators_v1.sql
--- ROOTED ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ Canonical Migration
+-- ROOTED ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ Canonical Migration
 -- Purpose:
 --   1) Enforce exactly-one host per event (DB truth, not UI)
 --   2) Enforce host role correctness (vendor vs institution)
@@ -32,6 +33,7 @@ begin
        or specialty_code <> upper(specialty_code);
   end if;
 end;
+$$;
 
 create or replace function public.vertical_canonical_specialties_normalize_v1()
 returns trigger
@@ -72,6 +74,7 @@ begin
       on delete set null;
   end if;
 end;
+$$;
 
 -- ============================================================
 -- 2) Host correctness CHECK (NOT VALID first to avoid legacy rows blocking deploy)
@@ -88,6 +91,7 @@ begin
       not valid;
   end if;
 end;
+$$;
 
 -- ============================================================
 -- 3) Core correctness trigger: host required + role correctness
@@ -199,6 +203,7 @@ begin
     execute function public.set_updated_at();
   end if;
 end;
+$$;
 
 -- ============================================================
 -- 5) RLS helpers (audit-first)

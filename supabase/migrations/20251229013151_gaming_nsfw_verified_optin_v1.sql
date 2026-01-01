@@ -1,3 +1,4 @@
+-- ROOTED: ENFORCE-DO-CLOSE-DELIMITER-STEP-1S (canonical)
 -- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- ROOTED: ENSURE-DO-CLOSE-DELIMITER-AFTER-END-STEP-1Q (canonical)
 -- ROOTED: REPAIR-DO-DELIMITERS-AND-SEMICOLONS-STEP-1P2 (canonical)
@@ -32,6 +33,7 @@ begin
     using (true);
   end if;
 end;
+$$;
 
 -- Owner can manage their gamer profile row.
 do $$
@@ -59,6 +61,7 @@ begin
     );
   end if;
 end;
+$$;
 
 -- Gamer accounts: only owner can select/update/insert.
 do $$
@@ -74,6 +77,7 @@ begin
     with check (user_id = auth.uid());
   end if;
 end;
+$$;
 
 -- Private stats: only owner.
 do $$
@@ -101,6 +105,7 @@ begin
     );
   end if;
 end;
+$$;
 
 commit;
   select lower(p_status) in ('on','granted','accepted','true','enabled','verified','approved');
@@ -123,6 +128,7 @@ begin
     using (true);
   end if;
 end;
+$$;
 
 -- Owner can manage their gamer profile row.
 do $$
@@ -150,6 +156,7 @@ begin
     );
   end if;
 end;
+$$;
 
 -- Gamer accounts: only owner can select/update/insert.
 do $$
@@ -165,6 +172,7 @@ begin
     with check (user_id = auth.uid());
   end if;
 end;
+$$;
 
 -- Private stats: only owner.
 do $$
@@ -192,6 +200,7 @@ begin
     );
   end if;
 end;
+$$;
 
 commit;;
 
@@ -218,6 +227,7 @@ begin
     using (true);
   end if;
 end;
+$$;
 
 -- Owner can manage their gamer profile row.
 do $$
@@ -245,6 +255,7 @@ begin
     );
   end if;
 end;
+$$;
 
 -- Gamer accounts: only owner can select/update/insert.
 do $$
@@ -260,6 +271,7 @@ begin
     with check (user_id = auth.uid());
   end if;
 end;
+$$;
 
 -- Private stats: only owner.
 do $$
@@ -287,6 +299,7 @@ begin
     );
   end if;
 end;
+$$;
 
 commit;
   select
@@ -322,6 +335,7 @@ begin
     using (true);
   end if;
 end;
+$$;
 
 -- Owner can manage their gamer profile row.
 do $$
@@ -349,6 +363,7 @@ begin
     );
   end if;
 end;
+$$;
 
 -- Gamer accounts: only owner can select/update/insert.
 do $$
@@ -364,6 +379,7 @@ begin
     with check (user_id = auth.uid());
   end if;
 end;
+$$;
 
 -- Private stats: only owner.
 do $$
@@ -391,6 +407,7 @@ begin
     );
   end if;
 end;
+$$;
 
 commit;;
 
@@ -418,6 +435,7 @@ begin
     using (true);
   end if;
 end;
+$$;
 
 -- Owner can manage their gamer profile row.
 do $$
@@ -445,6 +463,7 @@ begin
     );
   end if;
 end;
+$$;
 
 -- Gamer accounts: only owner can select/update/insert.
 do $$
@@ -460,6 +479,7 @@ begin
     with check (user_id = auth.uid());
   end if;
 end;
+$$;
 
 -- Private stats: only owner.
 do $$
@@ -487,6 +507,7 @@ begin
     );
   end if;
 end;
+$$;
 
 commit;
   select public.nsfw_opt_in_enabled(auth.uid());
@@ -509,6 +530,7 @@ begin
     using (true);
   end if;
 end;
+$$;
 
 -- Owner can manage their gamer profile row.
 do $$
@@ -536,6 +558,7 @@ begin
     );
   end if;
 end;
+$$;
 
 -- Gamer accounts: only owner can select/update/insert.
 do $$
@@ -551,6 +574,7 @@ begin
     with check (user_id = auth.uid());
   end if;
 end;
+$$;
 
 -- Private stats: only owner.
 do $$

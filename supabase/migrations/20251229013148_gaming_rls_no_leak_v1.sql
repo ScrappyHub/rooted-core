@@ -1,3 +1,4 @@
+-- ROOTED: ENFORCE-DO-CLOSE-DELIMITER-STEP-1S (canonical)
 -- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- ROOTED: ENSURE-DO-CLOSE-DELIMITER-AFTER-END-STEP-1Q (canonical)
 -- ROOTED: REPAIR-DO-DELIMITERS-AND-SEMICOLONS-STEP-1P2 (canonical)
@@ -71,6 +72,7 @@ begin
     for each row execute function public._touch_updated_at();
   end if;
 end;
+$$;
 
 commit;
 begin
@@ -145,6 +147,7 @@ begin
     for each row execute function public._touch_updated_at();
   end if;
 end;
+$$;
 
 commit;;
 
@@ -211,6 +214,7 @@ begin
     for each row execute function public._touch_updated_at();
   end if;
 end;
+$$;
 
 commit;
 begin
@@ -298,6 +302,7 @@ begin
     for each row execute function public._touch_updated_at();
   end if;
 end;
+$$;
 
 commit;;
 
@@ -364,6 +369,7 @@ begin
     for each row execute function public._touch_updated_at();
   end if;
 end;
+$$;
 
 commit;
 begin
@@ -439,6 +445,7 @@ begin
     for each row execute function public._touch_updated_at();
   end if;
 end;
+$$;
 
 commit;;
 
@@ -505,6 +512,7 @@ begin
     for each row execute function public._touch_updated_at();
   end if;
 end;
+$$;
 
 commit;
 begin
