@@ -1,3 +1,4 @@
+-- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- 20251220002700_backfill_specialty_types_vertical_group.sql
 -- SAFETY PATCH: Backfill specialty_types.vertical_group so 20251220002724_remote_schema.sql can set NOT NULL safely.

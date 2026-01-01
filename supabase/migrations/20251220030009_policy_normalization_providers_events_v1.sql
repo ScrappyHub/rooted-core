@@ -1,3 +1,4 @@
+-- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: CANONICAL_DO_SQL_SEED_REPAIR_PIPELINE (one-shot)
 -- ROOTED: ENFORCE-DO-CLOSE-DELIMITER-STEP-1S (canonical)
 -- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
@@ -92,7 +93,7 @@ begin
             and ut.account_status = 'active'
         )
       );
-    $pol$;
+$pol$;
 
 -- 2) Owner can read their own row (authenticated only)
 create policy providers_owner_read_v2

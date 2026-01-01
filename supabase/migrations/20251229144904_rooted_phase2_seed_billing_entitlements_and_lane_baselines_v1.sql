@@ -1,3 +1,4 @@
+-- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: ENFORCE-DO-CLOSE-DELIMITER-STEP-1S (canonical)
 -- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- ROOTED: ENSURE-DO-CLOSE-DELIMITER-AFTER-END-STEP-1Q (canonical)
@@ -342,7 +343,7 @@ begin
         ('pack_ad_free')
       ) x(product_key)
       where not exists (select 1 from public.billing_products bp where bp.product_key = x.product_key);
-    $$;
+$$;
   end if;
 
 end $$;

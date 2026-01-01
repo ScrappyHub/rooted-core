@@ -1,3 +1,4 @@
+-- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251216204467_fix_vertical_specialties_view_replace_v1.sql
 -- Fix: remote may already have vertical_specialties_v1 with different columns.

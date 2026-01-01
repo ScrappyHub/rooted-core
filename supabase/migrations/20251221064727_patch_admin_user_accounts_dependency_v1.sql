@@ -1,3 +1,4 @@
+-- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: STRIP-EXECUTE-DOLLAR-QUOTES-STEP-1P (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 -- ROOTED: AUTO-FIX-EXECUTE-CLOSER-MISMATCH-STEP-1N (canonical)
@@ -55,7 +56,7 @@ begin
       null::text              as deletion_status,
       null::timestamptz       as deletion_requested_at
     from auth.users u;
-  $v$;
+$v$;
 
   -- 3) Recreate the function (STUB)
   -- NOTE: If you already have the real function body elsewhere later in migrations,

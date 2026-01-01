@@ -1,3 +1,4 @@
+-- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251212000000_create_core_base_tables_minimal.sql
 -- Minimal base schema so later policy/taxonomy migrations can apply cleanly.

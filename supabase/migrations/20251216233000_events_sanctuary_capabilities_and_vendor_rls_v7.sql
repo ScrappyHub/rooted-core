@@ -1,3 +1,4 @@
+-- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- ROOTED: STRIP-EXECUTE-DOLLAR-QUOTES-STEP-1P (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
@@ -177,7 +178,7 @@ begin
         or (coalesce(status,'') = 'published' and coalesce(moderation_status,'') = 'approved')
       )
     );
-  $pol$;
+$pol$;
 
   execute $q$
     create policy events_host_vendor_update_v7

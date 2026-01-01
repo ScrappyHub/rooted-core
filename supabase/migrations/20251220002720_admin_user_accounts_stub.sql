@@ -1,3 +1,4 @@
+-- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: STRIP-EXECUTE-DOLLAR-QUOTES-STEP-1P (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 -- ROOTED: AUTO-FIX-EXECUTE-CLOSER-MISMATCH-STEP-1N (canonical)
@@ -41,7 +42,7 @@ begin
             and ut.role = 'admin'
         );
       end;
-      $body$;
+$body$;
   end if;
 end $$;
 
@@ -79,7 +80,7 @@ begin
       null::text              as deletion_status,
       null::timestamptz       as deletion_requested_at
     from auth.users u;
-  $v$;
+$v$;
 
   -- Recreate a minimal stub so anything expecting it doesn't break.
     create or replace function public.admin_get_user_accounts()

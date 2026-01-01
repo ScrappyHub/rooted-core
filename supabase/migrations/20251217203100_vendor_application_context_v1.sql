@@ -1,3 +1,4 @@
+-- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: CANONICAL_DO_SQL_SEED_REPAIR_PIPELINE (one-shot)
 -- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
@@ -39,6 +40,6 @@ begin
     execute $q$
       create index if not exists vendor_applications_user_idx
         on public.vendor_applications(user_id);
-    $idx$;
+$idx$;
 
 commit;

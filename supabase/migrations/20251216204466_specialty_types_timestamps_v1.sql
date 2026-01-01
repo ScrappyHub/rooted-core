@@ -1,3 +1,4 @@
+-- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251216204466_specialty_types_timestamps_v1.sql
 -- Fix: seed_rooted_platform_canonical_placeholder uses updated_at = now()

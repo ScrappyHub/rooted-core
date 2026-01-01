@@ -1,3 +1,4 @@
+-- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251216241150_fix_specialty_effective_groups_v1.sql
 -- Fix: specialty_effective_groups_v1 referenced vs.specialty_label, but vertical_specialties_v1 no longer exposes it.

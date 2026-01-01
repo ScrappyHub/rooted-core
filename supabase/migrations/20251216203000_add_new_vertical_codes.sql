@@ -1,3 +1,4 @@
+-- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251216203000_add_new_vertical_codes.sql
 -- ROOTED CORE: Add/seed new vertical codes safely (skip if canonical_verticals not created yet)

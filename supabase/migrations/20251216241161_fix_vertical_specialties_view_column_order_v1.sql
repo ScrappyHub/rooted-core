@@ -1,3 +1,4 @@
+-- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251216241161_fix_vertical_specialties_view_column_order_v1.sql
 -- Fix: 41160 creates vertical_specialties_v1 with (vertical_code, specialty_code, specialty_label, is_default).

@@ -1,3 +1,4 @@
+-- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251216241199_drop_specialty_effective_groups_before_41200_v1.sql
 -- Fix: 41200 does CREATE OR REPLACE VIEW specialty_effective_groups_v1 with a smaller column set.

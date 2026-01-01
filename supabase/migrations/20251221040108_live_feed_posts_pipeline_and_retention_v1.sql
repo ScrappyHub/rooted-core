@@ -1,3 +1,4 @@
+-- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 begin;
 
@@ -61,7 +62,7 @@ begin
       new.updated_at := now();
       return new;
     end;
-    $$;
+$$;
 
     revoke all on function public._touch_updated_at() from anon;
     revoke all on function public._touch_updated_at() from authenticated;

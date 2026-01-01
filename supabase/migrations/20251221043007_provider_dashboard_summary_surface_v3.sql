@@ -1,3 +1,4 @@
+-- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 -- ROOTED: AUTO-FIX-NESTED-EXECUTE-DOLLAR-TAG-STEP-1L (canonical)
 -- ROOTED: AUTO-FIX-DO-TAG-MISMATCH-STEP-1K (canonical)
@@ -38,7 +39,7 @@ BEGIN
         null::uuid as provider_id,
         null::text as name
       where false;
-    $v$;
+$v$;
     RETURN;
   END IF;
 

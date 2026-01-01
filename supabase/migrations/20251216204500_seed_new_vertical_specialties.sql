@@ -1,3 +1,4 @@
+-- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: DO-SQL-NORMALIZE+PURGE-TAILS-STEP-1AA-R (canonical)
 -- ROOTED: UNDO-DO-UPDATE-SEMICOLON-STEP-1Y (canonical)
 -- ROOTED: SEMICOLON-NORMALIZATION-DO-CONFLICT-STEP-1X (canonical)
@@ -68,6 +69,6 @@ begin
       on conflict (vertical_code, specialty_code) do nothing;
   end if;
 end;
-    $sql$;
+$sql$;
 
 commit;

@@ -1,3 +1,4 @@
+-- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251216204465_specialty_types_add_description_v1.sql
 -- Fix: seed_rooted_platform_canonical_placeholder expects specialty_types.description

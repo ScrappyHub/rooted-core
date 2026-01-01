@@ -1,3 +1,4 @@
+-- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251213170100_seed_canonical_verticals.sql
 -- ROOTED CORE: Seed canonical_verticals (migration-only; safe if table not yet created)

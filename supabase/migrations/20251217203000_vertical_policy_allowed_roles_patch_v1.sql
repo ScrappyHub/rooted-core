@@ -1,3 +1,4 @@
+-- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251217203000_vertical_policy_allowed_roles_patch_v1.sql
 -- Add min_engine_state + allowed_roles to vertical_policy (engine-aware bounds + role hard-stop)

@@ -1,3 +1,4 @@
+-- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251213170000_canonical_verticals_bypass.sql
 -- ROOTED CORE: Allow migration-only bypass for canonical_verticals lock trigger

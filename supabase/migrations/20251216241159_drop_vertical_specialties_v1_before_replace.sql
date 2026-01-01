@@ -1,3 +1,4 @@
+-- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251216241159_drop_vertical_specialties_v1_before_replace.sql
 -- Fix: 20251216241160 uses CREATE OR REPLACE VIEW with a column reorder,

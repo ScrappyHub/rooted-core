@@ -1,3 +1,4 @@
+-- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: DO-SQL-NORMALIZE+PURGE-TAILS-STEP-1AA-R (canonical)
 -- ROOTED: AUTO-REPAIR-SEED-DO-SQL-CLOSURE-STEP-1U (canonical)
 -- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
@@ -39,8 +40,8 @@ begin
       where specialty_code is not null and btrim(specialty_code) <> ''
       on conflict do nothing;
   end if;
-end
-$do$;
+end;
+$sql$;
 
 -- Seed from vertical_canonical_specialties ONLY if it exists
 
@@ -58,7 +59,7 @@ begin
       on conflict do nothing;
   end if;
 end;
-    $sql$;
+$sql$;
 $do$;
 
 -- ---------------------------------------------------------------------
@@ -208,7 +209,7 @@ begin
         from public.sanctuary_specialties s
         where s.specialty_code = p_specialty
       );
-    $$;
+$$;
 
   -- Replace vendor-host policies with capability-aware v6
     alter table public.events enable row level security;

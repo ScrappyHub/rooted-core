@@ -1,3 +1,4 @@
+-- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: DO-SQL-NORMALIZE+PURGE-TAILS-STEP-1AA-R (canonical)
 -- ROOTED: AUTO-REPAIR-SEED-DO-SQL-CLOSURE-STEP-1U (canonical)
 -- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
@@ -46,7 +47,7 @@ begin
       ('AGRICULTURE', 'AGRI_WILDLIFE_RESCUE_REHAB', false)
     on conflict do nothing;
 end;
-  $sql$;
+$sql$;
 $do$;
 
 commit;

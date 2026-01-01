@@ -1,3 +1,4 @@
+-- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251216242000_seed_standard_vendor_specialty_groups.sql
 -- Creates specialty governance groups + membership table (if missing)

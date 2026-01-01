@@ -1,3 +1,4 @@
+-- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 -- ROOTED: AUTO-FIX-EXECUTE-CLOSER-MISMATCH-STEP-1N (canonical)
@@ -42,7 +43,7 @@ begin
       alter table public.providers
         add constraint providers_specialty_not_blank_chk
         check (specialty is null or btrim(specialty) <> '');
-    $sql$;
+$sql$;
   end if;
 
   -- If you intended to recreate the v7 policies with an added "p.specialty not blank" condition,

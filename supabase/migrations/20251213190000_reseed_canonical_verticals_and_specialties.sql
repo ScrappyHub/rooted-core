@@ -1,3 +1,4 @@
+-- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251213190000_reseed_canonical_verticals_and_specialties.sql
 -- ROOTED CORE: Canonical reseed to the locked 21 verticals + rebuild defaults

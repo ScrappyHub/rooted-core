@@ -1,3 +1,4 @@
+-- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251217194000_seed_interests_specialties_v1.sql
 -- CANONICAL PATCH (pipeline rewrite - schema agnostic):

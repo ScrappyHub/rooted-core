@@ -1,3 +1,4 @@
+-- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251220002712_seed_missing_vertical_defaults_into_specialty_types.sql
 -- SAFETY PATCH: Ensure canonical_verticals.default_specialty values exist in specialty_types(code)

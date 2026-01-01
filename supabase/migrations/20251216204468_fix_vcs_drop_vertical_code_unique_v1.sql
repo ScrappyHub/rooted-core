@@ -1,3 +1,4 @@
+-- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251216204468_fix_vcs_drop_vertical_code_unique_v1.sql
 -- Fix: earlier patch added UNIQUE(vertical_code) which breaks multi-specialty-per-vertical seeds.
