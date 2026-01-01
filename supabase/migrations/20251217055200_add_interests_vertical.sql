@@ -1,3 +1,4 @@
+-- ROOTED: FIX-DO-DOLLAR-MISMATCH-V1 (canonical)
 -- ROOTED: FIX-EXECUTE-DOLLAR-QUOTES-V1 (canonical)
 -- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: ENFORCE-DO-CLOSE-DELIMITER-STEP-1S (canonical)
@@ -70,7 +71,6 @@ begin
     execute format('alter table public.canonical_verticals disable trigger %I', tr.tgname);
   end loop;
 end;
-$$;
 $ins$;
 
 -- ------------------------------------------------------------

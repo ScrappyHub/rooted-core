@@ -1,3 +1,4 @@
+-- ROOTED: FIX-DO-DOLLAR-MISMATCH-V1 (canonical)
 -- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 -- ROOTED: AUTO-FIX-DO-TAG-MISMATCH-STEP-1K (canonical)
@@ -118,7 +119,6 @@ begin
           )
           or public.is_vetted_community_v1() = true
         );
-$$;
 
     revoke all on function public.can_create_live_feed_post_v1(uuid,uuid) from anon;
     revoke all on function public.can_create_live_feed_post_v1(uuid,uuid) from authenticated;

@@ -1,3 +1,4 @@
+-- ROOTED: FIX-DO-DOLLAR-MISMATCH-V1 (canonical)
 -- ROOTED: FIX-EXECUTE-DOLLAR-QUOTES-V1 (canonical)
 -- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: ENFORCE-DO-CLOSE-DELIMITER-STEP-1S (canonical)
@@ -345,7 +346,6 @@ begin
       ) x(product_key)
       where not exists (select 1 from public.billing_products bp where bp.product_key = x.product_key);
 $q$;
-$$;
   end if;
 
 end $$;

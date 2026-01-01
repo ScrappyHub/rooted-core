@@ -1,3 +1,4 @@
+-- ROOTED: FIX-DO-DOLLAR-MISMATCH-V1 (canonical)
 -- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- ROOTED: ENSURE-DO-CLOSE-DELIMITER-AFTER-END-STEP-1Q (canonical)
@@ -213,7 +214,7 @@ as $$
     when p_lane_code in ('events') then coalesce(vp.allows_events,false)
     when p_lane_code in ('b2b_bulk','b2b_bid') then coalesce(vp.allows_b2b,false)
     else true
-  end
+  end;
   from public.vertical_policy vp
   where vp.vertical_code = p_vertical_code;
 

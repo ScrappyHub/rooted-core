@@ -1,3 +1,4 @@
+-- ROOTED: FIX-DO-DOLLAR-MISMATCH-V1 (canonical)
 -- ROOTED: FIX-EXECUTE-DOLLAR-QUOTES-V1 (canonical)
 -- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
@@ -53,6 +54,5 @@ $sql$;
   -- For now we only prevent the migration from crashing while base tables are missing.
 
 end
-$do$;
 
 commit;

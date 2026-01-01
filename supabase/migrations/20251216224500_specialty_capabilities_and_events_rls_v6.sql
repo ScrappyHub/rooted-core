@@ -1,3 +1,4 @@
+-- ROOTED: FIX-DO-DOLLAR-MISMATCH-V1 (canonical)
 -- ROOTED: FIX-EXECUTE-DOLLAR-QUOTES-V1 (canonical)
 -- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: DO-SQL-NORMALIZE+PURGE-TAILS-STEP-1AA-R (canonical)
@@ -62,7 +63,6 @@ $q$;
   end if;
 end;
 $sql$;
-$do$;
 
 -- ---------------------------------------------------------------------
 -- B) Capability tables
@@ -212,7 +212,6 @@ begin
         where s.specialty_code = p_specialty
       );
 $q$;
-$$;
 
   -- Replace vendor-host policies with capability-aware v6
     alter table public.events enable row level security;
@@ -266,7 +265,7 @@ $$;
       )
     );
 
-end
-$do$;
+end;
+$$;
 
 commit;
