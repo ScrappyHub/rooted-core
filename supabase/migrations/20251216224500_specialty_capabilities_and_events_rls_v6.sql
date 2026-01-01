@@ -1,3 +1,4 @@
+-- ROOTED: FIX-EXECUTE-Q-FN-DOLLARS-V2 (canonical)
 -- ROOTED: FIX-DO-DOLLAR-MISMATCH-V1 (canonical)
 -- ROOTED: FIX-EXECUTE-DOLLAR-QUOTES-V1 (canonical)
 -- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
@@ -125,7 +126,7 @@ on conflict do nothing;
 -- ---------------------------------------------------------------------
 
 -- ROOTED: AUTO-FIX-DO-DOLLAR-QUOTE (canonical)
-do $$
+do $do$
 begin
   if to_regclass('public.providers') is null then
     raise notice 'Skipping specialty capability helper functions/policies: public.providers does not exist.';
@@ -266,6 +267,6 @@ $q$;
     );
 
 end;
-$$;
+$do$;
 
 commit;
