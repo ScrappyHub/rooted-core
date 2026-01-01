@@ -1,3 +1,4 @@
+-- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- ROOTED: ENSURE-DO-CLOSE-DELIMITER-AFTER-END-STEP-1Q (canonical)
 -- ROOTED: REPAIR-DO-DELIMITERS-AND-SEMICOLONS-STEP-1P2 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
@@ -29,7 +30,6 @@ begin
     raise exception 'Missing required table: public.lane_codes';
   end if;
 end;
-$$;
 
 -- 1) Ensure lane vocabulary (Phase 2)
 insert into public.lane_codes (lane_code, label, description)
@@ -339,7 +339,7 @@ begin
         ('pack_b2g'),
         ('pack_ad_free')
       ) x(product_key)
-      where not exists (select 1 from public.billing_products bp where bp.product_key = x.product_key)
+      where not exists (select 1 from public.billing_products bp where bp.product_key = x.product_key);
     $$;
   end if;
 

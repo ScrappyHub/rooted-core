@@ -1,3 +1,4 @@
+-- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- ROOTED: ENSURE-DO-CLOSE-DELIMITER-AFTER-END-STEP-1Q (canonical)
 -- ROOTED: AUTO-FIX-DO-OPENERS-STEP-1J2C (canonical)
 BEGIN;
@@ -19,7 +20,6 @@ BEGIN
   EXCEPTION WHEN undefined_object THEN
     NULL;
   END;
-  $do$;
 
   -- conversation_participants: drop legacy truncated gate if present
   BEGIN

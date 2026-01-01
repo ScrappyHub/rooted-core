@@ -1,3 +1,4 @@
+-- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- ROOTED: ENSURE-DO-CLOSE-DELIMITER-AFTER-END-STEP-1Q (canonical)
 -- ROOTED: REPAIR-DO-DELIMITERS-AND-SEMICOLONS-STEP-1P2 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
@@ -58,7 +59,6 @@ begin
     execute format('revoke all on function %s from anon', r.obj);
   end loop;
 end;
-$$;
 
 -- Re-grant SELECT only on the 12 views
 DO $$
@@ -69,7 +69,6 @@ BEGIN
     RAISE NOTICE 'remote_schema: skip grant missing view public.arts_culture_events_discovery_v1 to anon';
   END IF;
 end;
-$$;
 DO $$
 BEGIN
   IF to_regclass('public.arts_culture_providers_discovery_v1') IS NOT NULL THEN
@@ -78,7 +77,6 @@ BEGIN
     RAISE NOTICE 'remote_schema: skip grant missing view public.arts_culture_providers_discovery_v1 to anon';
   END IF;
 end;
-$$;
 DO $$
 BEGIN
   IF to_regclass('public.community_landmarks_kidsafe_v1') IS NOT NULL THEN
@@ -87,7 +85,6 @@ BEGIN
     RAISE NOTICE 'remote_schema: skip grant missing view public.community_landmarks_kidsafe_v1 to anon';
   END IF;
 end;
-$$;
 DO $$
 BEGIN
   IF to_regclass('public.community_providers_discovery_v1') IS NOT NULL THEN
@@ -96,7 +93,6 @@ BEGIN
     RAISE NOTICE 'remote_schema: skip grant missing view public.community_providers_discovery_v1 to anon';
   END IF;
 end;
-$$;
 DO $$
 BEGIN
   IF to_regclass('public.education_providers_discovery_v1') IS NOT NULL THEN
@@ -105,7 +101,6 @@ BEGIN
     RAISE NOTICE 'remote_schema: skip grant missing view public.education_providers_discovery_v1 to anon';
   END IF;
 end;
-$$;
 DO $$
 BEGIN
   IF to_regclass('public.events_discovery_v1') IS NOT NULL THEN
@@ -114,7 +109,6 @@ BEGIN
     RAISE NOTICE 'remote_schema: skip grant missing view public.events_discovery_v1 to anon';
   END IF;
 end;
-$$;
 DO $$
 BEGIN
   IF to_regclass('public.events_public_v1') IS NOT NULL THEN
@@ -123,7 +117,6 @@ BEGIN
     RAISE NOTICE 'remote_schema: skip grant missing view public.events_public_v1 to anon';
   END IF;
 end;
-$$;
 DO $$
 BEGIN
   IF to_regclass('public.experiences_discovery_v1') IS NOT NULL THEN
@@ -132,7 +125,6 @@ BEGIN
     RAISE NOTICE 'remote_schema: skip grant missing view public.experiences_discovery_v1 to anon';
   END IF;
 end;
-$$;
 DO $$
 BEGIN
   IF to_regclass('public.landmarks_public_kids_v1') IS NOT NULL THEN
@@ -141,7 +133,6 @@ BEGIN
     RAISE NOTICE 'remote_schema: skip grant missing view public.landmarks_public_kids_v1 to anon';
   END IF;
 end;
-$$;
 DO $$
 BEGIN
   IF to_regclass('public.landmarks_public_v1') IS NOT NULL THEN
@@ -150,7 +141,6 @@ BEGIN
     RAISE NOTICE 'remote_schema: skip grant missing view public.landmarks_public_v1 to anon';
   END IF;
 end;
-$$;
 DO $$
 BEGIN
   IF to_regclass('public.providers_discovery_v1') IS NOT NULL THEN
@@ -159,7 +149,6 @@ BEGIN
     RAISE NOTICE 'remote_schema: skip grant missing view public.providers_discovery_v1 to anon';
   END IF;
 end;
-$$;
 DO $$
 BEGIN
   IF to_regclass('public.providers_public_v1') IS NOT NULL THEN

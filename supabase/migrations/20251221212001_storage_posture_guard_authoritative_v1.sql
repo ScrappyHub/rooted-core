@@ -1,3 +1,4 @@
+-- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- =========================================================
 -- STORAGE POSTURE GUARD (AUTHORITATIVE v1)
 -- Rooted stance:
@@ -105,5 +106,5 @@ BEGIN
   END IF;
 
   RAISE NOTICE 'OK: storage posture guard passed (Rooted policy allowlist enforced).';
-END
+END;
 $$;

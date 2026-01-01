@@ -1,3 +1,4 @@
+-- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- ROOTED: ENSURE-DO-CLOSE-DELIMITER-AFTER-END-STEP-1Q (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 begin;
@@ -34,7 +35,6 @@ begin
   exception when others then
     raise notice 'default privileges revoke skipped (non-fatal): %', sqlerrm;
   end;
-  $$;
 
 end;
 $$;

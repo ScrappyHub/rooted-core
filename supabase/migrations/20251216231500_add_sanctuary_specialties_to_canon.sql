@@ -1,3 +1,4 @@
+-- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 -- ROOTED: AUTO-FIX-EXECUTE-CLOSER-MISMATCH-STEP-1N (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
@@ -41,7 +42,7 @@ begin
     values
       ('AGRICULTURE', 'AGRI_ANIMAL_SANCTUARY', false),
       ('AGRICULTURE', 'AGRI_WILDLIFE_RESCUE_REHAB', false)
-    on conflict do nothing
+    on conflict do nothing;
   $sql$;
 end
 $do$;

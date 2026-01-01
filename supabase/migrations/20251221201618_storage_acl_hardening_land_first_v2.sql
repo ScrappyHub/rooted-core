@@ -1,3 +1,4 @@
+-- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- ROOTED: REPAIR-DO-DELIMITERS-AND-SEMICOLONS-STEP-1P2 (canonical)
 -- =========================================================
 -- STORAGE ACL HARDENING (LAND-FIRST v2)
@@ -71,5 +72,5 @@ BEGIN
     ]);
 
   RAISE NOTICE 'storage denied-grants remaining AFTER sweep (target 0): %', bad;
-END
+END;
 $$;

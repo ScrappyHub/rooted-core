@@ -1,3 +1,4 @@
+-- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- ROOTED: REPAIR-DO-DELIMITERS-AND-SEMICOLONS-STEP-1P2 (canonical)
 -- ROOTED: STRIP-EXECUTE-DOLLAR-QUOTES-STEP-1P (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
@@ -56,7 +57,7 @@ BEGIN
 
     RAISE NOTICE 'remote_schema: providers_public_v1 fallback (missing providers.name)';
   END IF;
-END
+END;
 $$;
 
 comment on view public.providers_public_v1 is

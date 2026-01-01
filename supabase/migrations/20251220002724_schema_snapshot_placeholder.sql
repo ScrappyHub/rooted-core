@@ -1,3 +1,4 @@
+-- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- ============================================================
 -- ROOTED: Placeholder migration (history purge reconciliation)
 -- Version: 20251220002724
@@ -12,5 +13,5 @@
 DO $$
 BEGIN
   -- no-op
-END
+END;
 $$;

@@ -1,3 +1,4 @@
+-- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- ROOTED: AUTO-FIX-DO-OPENERS-STEP-1J2C (canonical)
 -- ============================================================================
 -- EVENTS HOST / VENDOR GATES v1 (SAFE / GUARDED)
@@ -26,5 +27,5 @@ BEGIN
   --   EXECUTE 'CREATE POLICY events_select_policy_v1 ON public.events FOR SELECT USING (true)';
   -- END IF;
 
-END
+END;
 $do$;

@@ -1,3 +1,4 @@
+-- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 -- ROOTED: AUTO-FIX-EXECUTE-CLOSER-MISMATCH-STEP-1N (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
@@ -36,7 +37,7 @@ begin
   if has_user_id then
     execute $q$
       create index if not exists vendor_applications_user_idx
-        on public.vendor_applications(user_id)
+        on public.vendor_applications(user_id);
     $idx$;
   else
     raise notice 'Skipping vendor_applications_user_idx: column user_id does not exist on public.vendor_applications.';

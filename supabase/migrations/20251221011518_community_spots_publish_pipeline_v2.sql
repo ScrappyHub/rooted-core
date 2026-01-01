@@ -1,3 +1,4 @@
+-- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- ROOTED: ENSURE-DO-CLOSE-DELIMITER-AFTER-END-STEP-1Q (canonical)
 -- ROOTED: REPAIR-DO-DELIMITERS-AND-SEMICOLONS-STEP-1P2 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
@@ -46,7 +47,6 @@ begin
 
   end if;
 end;
-$$;
 
 -- 1) published table (create w/ columns first; add constraints after for idempotency)
 create table if not exists public.community_spots (
@@ -107,7 +107,6 @@ begin
 
   end if;
 end;
-$$;
 
 alter table public.community_spots enable row level security;
 alter table public.community_spots force row level security;

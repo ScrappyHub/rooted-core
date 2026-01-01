@@ -1,3 +1,4 @@
+-- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- =========================================================
 -- STORAGE RLS GUARD (AUTHORITATIVE v2)
 -- Supabase Storage requires table GRANTs; security is via RLS.
@@ -108,5 +109,5 @@ BEGIN
   END IF;
 
   RAISE NOTICE 'OK: storage RLS posture matches ROOTED allowlist. auth_mut_total=%', auth_mut_total;
-END
+END;
 $$;

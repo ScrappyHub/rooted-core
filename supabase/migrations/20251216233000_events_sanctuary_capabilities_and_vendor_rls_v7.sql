@@ -1,3 +1,4 @@
+-- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- ROOTED: STRIP-EXECUTE-DOLLAR-QUOTES-STEP-1P (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 -- ROOTED: AUTO-FIX-EXECUTE-CLOSER-MISMATCH-STEP-1N (canonical)
@@ -111,7 +112,7 @@ begin
     ('AGRI_WILDLIFE_RESCUE_REHAB',   'EVENT_VOLUNTEER',     true)
   on conflict (specialty_code, capability_key) do update
     set is_allowed = excluded.is_allowed;
-end
+end;
 $seed$;
 
 -- ------------------------------------------------------------

@@ -1,3 +1,4 @@
+-- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- ROOTED: ENSURE-DO-CLOSE-DELIMITER-AFTER-END-STEP-1Q (canonical)
 -- ROOTED: AUTO-FIX-DO-OPENERS-STEP-1J2C (canonical)
 BEGIN;
@@ -30,7 +31,6 @@ BEGIN
   EXCEPTION WHEN duplicate_object THEN
     NULL;
   END;
-  $do$;
 END;
 $do$;
 
@@ -134,6 +134,6 @@ END;
 $fn$;
 
 COMMENT ON FUNCTION public.service_sync_subscription_from_stripe_price(uuid,text,text,text,text)
-IS 'Service/admin-only. Canonical webhook entrypoint: sets subscription fields from stripe price ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ applies entitlements ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ prevents tier/subscription_tier drift.';
+IS 'Service/admin-only. Canonical webhook entrypoint: sets subscription fields from stripe price ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ applies entitlements ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ prevents tier/subscription_tier drift.';
 
 COMMIT;

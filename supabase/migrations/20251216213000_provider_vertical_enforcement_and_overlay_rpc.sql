@@ -1,3 +1,4 @@
+-- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- ============================================================================
 -- PROVIDER VERTICAL ENFORCEMENT + OVERLAY RPC (SAFE / GUARDED)
 -- Single guarded DO block so missing tables cannot break startup.
@@ -90,5 +91,5 @@ BEGIN
       ADD CONSTRAINT providers_specialty_not_blank_chk
       CHECK (specialty IS NULL OR btrim(specialty) <> '');
   END IF;
-END
+END;
 $$;

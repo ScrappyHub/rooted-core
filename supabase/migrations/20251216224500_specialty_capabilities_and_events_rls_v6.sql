@@ -1,3 +1,4 @@
+-- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- ROOTED: REPAIR-DO-DELIMITERS-AND-SEMICOLONS-STEP-1P2 (canonical)
 -- ROOTED: STRIP-EXECUTE-DOLLAR-QUOTES-STEP-1P (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
@@ -52,7 +53,7 @@ begin
       select distinct specialty_code
       from public.vertical_canonical_specialties
       where specialty_code is not null and btrim(specialty_code) <> ''
-      on conflict do nothing
+      on conflict do nothing;
     $sql$;
   end if;
 end
