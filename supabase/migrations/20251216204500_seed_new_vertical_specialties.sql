@@ -1,3 +1,4 @@
+-- ROOTED: FIX-HAS-IS-DEFAULT-IF-CLOSURE-STEP-1V (canonical)
 -- ROOTED: AUTO-REPAIR-SEED-DO-SQL-CLOSURE-STEP-1U (canonical)
 -- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- ROOTED: STRIP-EXECUTE-DOLLAR-QUOTES-STEP-1P (canonical)
@@ -55,6 +56,13 @@ begin
         ('REGIONAL_INTELLIGENCE', 'ROOTED_PLATFORM_CANONICAL', true)
       on conflict (vertical_code, specialty_code) do update
       set is_default = excluded.is_default;
+  else
+      insert into public.vertical_canonical_specialties (vertical_code, specialty_code)
+      values
+        ('META_INFRASTRUCTURE', 'ROOTED_PLATFORM_CANONICAL'),
+        ('REGIONAL_INTELLIGENCE', 'ROOTED_PLATFORM_CANONICAL')
+      on conflict (vertical_code, specialty_code) do nothing;
+  end if;
 end;
     $sql$;
   else
