@@ -1,3 +1,4 @@
+-- ROOTED: ENSURE-DO-CLOSE-DELIMITER-AFTER-END-STEP-1Q (canonical)
 -- ROOTED: REPAIR-DO-DELIMITERS-AND-SEMICOLONS-STEP-1P2 (canonical)
 -- ROOTED: STRIP-EXECUTE-DOLLAR-QUOTES-STEP-1P (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
@@ -13,6 +14,7 @@ begin
     raise exception 'Missing required table: public.billing_entitlements';
   end if;
 end;
+$$;
 
 -- ------------------------------------------------------------
 -- 1) Entitlement key vocabulary (what lanes will reference)

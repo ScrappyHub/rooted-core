@@ -1,3 +1,4 @@
+-- ROOTED: ENSURE-DO-CLOSE-DELIMITER-AFTER-END-STEP-1Q (canonical)
 -- ROOTED: REPAIR-DO-DELIMITERS-AND-SEMICOLONS-STEP-1P2 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 begin;
@@ -59,6 +60,7 @@ begin
     for each row execute function public._touch_updated_at();
   end if;
 end;
+$$;
 
 -- -----------------------------
 -- RLS: no leakage, strict visibility
@@ -80,6 +82,7 @@ begin
     using (true);
   end if;
 end;
+$$;
 
 -- Owner can manage their gamer_profiles_public row
 do $$
@@ -107,6 +110,7 @@ begin
     );
   end if;
 end;
+$$;
 
 -- Only owner can access gamer_accounts
 do $$
@@ -122,6 +126,7 @@ begin
     with check (user_id = auth.uid());
   end if;
 end;
+$$;
 
 -- Only owner can access gamer_private_stats
 do $$
@@ -149,6 +154,7 @@ begin
     );
   end if;
 end;
+$$;
 
 -- -----------------------------
 -- NSFW gating helpers (verified + explicit opt-in)

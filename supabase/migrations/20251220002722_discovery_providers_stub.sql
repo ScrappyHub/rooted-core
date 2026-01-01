@@ -1,3 +1,4 @@
+-- ROOTED: ENSURE-DO-CLOSE-DELIMITER-AFTER-END-STEP-1Q (canonical)
 -- ROOTED: STRIP-EXECUTE-DOLLAR-QUOTES-STEP-1P (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 -- ROOTED: AUTO-FIX-EXECUTE-CLOSER-MISMATCH-STEP-1N (canonical)
@@ -26,6 +27,7 @@ begin
       raise notice 'discovery_providers_stub: discovery_providers exists but is not a droppable view; leaving as-is.';
       return;
     end;
+    $v$;
   end if;
 
   -- Create minimal stub view with the EXACT expected columns + order.

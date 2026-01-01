@@ -1,3 +1,4 @@
+-- ROOTED: ENSURE-DO-CLOSE-DELIMITER-AFTER-END-STEP-1Q (canonical)
 -- ROOTED: REPAIR-DO-DELIMITERS-AND-SEMICOLONS-STEP-1P2 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 begin;
@@ -30,6 +31,7 @@ begin
     raise exception 'Missing mapping table: public.vertical_canonical_specialties (or _bak)';
   end if;
 end;
+$$;
 
 -- Determine canonical specialty key column name
 -- Prefer: specialty_code, else: code
@@ -94,6 +96,7 @@ begin
   );
 
 end;
+$$;
 
 -- Mapping: vertical_canonical_specialties
 -- Prefer table vertical_canonical_specialties; fallback to _bak if that's your live table.
@@ -141,6 +144,7 @@ begin
   $f$, map_table, scol, map_table, scol);
 
 end;
+$$;
 
 commit;
 begin
@@ -177,6 +181,7 @@ begin
     raise exception 'Missing mapping table: public.vertical_canonical_specialties (or _bak)';
   end if;
 end;
+$$;
 
 -- Determine canonical specialty key column name
 -- Prefer: specialty_code, else: code
@@ -241,6 +246,7 @@ begin
   );
 
 end;
+$$;
 
 -- Mapping: vertical_canonical_specialties
 -- Prefer table vertical_canonical_specialties; fallback to _bak if that's your live table.
@@ -288,6 +294,7 @@ begin
   $f$, map_table, scol, map_table, scol);
 
 end;
+$$;
 
 commit;;
 
@@ -321,6 +328,7 @@ begin
     raise exception 'Missing mapping table: public.vertical_canonical_specialties (or _bak)';
   end if;
 end;
+$$;
 
 -- Determine canonical specialty key column name
 -- Prefer: specialty_code, else: code
@@ -385,6 +393,7 @@ begin
   );
 
 end;
+$$;
 
 -- Mapping: vertical_canonical_specialties
 -- Prefer table vertical_canonical_specialties; fallback to _bak if that's your live table.
@@ -432,6 +441,7 @@ begin
   $f$, map_table, scol, map_table, scol);
 
 end;
+$$;
 
 commit;
   select case
@@ -466,6 +476,7 @@ begin
     raise exception 'Missing mapping table: public.vertical_canonical_specialties (or _bak)';
   end if;
 end;
+$$;
 
 -- Determine canonical specialty key column name
 -- Prefer: specialty_code, else: code
@@ -530,6 +541,7 @@ begin
   );
 
 end;
+$$;
 
 -- Mapping: vertical_canonical_specialties
 -- Prefer table vertical_canonical_specialties; fallback to _bak if that's your live table.
@@ -577,6 +589,7 @@ begin
   $f$, map_table, scol, map_table, scol);
 
 end;
+$$;
 
 commit;;
 
@@ -607,6 +620,7 @@ begin
     raise exception 'Missing mapping table: public.vertical_canonical_specialties (or _bak)';
   end if;
 end;
+$$;
 
 -- Determine canonical specialty key column name
 -- Prefer: specialty_code, else: code
@@ -671,6 +685,7 @@ begin
   );
 
 end;
+$$;
 
 -- Mapping: vertical_canonical_specialties
 -- Prefer table vertical_canonical_specialties; fallback to _bak if that's your live table.
@@ -718,6 +733,7 @@ begin
   $f$, map_table, scol, map_table, scol);
 
 end;
+$$;
 
 commit;
 declare
@@ -832,6 +848,7 @@ begin
     raise exception 'Missing mapping table: public.vertical_canonical_specialties (or _bak)';
   end if;
 end;
+$$;
 
 -- Determine canonical specialty key column name
 -- Prefer: specialty_code, else: code
@@ -896,6 +913,7 @@ begin
   );
 
 end;
+$$;
 
 -- Mapping: vertical_canonical_specialties
 -- Prefer table vertical_canonical_specialties; fallback to _bak if that's your live table.

@@ -1,3 +1,4 @@
+-- ROOTED: ENSURE-DO-CLOSE-DELIMITER-AFTER-END-STEP-1Q (canonical)
 -- ROOTED: REPAIR-DO-DELIMITERS-AND-SEMICOLONS-STEP-1P2 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- 20251217054500_engine_enforcement_core_v1.sql
@@ -33,6 +34,7 @@ begin
     );
   end if;
 end;
+$$;
 
 -- ------------------------------------------------------------
 -- 1) Engine registry (includes future engines, non-assignable)

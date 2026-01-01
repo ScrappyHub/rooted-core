@@ -1,3 +1,4 @@
+-- ROOTED: ENSURE-DO-CLOSE-DELIMITER-AFTER-END-STEP-1Q (canonical)
 -- ROOTED: REPAIR-DO-DELIMITERS-AND-SEMICOLONS-STEP-1P2 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 begin;
@@ -34,6 +35,7 @@ begin
     execute format('revoke all on table %s from authenticated', r.obj);
   end loop;
 end;
+$$;
 
 -- 2) Guardrail: fail if any analytics-ish relation is SELECT-granted to anon/authenticated
 --    (views or tables). This protects against accidental GRANTs in future migrations.

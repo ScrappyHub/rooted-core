@@ -1,3 +1,4 @@
+-- ROOTED: ENSURE-DO-CLOSE-DELIMITER-AFTER-END-STEP-1Q (canonical)
 -- ROOTED: AUTO-FIX-DO-OPENERS-STEP-1J2C (canonical)
 BEGIN;
 
@@ -36,6 +37,7 @@ BEGIN
     WITH CHECK (current_setting('request.jwt.claim.role', true) = 'service_role' OR public.is_admin());
   EXCEPTION WHEN duplicate_object THEN NULL;
   END;
+  $do$;
 
   -- Authenticated users: no access (default deny via no policies)
 END;
@@ -106,7 +108,7 @@ BEGIN
   END IF;
 
   -- Core action:
-  -- Canonical: sync subscription ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ applies entitlements ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ fixes drift
+  -- Canonical: sync subscription ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ applies entitlements ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ fixes drift
   PERFORM public.service_sync_subscription_from_stripe_price(
     p_user_id,
     p_stripe_price_id,

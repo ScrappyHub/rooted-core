@@ -1,3 +1,4 @@
+-- ROOTED: ENSURE-DO-CLOSE-DELIMITER-AFTER-END-STEP-1Q (canonical)
 -- ROOTED: REPAIR-DO-DELIMITERS-AND-SEMICOLONS-STEP-1P2 (canonical)
 -- ROOTED: AUTO-FIX-DO-OPENERS-STEP-1J2C (canonical)
 BEGIN;
@@ -97,6 +98,7 @@ BEGIN
     EXCEPTION WHEN duplicate_object THEN NULL; END;
   END IF;
 END;
+$do$;
 
 -- ---------- RLS ----------
 ALTER TABLE public.billing_products ENABLE ROW LEVEL SECURITY;

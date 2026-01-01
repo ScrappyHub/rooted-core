@@ -1,3 +1,4 @@
+-- ROOTED: ENSURE-DO-CLOSE-DELIMITER-AFTER-END-STEP-1Q (canonical)
 -- ROOTED: AUTO-FIX-DO-OPENERS-STEP-1J2C (canonical)
 BEGIN;
 
@@ -26,6 +27,7 @@ BEGIN
   EXCEPTION WHEN duplicate_object THEN
     NULL;
   END;
+  $do$;
 
   -- event_registrations
   BEGIN

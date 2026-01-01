@@ -1,3 +1,4 @@
+-- ROOTED: ENSURE-DO-CLOSE-DELIMITER-AFTER-END-STEP-1Q (canonical)
 -- ROOTED: AUTO-FIX-DO-OPENERS-STEP-1J2C (canonical)
 BEGIN;
 
@@ -15,6 +16,7 @@ BEGIN
     WITH CHECK (public.is_admin() OR NOT public.password_rotation_required(auth.uid()));
   EXCEPTION WHEN duplicate_object THEN NULL;
   END;
+  $do$;
 
   -- user_consents
   BEGIN
