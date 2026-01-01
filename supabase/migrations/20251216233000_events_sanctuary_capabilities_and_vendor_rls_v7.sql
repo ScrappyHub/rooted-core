@@ -1,3 +1,4 @@
+-- ROOTED: FIX-EXECUTE-DOLLAR-QUOTES-V1 (canonical)
 -- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- ROOTED: STRIP-EXECUTE-DOLLAR-QUOTES-STEP-1P (canonical)
@@ -236,6 +237,7 @@ $pol$;
     );
 
 end
+$q$;
 $do$;
 
 commit;

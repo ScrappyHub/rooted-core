@@ -1,3 +1,4 @@
+-- ROOTED: FIX-EXECUTE-DOLLAR-QUOTES-V1 (canonical)
 -- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 -- =========================================
@@ -96,6 +97,7 @@ begin
     to authenticated
     using (is_admin() or not public.password_rotation_required(auth.uid()))
     with check (is_admin() or not public.password_rotation_required(auth.uid()));
+$sql$;
 $$;
 
   raise notice 'institutions password-rotation gate policy applied';

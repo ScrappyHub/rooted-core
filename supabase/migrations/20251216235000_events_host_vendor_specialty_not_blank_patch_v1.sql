@@ -1,3 +1,4 @@
+-- ROOTED: FIX-EXECUTE-DOLLAR-QUOTES-V1 (canonical)
 -- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
@@ -43,6 +44,7 @@ begin
       alter table public.providers
         add constraint providers_specialty_not_blank_chk
         check (specialty is null or btrim(specialty) <> '');
+$q$;
 $sql$;
   end if;
 

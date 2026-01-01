@@ -1,3 +1,4 @@
+-- ROOTED: FIX-EXECUTE-DOLLAR-QUOTES-V1 (canonical)
 -- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- ROOTED: REPAIR-DO-DELIMITERS-AND-SEMICOLONS-STEP-1P2 (canonical)
@@ -57,6 +58,7 @@ BEGIN
       from public.providers p;
 
     RAISE NOTICE 'remote_schema: providers_public_v1 fallback (missing providers.name)';
+$q$;
   END IF;
 END;
 $$;

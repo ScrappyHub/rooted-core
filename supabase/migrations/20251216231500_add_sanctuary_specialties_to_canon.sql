@@ -1,3 +1,4 @@
+-- ROOTED: FIX-EXECUTE-DOLLAR-QUOTES-V1 (canonical)
 -- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: DO-SQL-NORMALIZE+PURGE-TAILS-STEP-1AA-R (canonical)
 -- ROOTED: AUTO-REPAIR-SEED-DO-SQL-CLOSURE-STEP-1U (canonical)
@@ -46,6 +47,7 @@ begin
       ('AGRICULTURE', 'AGRI_ANIMAL_SANCTUARY', false),
       ('AGRICULTURE', 'AGRI_WILDLIFE_RESCUE_REHAB', false)
     on conflict do nothing;
+$q$;
 end;
 $sql$;
 $do$;

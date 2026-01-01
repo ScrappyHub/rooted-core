@@ -1,3 +1,4 @@
+-- ROOTED: FIX-EXECUTE-DOLLAR-QUOTES-V1 (canonical)
 -- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: CANONICAL_DO_SQL_SEED_REPAIR_PIPELINE (one-shot)
 -- ROOTED: ENFORCE-DO-CLOSE-DELIMITER-STEP-1S (canonical)
@@ -93,6 +94,7 @@ begin
             and ut.account_status = 'active'
         )
       );
+$q$;
 $pol$;
 
 -- 2) Owner can read their own row (authenticated only)

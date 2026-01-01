@@ -1,3 +1,4 @@
+-- ROOTED: FIX-EXECUTE-DOLLAR-QUOTES-V1 (canonical)
 -- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: ENFORCE-DO-CLOSE-DELIMITER-STEP-1S (canonical)
 -- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
@@ -46,6 +47,7 @@ begin
       values ('INTERESTS_GENERAL', 'Interests (General)')
       on conflict (code) do update
         set label = excluded.label;
+$q$;
   end if;
 end $$;
 

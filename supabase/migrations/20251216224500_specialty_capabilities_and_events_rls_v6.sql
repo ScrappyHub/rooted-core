@@ -1,3 +1,4 @@
+-- ROOTED: FIX-EXECUTE-DOLLAR-QUOTES-V1 (canonical)
 -- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: DO-SQL-NORMALIZE+PURGE-TAILS-STEP-1AA-R (canonical)
 -- ROOTED: AUTO-REPAIR-SEED-DO-SQL-CLOSURE-STEP-1U (canonical)
@@ -57,6 +58,7 @@ begin
       from public.vertical_canonical_specialties
       where specialty_code is not null and btrim(specialty_code) <> ''
       on conflict do nothing;
+$q$;
   end if;
 end;
 $sql$;
@@ -209,6 +211,7 @@ begin
         from public.sanctuary_specialties s
         where s.specialty_code = p_specialty
       );
+$q$;
 $$;
 
   -- Replace vendor-host policies with capability-aware v6

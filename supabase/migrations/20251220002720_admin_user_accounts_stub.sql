@@ -1,3 +1,4 @@
+-- ROOTED: FIX-EXECUTE-DOLLAR-QUOTES-V1 (canonical)
 -- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: STRIP-EXECUTE-DOLLAR-QUOTES-STEP-1P (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
@@ -80,6 +81,7 @@ begin
       null::text              as deletion_status,
       null::timestamptz       as deletion_requested_at
     from auth.users u;
+$q$;
 $v$;
 
   -- Recreate a minimal stub so anything expecting it doesn't break.
