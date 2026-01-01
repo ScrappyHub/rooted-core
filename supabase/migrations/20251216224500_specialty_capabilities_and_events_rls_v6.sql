@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-REPAIR-SEED-DO-SQL-CLOSURE-STEP-1U (canonical)
 -- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- ROOTED: REPAIR-DO-DELIMITERS-AND-SEMICOLONS-STEP-1P2 (canonical)
 -- ROOTED: STRIP-EXECUTE-DOLLAR-QUOTES-STEP-1P (canonical)
@@ -54,6 +55,8 @@ begin
       from public.vertical_canonical_specialties
       where specialty_code is not null and btrim(specialty_code) <> ''
       on conflict do nothing;
+  end if;
+end;
     $sql$;
   end if;
 end

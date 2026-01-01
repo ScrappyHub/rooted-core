@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-REPAIR-SEED-DO-SQL-CLOSURE-STEP-1U (canonical)
 -- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- ROOTED: STRIP-EXECUTE-DOLLAR-QUOTES-STEP-1P (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
@@ -54,6 +55,7 @@ begin
         ('REGIONAL_INTELLIGENCE', 'ROOTED_PLATFORM_CANONICAL', true)
       on conflict (vertical_code, specialty_code) do update
       set is_default = excluded.is_default;
+end;
     $sql$;
   else
     execute $q$
