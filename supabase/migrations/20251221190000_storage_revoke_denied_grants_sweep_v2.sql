@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 begin;
 
 -- =========================================================
@@ -33,6 +34,7 @@ begin
     raise notice 'default privileges revoke skipped (non-fatal): %', sqlerrm;
   end;
 
-end $$;
+end;
+$$;
 
 commit;

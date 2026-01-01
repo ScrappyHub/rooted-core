@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 begin;
 
 -- =========================================================
@@ -31,7 +32,8 @@ begin
     execute format('revoke all on table %s from anon', r.obj);
     execute format('revoke all on table %s from authenticated', r.obj);
   end loop;
-end $$;
+end;
+$$;
 
 -- 2) Guardrail: fail if any analytics-ish relation is SELECT-granted to anon/authenticated
 --    (views or tables). This protects against accidental GRANTs in future migrations.
@@ -54,6 +56,7 @@ begin
     raise exception
       'Hardening violation: analytics-ish objects in public have SELECT grants to anon/authenticated.';
   end if;
-end $$;
+end;
+$$;
 
 commit;

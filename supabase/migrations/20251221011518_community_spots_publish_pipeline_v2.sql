@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 begin;
 
 -- =========================================================
@@ -42,7 +43,8 @@ begin
     end if;
 
   end if;
-end $$;
+end;
+$$;
 
 -- 1) published table (create w/ columns first; add constraints after for idempotency)
 create table if not exists public.community_spots (
@@ -102,7 +104,8 @@ begin
     end if;
 
   end if;
-end $$;
+end;
+$$;
 
 alter table public.community_spots enable row level security;
 alter table public.community_spots force row level security;

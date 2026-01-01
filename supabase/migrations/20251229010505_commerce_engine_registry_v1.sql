@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 begin;
 
 -- ROOTED PATCH: ensure enum value exists before inserting rows that reference it.
@@ -15,7 +16,8 @@ begin
   ) then
     alter type public.engine_type add value 'core_commerce';
   end if;
-end $$;
+end;
+$$;
 -- ROOTED PATCH: txn split for enum safety (Postgres 55P04)
 commit;
 begin;
@@ -34,7 +36,8 @@ begin
   ) then
     alter type public.engine_type add value 'core_commerce';
   end if;
-end $$;
+end;
+$$;
 insert into public.engine_registry (
   engine_type,
   is_active,

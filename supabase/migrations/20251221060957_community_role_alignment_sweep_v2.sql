@@ -1,8 +1,9 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 -- ROOTED: AUTO-FIX-DO-TAG-MISMATCH-STEP-1K (canonical)
 begin;
 
 -- =========================================================
--- COMMUNITY ROLE ALIGNMENT SWEEP (v2) ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â CANONICAL
+-- COMMUNITY ROLE ALIGNMENT SWEEP (v2) ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â CANONICAL
 -- Goal:
 --   - Eliminate any reliance on role='individual' (NOT allowed by CHECK constraints)
 --   - Use role='community' + feature_flags->>'is_vetted_community' gate
@@ -67,7 +68,7 @@ select * from policy_hits
 union all
 select * from function_hits;
 
--- Lock down diagnostics view to admins only (RLS doesnÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢t apply to views; use grants)
+-- Lock down diagnostics view to admins only (RLS doesnÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢t apply to views; use grants)
 revoke all on public.admin_role_string_hits_v1 from public;
 do $fn$
 BEGIN
@@ -76,7 +77,8 @@ BEGIN
   ELSE
     RAISE NOTICE 'remote_schema: skip grant missing view public.admin_role_string_hits_v1 to authenticated';
   END IF;
-END $$;
+end;
+$fn$;
 -- (Optional) if you have an is_admin() function (you do), we keep this as *convention*:
 comment on view public.admin_role_string_hits_v1
 is 'Admin diagnostics: shows any policy/function code containing the string "individual".';
@@ -115,7 +117,7 @@ begin
           )
           or public.is_vetted_community_v1() = true
         );
-    $fn$;
+    $$;
 
     revoke all on function public.can_create_live_feed_post_v1(uuid,uuid) from anon;
     revoke all on function public.can_create_live_feed_post_v1(uuid,uuid) from authenticated;

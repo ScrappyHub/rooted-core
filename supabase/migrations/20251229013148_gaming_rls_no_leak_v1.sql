@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 begin;
 
 alter table public.gamer_accounts enable row level security;
@@ -66,7 +67,8 @@ begin
     before update on public.gamer_private_stats
     for each row execute function public._touch_updated_at();
   end if;
-end $$;
+end;
+$$;
 
 commit;
 begin
@@ -140,7 +142,8 @@ begin
     before update on public.gamer_private_stats
     for each row execute function public._touch_updated_at();
   end if;
-end $$;
+end;
+$$;
 
 commit;;
 
@@ -206,7 +209,8 @@ begin
     before update on public.gamer_private_stats
     for each row execute function public._touch_updated_at();
   end if;
-end $$;
+end;
+$$;
 
 commit;
 begin
@@ -293,7 +297,8 @@ begin
     before update on public.gamer_private_stats
     for each row execute function public._touch_updated_at();
   end if;
-end $$;
+end;
+$$;
 
 commit;;
 
@@ -359,7 +364,8 @@ begin
     before update on public.gamer_private_stats
     for each row execute function public._touch_updated_at();
   end if;
-end $$;
+end;
+$$;
 
 commit;
 begin
@@ -434,7 +440,8 @@ begin
     before update on public.gamer_private_stats
     for each row execute function public._touch_updated_at();
   end if;
-end $$;
+end;
+$$;
 
 commit;;
 
@@ -500,7 +507,8 @@ begin
     before update on public.gamer_private_stats
     for each row execute function public._touch_updated_at();
   end if;
-end $$;
+end;
+$$;
 
 commit;
 begin
@@ -587,7 +595,8 @@ begin
     before update on public.gamer_private_stats
     for each row execute function public._touch_updated_at();
   end if;
-end $$;
+end;
+$$;
 
 commit;;
 

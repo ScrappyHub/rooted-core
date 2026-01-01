@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 -- ROOTED: AUTO-FIX-EXECUTE-CLOSER-MISMATCH-STEP-1N (canonical)
 begin;
 
@@ -9,7 +10,8 @@ begin
   if to_regclass('public.billing_entitlements') is null then
     raise exception 'Missing required table: public.billing_entitlements';
   end if;
-end $$;
+end;
+$$;
 
 -- ------------------------------------------------------------
 -- 1) Entitlement key vocabulary (what lanes will reference)

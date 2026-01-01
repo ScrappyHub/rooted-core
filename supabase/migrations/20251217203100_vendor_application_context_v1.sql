@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 -- ROOTED: AUTO-FIX-EXECUTE-CLOSER-MISMATCH-STEP-1N (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- ROOTED: AUTO-FIX-NESTED-EXECUTE-DOLLAR-TAG-STEP-1L (canonical)
@@ -36,7 +37,7 @@ begin
     execute $q$
       create index if not exists vendor_applications_user_idx
         on public.vendor_applications(user_id)
-    $q$;
+    $idx$;
   else
     raise notice 'Skipping vendor_applications_user_idx: column user_id does not exist on public.vendor_applications.';
   end if;

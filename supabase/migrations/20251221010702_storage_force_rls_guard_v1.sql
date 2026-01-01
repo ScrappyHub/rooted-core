@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 -- =========================================================
 -- STORAGE RLS GUARD (Hosted-compatible)
 -- Supabase Hosted: storage tables are platform-owned.
@@ -31,4 +32,5 @@ begin
     (select c.relforcerowsecurity
        from pg_class c join pg_namespace n on n.oid=c.relnamespace
       where n.nspname='storage' and c.relname='objects');
-end $$;
+end;
+$$;

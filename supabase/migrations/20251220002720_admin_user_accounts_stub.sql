@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 -- ROOTED: AUTO-FIX-EXECUTE-CLOSER-MISMATCH-STEP-1N (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
 -- ROOTED: AUTO-FIX-NESTED-EXECUTE-DOLLAR-TAG-STEP-1L (canonical)
@@ -40,7 +41,7 @@ begin
             and ut.role = 'admin'
         );
       end;
-      $fn$;
+      $body$;
       $fn$;
   end if;
 end $$;
@@ -79,7 +80,7 @@ begin
       null::text              as deletion_status,
       null::timestamptz       as deletion_requested_at
     from auth.users u;
-  $q$;
+  $v$;
 
   -- Recreate a minimal stub so anything expecting it doesn't break.
   execute $fn$

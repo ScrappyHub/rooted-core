@@ -1,6 +1,7 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 -- ============================================================
 -- 20251228060000_events_host_and_collaborators_v1.sql
--- ROOTED â€¢ Canonical Migration
+-- ROOTED Ã¢â‚¬Â¢ Canonical Migration
 -- Purpose:
 --   1) Enforce exactly-one host per event (DB truth, not UI)
 --   2) Enforce host role correctness (vendor vs institution)
@@ -27,7 +28,8 @@ begin
     where vertical_code  <> upper(vertical_code)
        or specialty_code <> upper(specialty_code);
   end if;
-end $$;
+end;
+$$;
 
 create or replace function public.vertical_canonical_specialties_normalize_v1()
 returns trigger
@@ -68,7 +70,8 @@ begin
       references public.providers(id)
       on delete set null;
   end if;
-end $$;
+end;
+$$;
 
 -- ============================================================
 -- 2) Host correctness CHECK (NOT VALID first to avoid legacy rows blocking deploy)
@@ -84,7 +87,8 @@ begin
       )
       not valid;
   end if;
-end $$;
+end;
+$$;
 
 -- ============================================================
 -- 3) Core correctness trigger: host required + role correctness
@@ -196,7 +200,8 @@ begin
     for each row
     execute function public.set_updated_at();
   end if;
-end $$;
+end;
+$$;
 
 -- ============================================================
 -- 5) RLS helpers (audit-first)
@@ -353,6 +358,7 @@ begin
     alter table public.events
       validate constraint events_exactly_one_host_chk;
   end if;
-end $$;
+end;
+$$;
 
 commit;

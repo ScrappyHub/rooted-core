@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 begin;
 
 -- -----------------------------
@@ -56,7 +57,8 @@ begin
     create trigger trg_gamer_private_stats_touch before update on public.gamer_private_stats
     for each row execute function public._touch_updated_at();
   end if;
-end $$;
+end;
+$$;
 
 -- -----------------------------
 -- RLS: no leakage, strict visibility
@@ -77,7 +79,8 @@ begin
     for select
     using (true);
   end if;
-end $$;
+end;
+$$;
 
 -- Owner can manage their gamer_profiles_public row
 do $$
@@ -104,7 +107,8 @@ begin
       )
     );
   end if;
-end $$;
+end;
+$$;
 
 -- Only owner can access gamer_accounts
 do $$
@@ -119,7 +123,8 @@ begin
     using (user_id = auth.uid())
     with check (user_id = auth.uid());
   end if;
-end $$;
+end;
+$$;
 
 -- Only owner can access gamer_private_stats
 do $$
@@ -146,7 +151,8 @@ begin
       )
     );
   end if;
-end $$;
+end;
+$$;
 
 -- -----------------------------
 -- NSFW gating helpers (verified + explicit opt-in)

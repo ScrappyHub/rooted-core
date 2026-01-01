@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 -- =========================================
 -- ROOTED CORE: PASSWORD ROTATION GATE (compat stub)
 -- - Some RLS policies reference public.password_rotation_required(uuid)
@@ -94,7 +95,7 @@ begin
     to authenticated
     using (is_admin() or not public.password_rotation_required(auth.uid()))
     with check (is_admin() or not public.password_rotation_required(auth.uid()));
-  $sql$;
+  $$;
 
   raise notice 'institutions password-rotation gate policy applied';
 end $$;

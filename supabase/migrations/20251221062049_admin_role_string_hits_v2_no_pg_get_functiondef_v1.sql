@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 begin;
 
 -- =========================================================
@@ -39,7 +40,7 @@ select * from function_hits;
 
 revoke all on public.admin_role_string_hits_v2 from public;
 
--- NOTE: keep same behavior as your v1 for now; if you want admin-only weÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ll change grants next.
+-- NOTE: keep same behavior as your v1 for now; if you want admin-only weÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ll change grants next.
 DO $$
 BEGIN
   IF to_regclass('public.admin_role_string_hits_v2') IS NOT NULL THEN
@@ -47,7 +48,8 @@ BEGIN
   ELSE
     RAISE NOTICE 'remote_schema: skip grant missing view public.admin_role_string_hits_v2 to authenticated';
   END IF;
-END $$;
+end;
+$$;
 comment on view public.admin_role_string_hits_v2
 is 'Admin diagnostics (v2): finds string "individual" in policies and in functions via pg_proc.prosrc (no pg_get_functiondef).';
 

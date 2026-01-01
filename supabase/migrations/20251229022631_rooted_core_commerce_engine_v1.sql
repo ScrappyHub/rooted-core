@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 begin;
 
 -- 1) Add engine_state 'commerce' if missing
@@ -14,7 +15,8 @@ begin
   ) then
     alter type public.engine_state add value 'commerce';
   end if;
-end $$;
+end;
+$$;
 
 -- 2) Add engine_type 'core_commerce' if missing
 do $$
@@ -30,7 +32,8 @@ begin
   ) then
     alter type public.engine_type add value 'core_commerce';
   end if;
-end $$;
+end;
+$$;
 
 -- 3) Ensure engine_registry row exists
 insert into public.engine_registry (engine_type, is_active, is_assignable_to_entities, notes)

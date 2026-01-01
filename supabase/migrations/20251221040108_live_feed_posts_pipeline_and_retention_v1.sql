@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 begin;
 
 -- =========================================================
@@ -59,7 +60,8 @@ begin
     begin
       new.updated_at := now();
       return new;
-    end $f$;
+    end;
+    $$;
 
     revoke all on function public._touch_updated_at() from anon;
     revoke all on function public._touch_updated_at() from authenticated;

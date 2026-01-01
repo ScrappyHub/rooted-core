@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 -- =========================================================
 -- STORAGE GRANT SURFACE REPORT (Hosted-compatible)
 -- Supabase Hosted Storage is platform-managed.
@@ -19,4 +20,5 @@ begin
     raise notice 'storage grant: grantee=% table=%.% privilege=%',
       r.grantee, r.table_schema, r.table_name, r.privilege_type;
   end loop;
-end $$;
+end;
+$$;

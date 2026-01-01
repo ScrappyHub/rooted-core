@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 begin;
 
 -- Ensure engine_registry has core_commerce
@@ -29,7 +30,8 @@ begin
   ) then
     alter type public.engine_state add value 'commerce';
   end if;
-end $$;
+end;
+$$;
 
 -- Add engine_type 'core_commerce' if missing
 do $$
@@ -45,7 +47,8 @@ begin
   ) then
     alter type public.engine_type add value 'core_commerce';
   end if;
-end $$;
+end;
+$$;
 
 commit;
 begin
@@ -74,7 +77,8 @@ begin
   ) then
     alter type public.engine_state add value 'commerce';
   end if;
-end $$;
+end;
+$$;
 
 -- Add engine_type 'core_commerce' if missing
 do $$
@@ -90,7 +94,8 @@ begin
   ) then
     alter type public.engine_type add value 'core_commerce';
   end if;
-end $$;
+end;
+$$;
 
 commit;;
 

@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 begin;
 
 -- =========================================================
@@ -47,7 +48,8 @@ begin
     execute format('revoke all on table %s from anon', r.fqtn);
     execute format('revoke all on table %s from authenticated', r.fqtn);
   end loop;
-end $$;
+end;
+$$;
 
 -- 3) Admin diagnostics: any remaining SELECT grants?
 drop view if exists public.admin_analytics_select_grants_v1 cascade;

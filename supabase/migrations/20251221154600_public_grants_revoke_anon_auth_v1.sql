@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 -- =========================================================
 -- ENFORCE: Remove explicit anon/authenticated grants from public schema objects
 -- Hosted-safe: REVOKE only (no attempt to ALTER DEFAULT PRIVILEGES for supabase_admin).
@@ -50,4 +51,5 @@ BEGIN
   END LOOP;
 
   RAISE NOTICE 'OK: revoked explicit anon/authenticated grants in public schema (objects + functions + schema).';
-END $$;
+end;
+$$;

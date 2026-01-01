@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 begin;
 
 -- ============================================================
@@ -25,7 +26,8 @@ begin
   if to_regclass('public.lane_codes') is null then
     raise exception 'Missing required table: public.lane_codes';
   end if;
-end $$;
+end;
+$$;
 
 -- 1) Ensure lane vocabulary (Phase 2)
 insert into public.lane_codes (lane_code, label, description)
@@ -336,7 +338,7 @@ begin
         ('pack_ad_free')
       ) x(product_key)
       where not exists (select 1 from public.billing_products bp where bp.product_key = x.product_key)
-    $q$;
+    $$;
   end if;
 
 end $$;

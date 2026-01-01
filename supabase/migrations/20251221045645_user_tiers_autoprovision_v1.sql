@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 begin;
 
 -- =========================================================
@@ -75,6 +76,7 @@ begin
   loop
     perform public._ensure_user_tiers_row_v1(r.id);
   end loop;
-end $$;
+end;
+$$;
 
 commit;

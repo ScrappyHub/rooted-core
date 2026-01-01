@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 -- =========================================================
 -- Hosted-safe: REPORT ONLY (no attempt to ALTER DEFAULT PRIVILEGES)
 -- supabase_admin default privileges cannot be changed from project roles.
@@ -28,4 +29,5 @@ BEGIN
       r.objtype,
       r.acl;
   END LOOP;
-END $$;
+end;
+$$;

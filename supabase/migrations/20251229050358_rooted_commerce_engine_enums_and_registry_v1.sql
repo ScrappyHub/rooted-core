@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 -- ============================================================
 -- ROOTED: Commerce engine enums (SAFE)
 -- NOTE: Postgres requires enum ADD VALUE be committed before use.
@@ -19,7 +20,8 @@ begin
   ) then
     alter type public.engine_state add value 'commerce';
   end if;
-end $$;
+end;
+$$;
 
 -- 2) engine_type: add 'core_commerce' if missing
 do $$
@@ -35,4 +37,5 @@ begin
   ) then
     alter type public.engine_type add value 'core_commerce';
   end if;
-end $$;
+end;
+$$;

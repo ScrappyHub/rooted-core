@@ -1,3 +1,4 @@
+-- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 begin;
 
 -- ============================================================
@@ -63,6 +64,7 @@ begin
   );
 
   raise notice 'events_host_fk_orphan_sanitize_patch_v1: applied PRE-GUARD using discriminator column %', col_event_type;
-end $$;
+end;
+$$;
 
 commit;
