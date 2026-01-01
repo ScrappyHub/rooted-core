@@ -1,3 +1,4 @@
+-- ROOTED: STRIP-EXECUTE-DOLLAR-QUOTES-STEP-1P (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 -- ROOTED: AUTO-FIX-EXECUTE-CLOSER-MISMATCH-STEP-1N (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
@@ -29,7 +30,6 @@ begin
 
   -- Create minimal stub view with the EXACT expected columns + order.
   if v_providers is not null then
-    execute $q$
       create view public.discovery_providers as
       select
         null::uuid              as id,
@@ -62,7 +62,6 @@ begin
         null::timestamptz       as last_shown_at,
         now()::timestamptz      as created_at
       where false;
-    $q$;
   end if;
 
 end $$;

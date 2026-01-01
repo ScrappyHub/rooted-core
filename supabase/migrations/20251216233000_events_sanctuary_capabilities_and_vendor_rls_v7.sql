@@ -1,3 +1,4 @@
+-- ROOTED: STRIP-EXECUTE-DOLLAR-QUOTES-STEP-1P (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 -- ROOTED: AUTO-FIX-EXECUTE-CLOSER-MISMATCH-STEP-1N (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
@@ -144,7 +145,6 @@ begin
   execute 'drop policy if exists events_host_vendor_delete_v7 on public.events';
 
   -- Create policies via EXECUTE so the block is fully guarded
-  execute $q$
     create policy events_host_vendor_insert_v7
     on public.events
     for insert
@@ -217,9 +217,7 @@ begin
         or (coalesce(status,'') = 'published' and coalesce(moderation_status,'') = 'approved')
       )
     );
-  $q$;
 
-  execute $q$
     create policy events_host_vendor_delete_v7
     on public.events
     for delete
@@ -234,7 +232,6 @@ begin
           and p.owner_user_id = auth.uid()
       )
     );
-  $q$;
 
 end
 $do$;

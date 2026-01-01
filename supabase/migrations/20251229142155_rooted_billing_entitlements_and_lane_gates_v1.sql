@@ -1,3 +1,4 @@
+-- ROOTED: STRIP-EXECUTE-DOLLAR-QUOTES-STEP-1P (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 -- ROOTED: AUTO-FIX-EXECUTE-CLOSER-MISMATCH-STEP-1N (canonical)
 begin;
@@ -85,7 +86,6 @@ begin
 
     if has_user_id_col and has_role_col then
       -- Try role, user_role, account_role in order
-      execute $q$
         select coalesce(t.role, t.user_role, t.account_role)
         from public.user_tiers t
         where t.user_id = $1
@@ -107,7 +107,6 @@ begin
   );
 
   return v_role;
-$q$;
 
 create or replace function public._user_tier_safe(p_user_id uuid)
 returns text
@@ -135,7 +134,6 @@ begin
     ) into has_tier_col;
 
     if has_user_id_col and has_tier_col then
-      execute $q$
         select coalesce(t.tier, t.plan_tier, t.subscription_tier)
         from public.user_tiers t
         where t.user_id = $1
@@ -156,7 +154,6 @@ begin
   );
 
   return v_tier;
-$q$;
 
 -- ------------------------------------------------------------
 -- 3) Billing-backed entitlement check (THIS is the canonical truth)

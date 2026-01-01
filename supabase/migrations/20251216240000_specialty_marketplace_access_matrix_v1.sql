@@ -1,3 +1,4 @@
+-- ROOTED: STRIP-EXECUTE-DOLLAR-QUOTES-STEP-1P (canonical)
 -- ROOTED: AUTO-FIX-EXECUTE-CLOSER-MISMATCH-STEP-1N (canonical)
 -- 20251216240000_specialty_marketplace_access_matrix_v1.sql
 -- Specialty Marketplace Access Matrix + capability resolver
@@ -42,7 +43,6 @@ begin
   end if;
 
   -- Resolve: specialty override (grant) wins, else fall back to default_allowed, else false
-  execute $q$
     select coalesce(
       (
         select g.is_allowed
@@ -67,6 +67,5 @@ begin
 
   return coalesce(v_allowed, false);
 end;
-$q$;
 
 commit;

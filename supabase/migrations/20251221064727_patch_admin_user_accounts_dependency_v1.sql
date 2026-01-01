@@ -1,3 +1,4 @@
+-- ROOTED: STRIP-EXECUTE-DOLLAR-QUOTES-STEP-1P (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 -- ROOTED: AUTO-FIX-EXECUTE-CLOSER-MISMATCH-STEP-1N (canonical)
 -- ROOTED: AUTO-FIX-NESTED-EXECUTE-DOLLAR-TAG-STEP-1L (canonical)
@@ -59,7 +60,6 @@ begin
   -- 3) Recreate the function (STUB)
   -- NOTE: If you already have the real function body elsewhere later in migrations,
   -- this stub just makes the schema consistent for now.
-  execute $fn$
     create or replace function public.admin_get_user_accounts()
     returns setof public.admin_user_accounts
     language sql
@@ -68,7 +68,6 @@ begin
     set search_path = public
     as $body$
       select * from public.admin_user_accounts;
-    $fn$;
   $fn$;
 
   -- 4) Permissions (tighten later if needed; keep minimal sane defaults)

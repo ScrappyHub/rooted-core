@@ -1,3 +1,4 @@
+-- ROOTED: STRIP-EXECUTE-DOLLAR-QUOTES-STEP-1P (canonical)
 -- ROOTED: AUTO-FIX-EXECUTE-CLOSER-MISMATCH-STEP-1N (canonical)
 begin;
 
@@ -79,7 +80,6 @@ begin
       ) into has_owner_col;
 
       if has_owner_col then
-        execute $q$
           select exists (
             select 1
             from public.providers p
@@ -105,7 +105,6 @@ begin
   end if;
 
   return false;
-$q$;
 
 revoke all on function public.can_create_live_feed_post_v1(uuid,uuid) from anon;
 grant execute on function public.can_create_live_feed_post_v1(uuid,uuid) to authenticated;

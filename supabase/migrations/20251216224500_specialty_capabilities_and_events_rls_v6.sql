@@ -1,3 +1,4 @@
+-- ROOTED: STRIP-EXECUTE-DOLLAR-QUOTES-STEP-1P (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 -- ROOTED: AUTO-FIX-EXECUTE-CLOSER-MISMATCH-STEP-1N (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
@@ -28,7 +29,6 @@ begin
   if to_regclass('public.vertical_specialties_v1') is null then
     raise notice 'Skipping canonical_specialties seed from vertical_specialties_v1: view does not exist.';
   else
-    execute $q$
       insert into public.canonical_specialties (specialty_code)
       select distinct specialty_code
       from public.vertical_specialties_v1
@@ -211,10 +211,8 @@ begin
         where s.specialty_code = p_specialty
       );
     $$;
-  $q$;
 
   -- Replace vendor-host policies with capability-aware v6
-  execute $q$
     alter table public.events enable row level security;
 
     drop policy if exists events_host_vendor_insert_v5 on public.events;
@@ -265,7 +263,6 @@ begin
         or public._specialty_has_capability(public._provider_specialty_code(host_vendor_id), 'can_host_large_scale_volunteer')
       )
     );
-  $q$;
 
 end
 $do$;

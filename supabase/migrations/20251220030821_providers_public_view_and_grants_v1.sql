@@ -1,3 +1,4 @@
+-- ROOTED: STRIP-EXECUTE-DOLLAR-QUOTES-STEP-1P (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 -- ROOTED: AUTO-FIX-EXECUTE-CLOSER-MISMATCH-STEP-1N (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
@@ -37,7 +38,6 @@ BEGIN
       AND table_name='providers'
       AND column_name='name'
   ) THEN
-    execute $q$
       create or replace view public.providers_public_v1 as
       select
         p.id,
@@ -53,7 +53,6 @@ BEGIN
         p.owner_user_id,
         NULL::text as name
       from public.providers p;
-    $q$;
 
     RAISE NOTICE 'remote_schema: providers_public_v1 fallback (missing providers.name)';
   END IF;

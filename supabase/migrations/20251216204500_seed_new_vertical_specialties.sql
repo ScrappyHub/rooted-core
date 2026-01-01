@@ -1,3 +1,4 @@
+-- ROOTED: STRIP-EXECUTE-DOLLAR-QUOTES-STEP-1P (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 -- ROOTED: AUTO-FIX-EXECUTE-CLOSER-MISMATCH-STEP-1N (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
@@ -46,7 +47,6 @@ begin
   -- Insert/Upsert mapping rows
   -- NOTE: adjust the VALUES list below to match what you actually want seeded.
   if has_is_default then
-    execute $q$
       insert into public.vertical_canonical_specialties (vertical_code, specialty_code, is_default)
       values
         ('META_INFRASTRUCTURE', 'ROOTED_PLATFORM_CANONICAL', true),
@@ -61,7 +61,6 @@ begin
         ('META_INFRASTRUCTURE', 'ROOTED_PLATFORM_CANONICAL'),
         ('REGIONAL_INTELLIGENCE', 'ROOTED_PLATFORM_CANONICAL')
       on conflict (vertical_code, specialty_code) do nothing
-    $q$;
   end if;
 end $$;
 

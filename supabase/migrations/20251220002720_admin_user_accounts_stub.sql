@@ -1,3 +1,4 @@
+-- ROOTED: STRIP-EXECUTE-DOLLAR-QUOTES-STEP-1P (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 -- ROOTED: AUTO-FIX-EXECUTE-CLOSER-MISMATCH-STEP-1N (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-MISMATCH-STEP-1M (canonical)
@@ -21,7 +22,6 @@ begin
       and p.proname = 'is_admin'
       and pg_get_function_identity_arguments(p.oid) = ''
   ) then
-    execute $fn$
       create or replace function public.is_admin()
       returns boolean
       language plpgsql
@@ -42,7 +42,6 @@ begin
         );
       end;
       $body$;
-      $fn$;
   end if;
 end $$;
 
@@ -83,7 +82,6 @@ begin
   $v$;
 
   -- Recreate a minimal stub so anything expecting it doesn't break.
-  execute $fn$
     create or replace function public.admin_get_user_accounts()
     returns setof public.admin_user_accounts
     language sql
@@ -92,7 +90,6 @@ begin
     set search_path = public
     as $body$
       select * from public.admin_user_accounts;
-    $fn$;
     $fn$;
 
   revoke all on function public.admin_get_user_accounts() from anon;
