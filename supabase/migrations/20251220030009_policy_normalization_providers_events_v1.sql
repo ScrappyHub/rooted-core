@@ -1,3 +1,4 @@
+-- ROOTED: CANONICAL_DO_SQL_SEED_REPAIR_PIPELINE (one-shot)
 -- ROOTED: ENFORCE-DO-CLOSE-DELIMITER-STEP-1S (canonical)
 -- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- ROOTED: ENSURE-DO-CLOSE-DELIMITER-AFTER-END-STEP-1Q (canonical)
@@ -92,11 +93,6 @@ begin
         )
       );
     $pol$;
-  ELSE
-    RAISE NOTICE 'remote_schema: skipped providers_public_read_discoverable_v2 (missing providers.is_discoverable)';
-  END IF;
-END
-$$;
 
 -- 2) Owner can read their own row (authenticated only)
 create policy providers_owner_read_v2

@@ -1,3 +1,4 @@
+-- ROOTED: CANONICAL_DO_SQL_SEED_REPAIR_PIPELINE (one-shot)
 -- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
 -- ROOTED: ENSURE-DO-CLOSE-DELIMITER-AFTER-END-STEP-1Q (canonical)
 -- ROOTED: STRIP-EXECUTE-DOLLAR-QUOTES-STEP-1P (canonical)
@@ -48,8 +49,6 @@ begin
       from public.providers p
       where false;
     $v$;
-  else
-    execute $q$
       create view public.discovery_providers as
       select
         null::uuid              as id,
