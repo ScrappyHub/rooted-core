@@ -1,3 +1,4 @@
+-- ROOTED: CANONICAL_MIGRATION_GATE_V6 (one-shot)
 -- ROOTED: FIX-EXECUTE-DOLLAR-QUOTES-V1 (canonical)
 -- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
@@ -33,7 +34,7 @@ $v$;
 -- 1) SAFE PUBLIC VIEW (no billing columns)
 --    NOTE: list columns explicitly (no SELECT *)
 -- =========================================================
-DO $$
+do $do$
 BEGIN
   IF EXISTS (
     SELECT 1
@@ -61,7 +62,7 @@ BEGIN
 $q$;
   END IF;
 END;
-$$;
+$do$;
 
 comment on view public.providers_public_v1 is
 'Public-safe provider projection for discovery. Excludes billing/sensitive columns.';

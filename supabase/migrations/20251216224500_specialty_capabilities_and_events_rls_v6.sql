@@ -1,3 +1,4 @@
+-- ROOTED: CANONICAL_MIGRATION_GATE_V6 (one-shot)
 -- ROOTED: FIX-EXECUTE-Q-FN-DOLLARS-V2 (canonical)
 -- ROOTED: FIX-DO-DOLLAR-MISMATCH-V1 (canonical)
 -- ROOTED: FIX-EXECUTE-DOLLAR-QUOTES-V1 (canonical)
@@ -49,7 +50,7 @@ $sql$;
 -- Seed from vertical_canonical_specialties ONLY if it exists
 
 -- ROOTED: AUTO-FIX-DO-DOLLAR-QUOTE (canonical)
-do $sql$
+do $do$
 begin
   if to_regclass('public.vertical_canonical_specialties') is null then
     raise notice 'Skipping canonical_specialties seed from vertical_canonical_specialties: relation does not exist.';
@@ -63,7 +64,7 @@ begin
 $q$;
   end if;
 end;
-$sql$;
+$do$;
 
 -- ---------------------------------------------------------------------
 -- B) Capability tables
@@ -146,7 +147,7 @@ begin
     stable
     security definer
     set search_path = public
-    as $$
+    as $fn$
       select exists (
         select 1
         from public.providers p
@@ -154,44 +155,60 @@ begin
           and p.owner_user_id = auth.uid()
       );
 
+    $fn$
+$q$;
+
+  execute $q$
     create or replace function public._provider_is_verified(p_vendor_id uuid)
     returns boolean
     language sql
     stable
     security definer
     set search_path = public
-    as $$
+    as $fn$
       select coalesce((select p.is_verified from public.providers p where p.id = p_vendor_id), false);
 
+    $fn$
+$q$;
+
+  execute $q$
     create or replace function public._provider_effective_vertical(p_vendor_id uuid)
     returns text
     language sql
     stable
     security definer
     set search_path = public
-    as $$
+    as $fn$
       select coalesce(p.primary_vertical, p.vertical)
       from public.providers p
       where p.id = p_vendor_id;
 
+    $fn$
+$q$;
+
+  execute $q$
     create or replace function public._provider_specialty_code(p_vendor_id uuid)
     returns text
     language sql
     stable
     security definer
     set search_path = public
-    as $$
+    as $fn$
       select p.specialty
       from public.providers p
       where p.id = p_vendor_id;
 
+    $fn$
+$q$;
+
+  execute $q$
     create or replace function public._specialty_has_capability(p_specialty text, p_capability text)
     returns boolean
     language sql
     stable
     security definer
     set search_path = public
-    as $$
+    as $fn$
       select exists (
         select 1
         from public.specialty_capability_grants g
@@ -200,19 +217,25 @@ begin
           and g.is_allowed = true
       );
 
+    $fn$
+$q$;
+
+  execute $q$
     create or replace function public._specialty_is_sanctuary(p_specialty text)
     returns boolean
     language sql
     stable
     security definer
     set search_path = public
-    as $$
+    as $fn$
       select exists (
         select 1
         from public.sanctuary_specialties s
         where s.specialty_code = p_specialty
       );
+    $fn$
 $q$;
+
 
   -- Replace vendor-host policies with capability-aware v6
     alter table public.events enable row level security;

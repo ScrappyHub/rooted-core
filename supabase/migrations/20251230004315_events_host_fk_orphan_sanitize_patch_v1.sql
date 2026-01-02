@@ -1,3 +1,4 @@
+-- ROOTED: CANONICAL_MIGRATION_GATE_V6 (one-shot)
 -- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: AUTO-FIX-DO-CLOSER-CANONICAL-STEP-1O (canonical)
 begin;
@@ -9,7 +10,7 @@ begin;
 -- - NO-OP (with NOTICE) if required columns are missing.
 -- ============================================================
 
-do $$
+do $do$
 declare
   has_requires_partner boolean;
   has_host_inst boolean;
@@ -66,6 +67,6 @@ begin
 
   raise notice 'events_host_fk_orphan_sanitize_patch_v1: applied PRE-GUARD using discriminator column %', col_event_type;
 end;
-$$;
+$do$;
 
 commit;

@@ -1,3 +1,4 @@
+-- ROOTED: CANONICAL_MIGRATION_GATE_V6 (one-shot)
 -- ROOTED: FIX-DO-DOLLAR-MISMATCH-V1 (canonical)
 -- ROOTED: FIX-EXECUTE-DOLLAR-QUOTES-V1 (canonical)
 -- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
@@ -34,7 +35,7 @@ on conflict do nothing;
 -- ---------------------------------------------------------------------
 
 -- ROOTED: AUTO-FIX-DO-DOLLAR-QUOTE (canonical)
-do $sql$
+do $do$
 begin
   if to_regclass('public.vertical_canonical_specialties') is null then
     raise notice 'Skipping sanctuary mapping: public.vertical_canonical_specialties does not exist.';
@@ -50,6 +51,6 @@ begin
     on conflict do nothing;
 $q$;
 end;
-$sql$;
+$do$;
 
 commit;

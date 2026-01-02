@@ -1,3 +1,4 @@
+-- ROOTED: CANONICAL_MIGRATION_GATE_V6 (one-shot)
 -- ROOTED: FIX-DO-DOLLAR-MISMATCH-V1 (canonical)
 -- ROOTED: FIX-EXECUTE-DOLLAR-QUOTES-V1 (canonical)
 -- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
@@ -15,7 +16,7 @@
 begin;
 
 -- ROOTED: AUTO-FIX-DO-DOLLAR-QUOTE (canonical)
-do $sql$
+do $do$
 begin
   if to_regclass('public.events') is null then
     raise notice 'Skipping events_host_vendor_specialty_not_blank_patch: public.events does not exist.';
@@ -46,7 +47,7 @@ begin
         add constraint providers_specialty_not_blank_chk
         check (specialty is null or btrim(specialty) <> '');
 $q$;
-$sql$;
+$do$;
   end if;
 
   -- If you intended to recreate the v7 policies with an added "p.specialty not blank" condition,

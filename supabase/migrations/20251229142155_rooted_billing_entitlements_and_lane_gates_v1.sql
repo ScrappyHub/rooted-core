@@ -1,3 +1,4 @@
+-- ROOTED: CANONICAL_MIGRATION_GATE_V6 (one-shot)
 -- ROOTED: FIX-DO-DOLLAR-MISMATCH-V1 (canonical)
 -- ROOTED: DO-BLOCK-NORMALIZE-V1 (canonical)
 -- ROOTED: PURGE-STRAY-DO-DELIMITERS-AND-SEMICOLONS-STEP-1R (canonical)
@@ -11,7 +12,7 @@ begin;
 -- ------------------------------------------------------------
 -- 0) Preconditions (hard fail early if billing_entitlements missing)
 -- ------------------------------------------------------------
-do $$
+do $do$
 begin
   if to_regclass('public.billing_entitlements') is null then
     raise exception 'Missing required table: public.billing_entitlements';
@@ -259,6 +260,6 @@ language sql
 stable
 as $$
   select public.user_has_entitlement(p_user_id, ('v:' || p_vertical_code || ':' || p_capability));
-$$;
+$do$;
 
 commit;
