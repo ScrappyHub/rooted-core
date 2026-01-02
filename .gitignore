@@ -3,7 +3,8 @@ supabase/migrations/_backup_*/
 supabase/_migrations_archive/
 supabase/migrations_disabled/
 supabase/.env.functions
-scripts/
+scripts/*
+!scripts/ROOTED_CANONICAL_MIGRATION_NORMALIZE_VALIDATE_GATE_V*.ps1
 supabase_diag/
 supabase_reset_debug.log
 supabase_start_debug.log
