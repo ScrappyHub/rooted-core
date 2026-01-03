@@ -1,98 +1,130 @@
-# Contributing
+# Contributing to ROOTED
 
-This repository is governed software.
-Contributions must preserve:
+ROOTED is a **law-governed civic platform**.
 
-- platform governance hierarchy
-- permission boundaries
-- audit integrity
-- non-bypassable enforcement at the correct layer (DB/infra before UI)
-- deterministic, reviewable change history
+This is not a typical startup codebase.
+This is not feature-first software.
 
-If you are not aligned with governance-first development, do not contribute.
-
----
-
-## 1) Non-Negotiable Rules
-
-### Governance & Authority
-- Governance documents are binding within this repo’s scope.
-- If a rule is not committed to Git, it has no enforceable standing here.
-- Implementation must never contradict the repo’s governance router/index (if present).
-
-### No Silent Power
-- No bypass flags, backdoors, hidden admin surfaces, or “temporary overrides”.
-- No undocumented privileged paths.
-- No shadow “service role” assumptions.
-
-### Auditability
-- Changes that affect permissions, data access, or governance must be:
-  - explicitly documented in the PR description
-  - testable (or at minimum, verifiable via checks)
-  - reviewable by CODEOWNERS (when configured)
+By contributing, you agree that:
+- governance overrides convenience
+- safety overrides growth
+- child protection overrides all other concerns
 
 ---
 
-## 2) How to Contribute (Required Process)
+## 1️⃣ Governance Comes First (Non-Negotiable)
+
+ROOTED is governed by written law committed to GitHub.
+
+You may **not**:
+- bypass governance files
+- introduce silent policy changes
+- add hidden privilege or access paths
+- weaken Kids Mode protections
+- weaken sanctuary or nonprofit restrictions
+- add profiling, tracking, or demographic inference
+
+If a rule is not written in GitHub governance files, it has **no authority**.
+
+---
+
+## 2️⃣ Supreme Child Safety Rule
+
+Children are never:
+- monetized
+- messaged
+- profiled
+- tracked
+- exposed to ads
+- exposed to fundraising or commerce
+- used for analytics segmentation
+
+Kids Mode is:
+- mandatory
+- non-cosmetic
+- non-overridable
+
+Any change that risks child safety must be stopped immediately.
+
+---
+
+## 3️⃣ How to Contribute (Required Process)
 
 ### Branching
-- Create a feature branch from `main`.
-- Do not push directly to `main` (unless you are the sole maintainer and intentionally allow it).
+- Create a branch from `main`.
+- Do not push directly to `main` unless explicitly permitted.
 
 ### Pull Requests
-All changes must go through a PR unless the repo explicitly documents an exception.
+All changes must go through a pull request.
 
-PRs must include:
-- **What changed**
-- **Why it changed**
-- **Risk assessment**
-- **Rollback plan** (even if “revert PR”)
+Your PR must clearly state:
+- what changed
+- why it changed
+- what governance files authorize it
+- any risk to safety, privacy, or trust
 
-If the change touches governance, permissions, workflows, or security boundaries:
-- include the governance checklist in the PR template
-- reference the governing file(s) that authorize the change
-
-### Reviews
-- If CODEOWNERS exists, required owners must approve.
-- Do not self-merge changes that alter governance enforcement unless you are the designated owner.
+If governance, permissions, or safety are touched:
+- explicitly reference the governing documents
+- expect heightened review
 
 ---
 
-## 3) What Requires Extra Scrutiny
+## 4️⃣ What Requires Extra Review
 
-These changes are considered high-impact and must be treated as such:
-- permissions / role mapping changes
-- auth/session changes
-- data access boundary changes
-- audit log changes
-- workflow or CI changes that affect enforcement
-- dependency upgrades that introduce new privilege or network behavior
-- new telemetry, analytics, or observability hooks
-- any “engine registry”, “vertical registry”, or cross-module routing logic
-
----
-
-## 4) Code Quality Standards
-
-- Prefer explicitness over cleverness.
-- Avoid magic behavior and hidden defaults.
-- Do not introduce breaking changes without documenting migration/compatibility behavior.
-- Keep changes minimal and review-friendly.
+These changes require special scrutiny:
+- Kids Mode logic
+- moderation or reporting systems
+- permissions or role handling
+- data access or visibility
+- discovery or ranking behavior
+- monetization or payments
+- analytics, telemetry, or tracking
+- admin tooling or overrides
+- feature flags affecting safety
 
 ---
 
-## 5) Secrets & Credentials
+## 5️⃣ What Is Not Allowed
+
+You may NOT:
+- add profiling by identity or belief
+- infer culture, religion, politics, or demographics
+- add hidden analytics or tracking
+- override moderation outcomes silently
+- create shadow admin powers
+- weaken audit logs
+- treat ROOTED as a growth-hack or ad platform
+
+---
+
+## 6️⃣ Code & Design Expectations
+
+- Prefer clarity over cleverness.
+- No “temporary” bypasses.
+- No undocumented behavior.
+- UI must never be the sole enforcement layer.
+- Database and policy enforcement must remain authoritative.
+
+---
+
+## 7️⃣ Secrets & Credentials
 
 - Never commit secrets.
-- Never paste tokens/keys into issues/PRs.
-- Use GitHub Secrets for CI.
-- If you suspect a secret leak, rotate it immediately and follow `SECURITY.md`.
+- Never post keys or tokens in issues or PRs.
+- Use approved secret storage mechanisms.
+- Report suspected leaks immediately (see `SECURITY.md`).
 
 ---
 
-## 6) Final Statement
+## 8️⃣ Final Statement
 
-By contributing, you affirm:
-- you will not bypass governance enforcement
-- you will not introduce silent privilege or hidden access paths
-- you accept that review and auditability override speed or convenience
+ROOTED exists to serve:
+- communities
+- families
+- children
+- educators
+- volunteers
+- public trust
+
+If your contribution does not align with these principles,
+**you must not contribute to this platform**.
